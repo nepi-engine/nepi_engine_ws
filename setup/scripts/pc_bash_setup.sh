@@ -12,25 +12,15 @@
 
 # This file sets up nepi bash aliases and util functions
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
 
-
-
-
-#############
-# Install Required Software
-
-NEPI_CFG_SOURCE=${CONFIG_SOURCE}
-NEPI_CFG_DEST=${HOME}/.NEPI_CONFIG
-echo "Installing NEPI Config ${NEPI_CFG_DEST} "
-if [ -f "$NEPI_CFG_DEST" ]; then
-    sudo rm $NEPI_CFG_DEST
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
 fi
-sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
-sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
-
 
 
 #############

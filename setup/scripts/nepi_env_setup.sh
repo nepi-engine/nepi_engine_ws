@@ -13,9 +13,15 @@
 # This file sets up the OS software requirements for a NEPI File System installation
 
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
 
 
 #######################################
@@ -134,26 +140,27 @@ sudo apt-get install -y lsyncd rsync
 ###################################
 # Config System Services 
 sudo apt-get install openssh-server -y
-if [ $NEPI_MANAGES_SSH == 1 ]; then
-    sudo systemctl enable --now sshd.service
-fi
+udo systemctl enable --now sshd.service
+
+
+sudo apt-get install samba -y
+sudo systemctl enable --now samba.service
 
 echo "Installing chrony for NTP services"
 sudo apt-get install chrony -y
+
 if [ $NEPI_MANAGES_TIME == 1 ]; then
     sudo systemctl enable --now chrony.service
 fi
 
-sudo apt-get install samba -y
-if [ $NEPI_MANAGES_SHARE == 1 ]; then
-    sudo systemctl enable --now samba.service
-fi
-
-# Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
-
 if [ $NEPI_MANAGES_NETWORK == 1 ]; then
     sudo systemctl disable NetworkManager
 fi
+
+
+# Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
+
+
 
 ######################################
 

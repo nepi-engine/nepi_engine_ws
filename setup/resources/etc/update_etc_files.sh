@@ -18,6 +18,7 @@ function update_text_value(){
   UPDATE=$3
   FILE=$1
   if [ -f "$FILE" ]; then
+    sudo echo "Updating NEPI Config Yaml file from: ${FILE}"
     if grep -q "$KEY" "$FILE"; then
       sed -i "/^$KEY/c\\$UPDATE" "$FILE"
     else
