@@ -1,0 +1,17 @@
+# Setup NEPI ETC to OS Host ETC Linked files
+sudo cp -r ${etc_source}/lsyncd /etc/
+function add_etc_sync(){
+    etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
+    etc_dest=/etc/${1}
+    lsyncd_file=/etc/lsyncd/lsyncd.conf
+    echo "" | sudo tee -a $lsyncd_file
+    echo "sync {" | sudo tee -a $lsyncd_file
+    echo "    default.rsync," | sudo tee -a $lsyncd_file
+    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+    echo "}" | sudo tee -a $lsyncd_file
+    echo " " | sudo tee -a $lsyncd_file
+}
+
+
+sudo chown -R ${USER}:${USER} ${NEPI_DOCKER_CONFIG}

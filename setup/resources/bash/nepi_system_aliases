@@ -184,8 +184,10 @@ function nepihelp(){
     echo "$HELPN"
 }
 
+##### Source the ROS environment
+sros
+
 ##### NEPI SETUP #####
 export NEPI_REMOTE_SETUP=0
 export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src
-
 export PATH=${PATH}:${SCRIPTS}

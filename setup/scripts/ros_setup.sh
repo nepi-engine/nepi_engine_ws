@@ -19,7 +19,12 @@ wait
 
 #######################################
 ## Configure NEPI Software Requirements
-
+# Uninstall ROS if reinstalling/updating
+# sudo apt remove ros-noetic-*
+# sudo apt autoremove
+# After that, it's recommended to remove ROS-related environment variables from your .bashrc file 
+# and delete the ROS installation directory, typically 
+# sudo rm -r /opt/ros/*
 
 echo ""
 echo "Installing ROS ${NEPI_ROS}"
@@ -59,20 +64,19 @@ if [[ "$ros_version" == 'noetic' ]]; then
     sudo rosdep init
     rosdep update
 
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F42ED6FBAB17C654
+    #sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F42ED6FBAB17C654
     sudo apt-get update --fix-missing
     
     # Then
-    #sudo apt-get install ros-noetic-catkin python-catkin-tools
-    #sudo python${PYTHON_VERSION} -m pip3 install --user git+https://github.com/catkin/catkin_tools.git
+    sudo apt-get install ros-noetic-catkin 
+    sudo python${PYTHON_VERSION} -m pip install --user git+https://github.com/catkin/catkin_tools.git
 
 
     # If needed remove old packages if installed
     #sudo apt remove ros-noetic-cv-bridge -y
     #sudo apt remove ros-noetic-web-video-server -y
 
-    ADDITIONAL_ROS_PACKAGES="python3-catkin-tools \
-        ros-${ros_version}-rosbridge-server \
+    ADDITIONAL_ROS_PACKAGES="ros-${ros_version}-rosbridge-server \
         ros-${ros_version}-pcl-ros \
         ros-${ros_version}-cv-bridge \
         ros-${ros_version}-web-video-server \
@@ -88,9 +92,9 @@ if [[ "$ros_version" == 'noetic' ]]; then
         #ros-${ros_version}-diagnostic-updater 
         #ros-${ros_version}-vision-msgs
 
-
+    sudo apt install $ADDITIONAL_ROS_PACKAGES -y
     source /opt/ros/noetic/setup.bash
-    wait
+
 
 
     #########################################

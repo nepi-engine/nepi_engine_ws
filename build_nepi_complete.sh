@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ##
 ## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
 ##
@@ -29,9 +31,7 @@
 #   sdk
 #   rui
 # Repeat -s <component> for additional components to skip
-sros
-wait
-echo "ROS Sourced"
+
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
@@ -114,32 +114,14 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 
 #####################################
-######       Update NEPI Config Files          #####\
-sudo mkdir $NEPI_ETC
-sudo cp -R -p $(pwd)/resources/etc/* ${NEPI_ETC}/
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
-NEPI_ETC_BAK=${NEPI_ETC}.bak
-sudo cp -R -p $NEPI_ETC $NEPI_ETC_BAK
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC_BAK
-printf "\n${HIGHLIGHT}*** NEPI Config Files Updated***\n"
-
-
-
-
-######       NEPI Update Factory Config Files          #####\
-sudo mkdir ${NEPI_CONFIG}/factory_cfg
-sudo cp -R -p $NEPI_ETC ${NEPI_CONFIG}/factory_cfg/
-sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}/factory_cfg/
-printf "\n${HIGHLIGHT}*** NEPI Factory Config Files Updated***\n"
-
-#####################################
 ###### NEPI Engine #####
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  catkin build --profile=release --env-cache
+
+  catkin build --profile=release --env-cache #-v
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
 else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine SDK Build by User Request ***${CLEAR}\n"
+  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine by User Request ***${CLEAR}\n"
 fi
 
 
@@ -160,7 +142,7 @@ else
     source ${NEPI_HOME}/.nvm/nvm.sh
     source ./devenv.sh
     cd src/rui_webserver/rui-app/
-    npm run build
+    npm run build 
     deactivate
     cd ${NEPI_ENGINE_SRC_ROOTDIR}
     printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
