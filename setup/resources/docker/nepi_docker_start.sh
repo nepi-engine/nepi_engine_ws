@@ -147,7 +147,7 @@ echo "Building NEPI Docker Run Command"
 
 ########
 # Initialize Run Command
-DOCKER_RUN_COMMAND=" sudo docker run --privileged --rm -e UDEV=1 --user ${NEPI_USER} '\'
+DOCKER_RUN_COMMAND=" sudo docker run -d --privileged --rm -e UDEV=1 --user ${NEPI_USER} '\'
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} '\'
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} '\'
 --mount type=bind,source=/dev,target=/dev '\'
@@ -182,6 +182,10 @@ ${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash '\'
 
 #-c 'nepi_start_all'"
 
+export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
+export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
+export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
+echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
 
 
 ########################

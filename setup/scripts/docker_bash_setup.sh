@@ -49,7 +49,7 @@ fi
 sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
 sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
 
-NEPI_CFG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_config
+NEPI_CFG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_docker_config
 NEPI_CFG_DEST=${HOME}/.nepi_config
 echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
 if [ -f "$NEPI_CFG_DEST" ]; then

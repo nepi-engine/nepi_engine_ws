@@ -195,10 +195,9 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     # Install Modeprobe Conf
     echo " "
     echo "Configuring nepi_modprobe.conf"
-    etc_path = modeprobe.d/nepi_modprobe.conf
-    if [ ! -f "/etc/${etc_path}" ]; then
-        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}
-        sudo rm -r /etc/ssh/sshd_config
+    etc_path=modprobe.d/nepi_modprobe.conf
+    if [ -f "/etc/${etc_path}" ]; then
+        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
     fi
     sudo ln -sf ${NEPI_ETC}/${etc_path} /etc/${etc_path}
 

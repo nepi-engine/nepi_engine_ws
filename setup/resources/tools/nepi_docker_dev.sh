@@ -15,11 +15,15 @@ export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
 export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
 
-export NEPI_ACTIVE_NAME=nepi
-export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-3-4
+export NEPI_ACTIVE_NAME=nepi_fs_a
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-2
+export NEPI_IP=192.168.179.103
+
 #export NEPI_ACTIVE_ID=docker images --filter "reference=${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG}" --format "{{.ID}}"
 
-sudo docker run  -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
+
+
+sudo docker run -d --privileged -it -e UDEV=1 --user $NEPI_USER --gpus all \
     --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
     --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
     --mount type=bind,source=/dev,target=/dev \
@@ -31,27 +35,39 @@ sudo docker run  -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
 
 export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
 export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
-#export NEPI_RUNNING_ID=$(sudo docker inspect --format "{{.Id}}" ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} | sed 's/^sha256://')
-#echo $NEPI_RUNNING_ID
 export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
-echo $NEPI_RUNNING_ID
+echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
 
-sudo docker exec -it -u nepi $NEPI_RUNNING_ID /bin/bash
+
+##########################################
+
+
+sudo docker exec -it -u $NEPI_USER $NEPI_RUNNING_ID /bin/bash -c "su ${NEPI_USER}"
 
 #######################################
 
-sudo docker commit $NEPI_RUNNING_ID ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}-5
+sudo docker commit $NEPI_RUNNING_ID ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}-2
 
 #################################
-sudo docker start -ai $NEPI_RUNNING_ID
 
 sudo docker stop $NEPI_RUNNING_ID
 
+#################################
+NEPI_STOPPED_ID=aeaf39348034
+sudo docker start $NEPI_STOPPED_ID
 
 
+#Create Docker Network
+export DOCKER_IP=192.168.179.0/24
+sudo docker network create --subnet=$DOCKER_IP nepi_network
+sudo docker network create --subnet 172.18.179.0/16 --gateway 172.18.179.1 my-custom-network
+sudo docker network inspect nepi_network
 
 
+or 
 
+    --net=host \
+    --runtime nvidia \
 '
 export NEPI_TCP_PORTS=$NEPI_TCP_PORTS
 echo $NEPI_TCP_PORTS
