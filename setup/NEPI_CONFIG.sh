@@ -6,6 +6,10 @@ export NEPI_ADMIN=nepiadmin
 export NEPI_ADMIN_PW=nepiadmin
 export NEPI_DEVICE_ID=device1
 
+export NEPI_IP=192.168.179.103
+export NEPI_NTP_IP=192.168.179.5
+export NEPI_DHCP_ON_START=0
+
 ####################################################
 # NEPI MANAGED SERVICES Config
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resource
@@ -13,20 +17,8 @@ export NEPI_DEVICE_ID=device1
 # these system services will be disabled in the NEPI OS environment, 
 # and stopped in the Host OS environment if running in container at runtime
 
-# NEPI Network Management Config
 export NEPI_MANAGES_NETWORK=1
-NEPI_NETWORK_ID=192.168.179
-NEPI_HOST_ID=103
-export NEPI_IP=${NEPI_NETWORK_ID}.${NEPI_HOST_ID}
-export NEPI_DHCP_ON_START=0
-
-
-
-# NEPI Network Management Config
 export NEPI_MANAGES_TIME=1
-NEPI_NTP_NETWORK_ID=$NEPI_NETWORK_ID
-NEPI_NTP_HOST_ID=5
-export NEPI_NTP_IP=${NEPI_NTP_NETWORK_ID}.${NEPI_NTP_HOST_ID}
 
 ####################################################
 # NEPI CONTAINER HOST Config
