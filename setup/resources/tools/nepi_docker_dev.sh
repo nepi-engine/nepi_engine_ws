@@ -16,9 +16,22 @@ export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
 
 export NEPI_ACTIVE_NAME=nepi_fs_a
+<<<<<<< HEAD
 export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-4
 export NEPI_IP=192.168.179.103
 
+=======
+<<<<<<< HEAD
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-4
+export NEPI_IP=192.168.179.103
+=======
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-2
+export NEPI_IP=192.168.179.103
+
+#export NEPI_ACTIVE_ID=docker images --filter "reference=${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG}" --format "{{.ID}}"
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
+
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 
 
 sudo docker run -d --privileged -it -e UDEV=1 --user $NEPI_USER --gpus all \
@@ -36,6 +49,10 @@ export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
 export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
 echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_time_start"
 sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_network_start"
 sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_dhcp_start"
@@ -48,6 +65,8 @@ sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_license_
 
 export NEPI_USER=$NEPI_USER
 export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
+<<<<<<< HEAD
+=======
 
 export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
@@ -60,6 +79,24 @@ export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
 export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
 export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
 echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
+=======
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
+
+export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
+export NEPI_IP=$NEPI_IP
+
+<<<<<<< HEAD
+export NEPI_ACTIVE_NAME=nepi_fs_a
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-4
+export NEPI_IP=192.168.179.103
+
+export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
+export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
+export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
+echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
+=======
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 
 sudo docker exec -it -u $NEPI_USER $NEPI_RUNNING_ID /bin/bash -c "su ${NEPI_USER}"
 

@@ -446,6 +446,21 @@ if [ 1 ]; then
       fi
   }
 
+<<<<<<< HEAD
+=======
+
+# Function to updates system environment variables from nepi_config.yaml
+function refresh_nepi_config(){
+      NEPI_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+      echo "refresh_nepi_config called with config file ${NEPI_CONFIG_FILE}"
+      source /home/${USER}/.nepi_config
+}
+
+export -f refresh_nepi_config
+
+
+
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
   BUILD=${NEPI_STORAGE}/nepi_src/nepi_engine_ws
   ## NEPI build shortcuts
   alias nepibld="

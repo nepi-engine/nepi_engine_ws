@@ -35,8 +35,11 @@ wait
 export ETC_FOLDER=$(pwd)/etc
 source $(pwd)/load_docker_config.sh
 wait
+<<<<<<< HEAD
 source $(pwd)/update_etc_files.sh
 wait
+=======
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 
 #***********************
 ##### TO DO
@@ -82,12 +85,29 @@ fi
 if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
 echo "nepi_fs_a"
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
+<<<<<<< HEAD
 ${NEPI_FSA}:${NEPI_FSA_TAG} /bin/bash"
 else
 echo "nepi_fs_b"
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
 ${NEPI_FSB}:${NEPI_FSB_TAG} /bin/bash"
 fi
+=======
+<<<<<<< HEAD
+${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash"
+=======
+${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash '\'
+-c 'nepi_rui_start'"
+
+#-c 'nepi_start_all'"
+
+export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
+export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
+export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
+echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
+
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 
 ########################
 # Run NEPI Docker
@@ -98,9 +118,30 @@ echo "Launching NEPI Docker Container with Command"
 echo "${DOCKER_RUN_COMMAND}"
 run $DOCKER_RUN_COMMAND
 
+<<<<<<< HEAD
 ########################
 # Start NEPI Processes
 ########################
+=======
+run $DOCKER_RUN_COMMAND
+
+########################
+# Start NEPI Processes
+########################
+
+export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
+export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
+export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
+echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
+
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_time_start"
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_network_start"
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_dhcp_start"
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_ssh_start"
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_samba_start"
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_engine_start"
+sudo docker exec  $NEPI_RUNNING_ID /bin/bash -c "/opt/nepi/scripts/nepi_license_start"
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 
 #export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
 #export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG

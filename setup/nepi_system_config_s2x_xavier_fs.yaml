@@ -37,9 +37,9 @@ MAX_FAIL: 3
 FAIL_COUNT: 0
 # Set to "CONTAINER" if running in container 
 # Set to partition path if running directly on device's file system
-NEPI_BOOT_DEVICE: CONTAINER
-NEPI_FS_DEVICE: CONTAINER
-NEPI_STORAGE_DEVICE: CONTAINER
+NEPI_BOOT_DEVICE: /dev/root
+NEPI_FS_DEVICE: /dev/nvme0n1p1
+NEPI_STORAGE_DEVICE: /dev/nvme0n1p3
 ####################################################
 # NEPI SOFTWARE Config
 NEPI_PYTHON: 3.8
@@ -54,10 +54,10 @@ NEPI_HAS_XPU: 0
 # NEPI Docker Folder
 # Set to DOCKER to use dockers native docker image storage location
 # Set to custom path to configure a custom docker image storage loacation
-NEPI_DOCKER: /mnt/nepi_docker
+NEPI_DOCKER: /mnt/nepi_storage/nepi_docker
 # NEPI Storage and Config Folders
 NEPI_STORAGE: /mnt/nepi_storage
-NEPI_CONFIG: /mnt/nepi_config
+NEPI_CONFIG: /mnt/nepi_storage/nepi_config
 DOCKER_MIN_GB: 100
 STORAGE_MIN_GB: 250
 CONFIG_MIN_GB: 1
@@ -73,9 +73,9 @@ NEPI_ENGINE: /opt/nepi/nepi_engine
 NEPI_ETC: /opt/nepi/etc
 NEPI_SCRIPTS: /opt/nepi/scripts
 # NEPI Config Paths
-NEPI_DOCKER_CONFIG: /mnt/nepi_config/docker_cfg
-NEPI_FACTORY_CONFIG: /mnt/nepi_config/factory_cfg
-NEPI_SYSTEM_CONFIG: /mnt/nepi_config/system_cfg
+NEPI_DOCKER_CONFIG: /mnt/nepi_storage/nepi_config/docker_cfg
+NEPI_FACTORY_CONFIG: /mnt/nepi_storage/nepi_config/factory_cfg
+NEPI_SYSTEM_CONFIG: /mnt/nepi_storage/nepi_config/system_cfg
 NEPI_USR_CONFIG: /mnt/nepi_storage/user_cfg
 # NEPI Image Paths
 NEPI_IMPORT_PATH: /mnt/nepi_storage/nepi_images

@@ -12,7 +12,7 @@ NEPI_DHCP_ON_START: 0
 # NEPI CONTAINER HOST Config
 # These settings are used to configure the host OS 
 # if NEPI is running in a container
-NEPI_IN_CONTAINER: 0
+NEPI_IN_CONTAINER: 1
 NEPI_CT_USER: NEPI
 NEPI_CT_DEVICE_ID: DEVICE1
 #NEPI_CT_NETWORK_ID=$NEPI_NETWORK_ID

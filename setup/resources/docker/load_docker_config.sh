@@ -12,6 +12,7 @@
 
 # This file loads the nepi_system_config.yaml values
 
+<<<<<<< HEAD
 CONFIG_SOURCE=$(pwd)/etc/nepi_system_config.yaml
 source $(pwd)/etc/load_system_config.sh
 echo $CONFIG_SOURCE
@@ -23,6 +24,8 @@ if [ $? -eq 1 ]; then
 fi
 
 
+=======
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 FILE=$(pwd)/nepi_docker_config.yaml
  
 if [[ -f "$FILE" ]]; then

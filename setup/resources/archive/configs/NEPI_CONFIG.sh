@@ -10,7 +10,23 @@ export NEPI_IP=192.168.179.103
 export NEPI_NTP_IP=192.168.179.5
 export NEPI_DHCP_ON_START=0
 
+<<<<<<< HEAD:setup/resources/archive/configs/NEPI_CONFIG.sh
 
+=======
+<<<<<<< HEAD:setup/resources/archive/configs/NEPI_CONFIG.sh
+
+=======
+####################################################
+# NEPI MANAGED SERVICES Config
+# NEPI Managed Resources. Set to 0 to turn off NEPI management of this resource
+# Note, if enabled for a docker deployment, 
+# these system services will be disabled in the NEPI OS environment, 
+# and stopped in the Host OS environment if running in container at runtime
+
+export NEPI_MANAGES_NETWORK=1
+export NEPI_MANAGES_TIME=1
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b:setup/NEPI_CONFIG.sh
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa:setup/NEPI_CONFIG.sh
 
 ####################################################
 # NEPI CONTAINER HOST Config

@@ -81,6 +81,210 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     # Clear any old nepi engine files/folders
     #source ./nepi_engine_clear.sh
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+
+    ###################
+    # Set up the default hostname
+    # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
+    if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
+        if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+            echo " "
+            echo "Updating system hostname"
+
+            #sudo chmod 744 /etc/host*
+            sudo cp -p /etc/hosts /etc/hosts.bak
+            if [ ! -f /etc/hosts ]; then
+                sudo rm /etc/hosts
+            fi
+            sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
+
+            sudo cp -p /etc/hostname /etc/hostname.bak
+            if [ ! -f "/etc/hostname" ]; then
+                sudo rm /etc/hostname
+            fi
+            sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
+
+
+            # Set up static IP addr.
+            echo "Updating Network interfaces.d"
+            if [ ! -f "/etc/network/interfaces.d" ]; then
+                sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
+                sudo rm -r /etc/network/interfaces.d
+            fi
+            sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
+
+            echo "Updating Network interfaces"
+            if [ ! -f "/etc/network/interfaces" ]; then
+                sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
+                sudo rm /etc/network/interfaces
+            fi
+            sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
+
+            # Set up DHCP
+            echo "Updating Network dhclient.conf"
+            if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
+                sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
+                sudo rm /etc/dhcp/dhclient.conf
+            fi
+            sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+
+
+            # Set up WIFI
+            echo "Updating Network wpa_supplicant.conf"
+            if [ ! -d "etc/wpa_supplicant" ]; then
+                sudo mkdir /etc/wpa_supplicant
+            fi
+            if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
+                sudo cp -p -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
+            fi
+            sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+        fi
+    fi
+
+    
+
+
+    ###########################################
+    # Set up SSH
+    echo " "
+    echo "Configuring SSH Keys"
+
+    # And link default public key - Make sure all ownership and permissions are as required by SSH
+    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_ETC}/ssh/authorized_keys
+    sudo chmod 0600 ${NEPI_ETC}/ssh/authorized_keys
+
+
+    sudo rm ${NEPI_HOME}/.ssh/authorized_keys
+    sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
+
+    sudo chmod 0700 ${NEPI_HOME}.ssh
+    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}.ssh
+
+
+    if [ ! -f "/etc/ssh/sshd_config" ]; then
+        sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+        sudo rm -r /etc/ssh/sshd_config
+    fi
+    sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
+
+
+
+    ###########################################
+    # Set up Samba
+    echo "Configuring nepi storage Samba share drive"
+    if [ ! -f "/etc/samba/smb.conf" ]; then
+        sudo cp -p -r /etc/samba/smb.conf /etc/samba/smb.conf.bak
+        sudo rm -r /etc/samba/smb.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
+    #printf "nepi\nepi\n" | sudo smbpasswd -a nepi
+
+    # Create the mountpoint for samba shares (now that sambashare group exists)
+    #sudo chown -R nepi:sambashare ${NEPI_STORAGE}
+    #sudo chmod -R 0775 ${NEPI_STORAGE}
+
+    #sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+    #sudo chown nepi:sambashare ${NEPI_STORAGE}
+    #sudo chmod -R 0775 ${NEPI_STORAGE}
+
+    ###########################################
+    # Set up Chrony
+    echo " "
+    echo "Configuring Chrony"
+    sudo cp -p /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+    sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
+
+
+    ###########################################
+    # Install Modeprobe Conf
+    echo " "
+    echo "Configuring nepi_modprobe.conf"
+    etc_path=modprobe.d/nepi_modprobe.conf
+    if [ -f "/etc/${etc_path}" ]; then
+        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
+    fi
+    sudo ln -sf ${NEPI_ETC}/${etc_path} /etc/${etc_path}
+
+
+
+    ##################################################
+    # Set up the NEPI sys env bash file
+    echo "Updating system env bash file"
+    sudo chmod +x ${NEPI_ETC}/sys_env.bash
+    sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
+    if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
+        sudo rm ${NEPI_BASE}/sys_env.bash
+    fi
+    sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
+    if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
+        sudo rm ${NEPI_BASE}/sys_env.bash.bak
+    fi
+    sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
+
+    ################################
+    # Update fstab
+    echo "Updating fstab"
+    sudo cp -p -r /etc/fstab /etc/fstab.bak
+    sudo cp -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
+    sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
+    if [ ! -f "/etc/fstab.bak" ]; then
+        sudo rm /etc/fstab.bak
+    fi
+    sudo cp ${NEPI_ETC}/fstabs/fstab /etc/fstab.bak
+
+    #########################################
+    # Setup supervisor
+    echo ""
+    echo "Setting up NEPI Supervisord"
+
+    if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
+        sudo cp -p -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
+        sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
+
+
+    #############################################
+    # Set up some udev rules for plug-and-play hardware
+    echo " "
+    echo "Setting up udev rules"
+        # IQR Pan/Tilt
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
+        # USB Power Saving on Cameras Disabled
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+
+
+    ##############################################
+    # Update the Desktop background image
+    echo ""
+    echo "Updating Desktop background image"
+    # Update the login screen background image - handled by a sys. config file
+    # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
+    #echo "Updating login screen background image"
+    #sudo cp ${NEPI_CONFIG}/usr/share/gnome-shell/theme/ubuntu.css ${NEPI_ETC}/ubuntu.css
+    #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
+    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
+
+    #########################################
+    # Setup system services
+    echo ""
+    echo "Setting up NEPI Engine Service"
+
+    sudo chmod +x ${NEPI_ETC}/services/*
+
+    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
+    sudo systemctl enable nepi_engine
+
+
+    echo "NEPI Engine Service Setup Complete"
+
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
 #############################################
 # Setting up Baumer GenTL Producers (Genicam support)
 echo " "

@@ -23,8 +23,11 @@ if [ "$ENABLE_DHCP" -eq 1 ]; then
     if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
       echo "Enabling NEPI DHCP."
     if [[ "NEPI_IN_CONTAINER" -eq 0 ]]; then
+<<<<<<< HEAD
       sudo dhclient -r
       sudo dhclient
+=======
+>>>>>>> ac1c03d57908885f2d6673a8ebba302e63aadfaa
       sudo dhclient -nw
     fi
     else
