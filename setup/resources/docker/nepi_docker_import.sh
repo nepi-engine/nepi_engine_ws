@@ -23,24 +23,23 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-########################
-# Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi_config
-wait
-########################
-
-IMPORT_PATH=$IMPORT_PATH
-echo $IMPORT_PATH
+NEPI_IMPORT_PATH=$NEPI_IMPORT_PATH
+echo $NEPI_IMPORT_PATH
 ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
 #IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
 IMAGE_FILE=$1
 echo $IMAGE_FILE
-######  NEED TO: Update from IMPORT_PATH tar file
-IMAGE_VERSION=3p2p0
+######  NEED TO: Update from NEPI_IMPORT_PATH tar file
+if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
+IMAGE_VERSION=$NEPI_FSA_VERSION
 echo $IMAGE_VERSION
+else
+IMAGE_VERSION=$NEPI_FSB_VERSION
+echo $IMAGE_VERSION
+fi
 ######
-#INSTALL_IMAGE=${IMPORT_PATH}/${IMAGE_FILE}
-INSTALL_IMAGE=${EXPORT_PATH}/''${IMAGE_FILE}
+#INSTALL_IMAGE=${NEPI_IMPORT_PATH}/${IMAGE_FILE}
+INSTALL_IMAGE=${NEPI_IMPORT_PATH}/''${IMAGE_FILE}
 echo $INSTALL_IMAGE
 #1) Stop any processes for INACTIVE_CONT
 #docker stop ${RUNNING_CONT}
@@ -56,15 +55,29 @@ ID=${hash:0:12}
 echo $ID
 NEW_DATE=$(date +%Y-%m-%d)
 echo $NEW_DATE
-NEW_NAME=$NEPI_INACTIVE_NAME
+if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
+NEW_NAME=$NEPI_FSA_NAME
 echo $NEW_NAME
-NEW_TAG=$NEPI_INACTIVE_TAG
+else
+NEW_NAME=$NEPI_FSB_NAME
+echo $NEW_NAME
+fi
+if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
+NEW_TAG=$NEPI_FSA_TAG
+echo $NEW_TAG
+else
+NEW_TAG=$NEPI_FSB_TAG
+echo $NEW_TAG
+fi
+
+
 printf 'Create a Custom Tag (y/n)? '
 read answer
 if [ "$answer" != "${answer#[Yy]}" ] ;then 
     echo 'Enter Custom Tag: ' 
     read CUSTOM_TAG
     NEW_TAG=$CUSTOM_TAG
+    echo $CUSTOM_TAG
     echo ''
 else
     echo ''
@@ -74,8 +87,8 @@ printf 'Create a Custom Version (y/n)? '
 read answer
 if [ "$answer" != "${answer#[Yy]}" ] ;then 
     echo 'Enter Custom Version: ' 
-    read CUSTOM_TAG
-    NEW_TAG=$CUSTOM_TAG
+    read CUSTOM_VERSION
+    NEW_VERSION=$CUSTOM_VERSION
     echo ''
 else
     echo ''
@@ -84,15 +97,28 @@ fi
 
 sudo docker tag $ID ${NEW_NAME}:${NEW_TAG}
 #6) Update inactive version,tags,ids in nepi_docker_config.yaml
-update_yaml_value "NEPI_INACTIVE_VERSION" "$INACTIVE_VERSION" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_INACTIVE_DATE" "$NEW_DATE" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_INACTIVE_TAG" "$NEW_TAG" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_INACTIVE_ID" "$NEW_VERSION" "$CONFIG_SOURCE"
-echo "  ADD SOME PRINT OUTS  "
+
+if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
+update_yaml_value "NEPI_FSA_NAME" "$NEW_NAME" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSA_TAG" "$NEW_TAG" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSA_ID" "$ID" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSA_VERSION" "$NEW_VERSION" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSA_BUILD_DATE" "$NEW_DATE" "$CONFIG_SOURCE"
+else
+update_yaml_value "NEPI_FSB_NAME" "$NEW_NAME" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSB_TAG" "$NEW_TAG" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSB_ID" "$ID" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSB_VERSION" "$NEW_VERSION" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSB_BUILD_DATE" "$NEW_DATE" "$CONFIG_SOURCE"
+fi
+
+#echo "  ADD SOME PRINT OUTS  "
+update_yaml_value "NEPI_FS_IMPORT" 0 "${CONFIG_SOURCE}"
+
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi_config
+source $(pwd)/load_docker_config.sh
 wait
 ########################
 

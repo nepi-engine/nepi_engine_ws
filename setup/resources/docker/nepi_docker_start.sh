@@ -83,11 +83,11 @@ fi
 if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
 echo "nepi_fs_a"
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
-${NEPI_FSA}:${NEPI_FSA_TAG} /bin/bash"
+${NEPI_FSA_NAME}:${NEPI_FSA_TAG} /bin/bash"
 else
 echo "nepi_fs_b"
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
-${NEPI_FSB}:${NEPI_FSB_TAG} /bin/bash"
+${NEPI_FSB_NAME}:${NEPI_FSB_TAG} /bin/bash"
 fi
 
 ########################
@@ -98,6 +98,20 @@ echo ""
 echo "Launching NEPI Docker Container with Command"
 echo "${DOCKER_RUN_COMMAND}"
 eval "$DOCKER_RUN_COMMAND"
+
+if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
+CONTAINER_ID=$(sudo docker ps -aqf "name=${NEPI_FSA_NAME}")
+else
+CONTAINER_ID=$(sudo docker ps -aqf "name=${NEPI_FSB_NAME}")
+fi
+
+update_yaml_value "NEPI_RUNNING" 1 "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_FS" "$NEPI_ACTUVE_FS" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_FS_ID" "$CONTAINER_ID" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" "$(date +%Y-%m-%d)" "$CONFIG_SOURCE"
+
+source $(pwd)/load_docker_config.sh
+wait
 
 ########################
 # Start NEPI Processes

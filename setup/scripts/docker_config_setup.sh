@@ -175,69 +175,82 @@ echo "Setting up NEPI Docker Host services"
 etc_source=${NEPI_CONFIG}/docker_cfg/etc
 
 etc_dest=/etc
-etc_sync=${NEPI_CONFIG}/docker_cfg/etc/docker/etc
+#etc_sync=${NEPI_CONFIG}/docker_cfg/etc/docker/etc
 lsyncd_file=${etc_dest}/lsyncd/lsyncd.conf
 
 sudo rm -r ${NEPI_DOCKER_CONFIG}/etc/docker/etc/*
 sudo chown -R ${USER}:${USER} ${NEPI_DOCKER_CONFIG}
 
-sudo ln -sf ${etc_source}/hosts ${etc_sync}
+
+### Update hosts file
 if [ ! -f "/etc/hosts.bak" ]; then
     sudo cp -p /etc/hosts /etc/hosts.bak
 fi
+sudo copy ${etc_source}/hosts ${etc_dest}/
+#sudo ln -sf ${etc_source}/hosts ${etc_sync}
 
-sudo ln -sf ${etc_source}/hostname ${etc_sync}
+### Update hostname file
 if [ ! -f "/etc/hostname.bak" ]; then
     sudo cp -p /etc/hostname /etc/hostname.bak
 fi
+
+sudo copy ${etc_source}/hostname ${etc_dest}/
+#sudo ln -sf ${etc_source}/hostname ${etc_sync}
+
 
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 
     sudo systemctl disable NetworkManager
     sudo systemctl stop NetworkManager
-    sudo systemctl stop networking.service
+    #sudo systemctl stop networking.service
 
-    sudo ln -sf ${etc_source}/network/interfaces.d ${etc_sync}
+    
     # Set up static IP addr.
     echo "Updating Network interfaces.d"
     if [ -d "/etc/network/interfaces.d" -a ! -d "/etc/network/interfaces.d.bak" ]; then
         sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
     fi
     sudo cp -p -r ${etc_source}/network/interfaces.d /etc/network/
+    #sudo ln -sf ${etc_source}/network/interfaces.d ${etc_sync}
 
     echo "Updating Network interfaces"
     if [ -f "/etc/network/interfaces" -a ! -f "/etc/network/interfaces.bak" ]; then
         sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
     fi
     sudo cp -p -r ${etc_source}/network/interfaces /etc/network/interfaces
-
+    #sudo ln -sf ${etc_source}/network/interfaces ${etc_sync}
 
     # Set up DHCP
-    sudo ln -sf ${etc_source}/dhcp/dhclient.conf ${etc_sync}
     echo "Updating Network dhclient.conf"
     if [ -f "/etc/dhcp/dhclient.conf" -a ! -f "/etc/dhcp/dhclient.conf.bak" ]; then
         sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
     fi
     sudo cp -p -r ${etc_source}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+    #sudo ln -sf ${etc_source}/dhcp/dhclient.conf ${etc_sync}
 
     # Set up WIFI
     if [ ! -d "etc/wpa_supplicant" ]; then
         sudo mkdir ${etc_sync}/wpa_supplicant
     fi
-    sudo ln -sf ${etc_source}/wpa_supplicant ${etc_sync}/wpa_supplicant
+    
     if [ -d "/etc/wpa_supplicant.bak" ]; then
         sudo cp -p -r /etc/wpa_supplicant /etc/wpa_supplicant.bak
     fi
     sudo cp -p -r ${etc_source}/wpa_supplicant /etc/
+    #sudo ln -sf ${etc_source}/wpa_supplicant ${etc_sync}/wpa_supplicant
 
-    # RESTART NETWORK
-    sudo ip addr flush eth0 && sudo systemctl restart networking.service
-    sudo ifdown --force --verbose eth0 && sudo ifup --force --verbose eth0
+    # # RESTART NETWORK
+    # #sudo ip addr flush eth0 && 
+    # sudo systemctl start networking.service
+    # sudo ifdown --force --verbose eth0
+    # sudo ifup --force --verbose eth0
 
-    # Remove and restart dhclient
-    sudo dhclient -r
-    sudo dhclient
-    sudo dhclient -nw
+    # # Remove and restart dhclient
+    # sudo dhclient -r
+    # sudo dhclient
+    # sudo dhclient -nw
+    # #ps aux | grep dhcp
+
     
 fi
 
@@ -309,15 +322,15 @@ sudo cp ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules
 #############################################
 ### Configure and restart nepi etc sync process
 
-sudo cp -r ${etc_source}/lsyncd ${etc_dest}
-if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
-    echo "" | sudo tee -a $lsyncd_file
-    echo "sync {" | sudo tee -a $lsyncd_file
-    echo "    default.rsync," | sudo tee -a $lsyncd_file
-    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
-    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
-    echo "}" | sudo tee -a $lsyncd_file
-fi
+# sudo cp -r ${etc_source}/lsyncd ${etc_dest}
+# if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
+#     echo "" | sudo tee -a $lsyncd_file
+#     echo "sync {" | sudo tee -a $lsyncd_file
+#     echo "    default.rsync," | sudo tee -a $lsyncd_file
+#     echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+#     echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+#     echo "}" | sudo tee -a $lsyncd_file
+# fi
 
 #sudo systemctl enable lsyncd
 #sudo systemctl restart lsyncd

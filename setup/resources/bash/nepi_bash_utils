@@ -107,13 +107,13 @@ export -f update_text_value
 
 
 function update_yaml_value(){
-    KEY=$1
-    #echo $KEY
-    VAL=$2
-    #echo $VAL
-    FILE=$3
-    #echo $FILE
-    yq e -i '.'"$KEY"' = env(VAL)' $FILE
+    export UPDATE_YAML_KEY=$1
+    #echo $UPDATE_YAML_KEY
+    export UPDATE_YAML_VAL=$2
+    #echo $UPDATE_YAML_VAL
+    export UPDATE_YAML_FILE=$3
+    #echo $UPDATE_YAML_FILE
+    yq e -i '.'"$UPDATE_YAML_KEY"' = env(UPDATE_YAML_VAL)' $UPDATE_YAML_FILE
 }
 export -f update_yaml_value
 

@@ -24,23 +24,25 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-
-
-########################
-# Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi_config
-wait
-########################
-
 CONFIG_SOURCE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
 
-EXPORT_NAME="${RUNNING_CONT}-${RUNNING_TAG}"
+if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
+EXPORT_NAME="${NEPI_RUNNING_FS}-${NEPI_FSA_TAG}"
 echo $EXPORT_NAME
+else
+EXPORT_NAME="${NEPI_RUNNING_FS}-${NEPI_FSB_TAG}"
+echo $EXPORT_NAME
+fi
 
-if [[ $RUNNING_ID != 0 ]]; then
-    TAR_EXPORT_PATH=${EXPORT_PATH}/''${EXPORT_NAME}.tar
+if [[ $NEPI_RUNNING_FS_ID != 0 ]]; then
+    TAR_EXPORT_PATH=${NEPI_EXPORT_PATH}/''${EXPORT_NAME}.tar
     #echo $TAR_EXPORT_PATH
-    sudo docker export $RUNNING_ID > $TAR_EXPORT_PATH
+    sudo docker export $NEPI_RUNNING_FS_ID > $TAR_EXPORT_PATH
 else
     echo "No Running NEPI Container to Export"
 fi
+
+update_yaml_value "NEPI_FS_EXPORT" 0 "${CONFIG_SOURCE}"
+
+source $(pwd)/load_docker_config.sh
+wait

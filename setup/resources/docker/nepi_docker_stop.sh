@@ -35,17 +35,23 @@ wait
 ########################
 # Stop Running Command
 ########################
+echo $NEPI_RUNNING_FS
+#if [[ ( -v NEPI_RUNNING_FS && "$NEPI_RUNNING_FS" -eq 1 ) ]]; then
+if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
+echo "Stopping Running NEPI Docker Process ${NEPI_FSA_NAME}:${NEPI_FSA_TAG} ID:${RUNNING_ID}"
+sudo docker stop $NEPI_RUNNING_FS_ID
+sudo docker rm $NEPI_RUNNING_FS_ID
+else
+echo "Stopping Running NEPI Docker Process ${NEPI_FSB_NAME}:${NEPI_FSB_TAG} ID:${RUNNING_ID}"
+sudo docker stop $NEPI_RUNNING_FS_ID
+sudo docker rm $NEPI_RUNNING_FS_ID
+fi
+update_yaml_value "NEPI_RUNNING" 0 "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_FS" "unknown" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_FS_ID" 0 "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "$CONFIG_SOURCE"
 
-if [[ ( -v NEPI_RUNNING && "$NEPI_RUNNING" -eq 1 ) ]]; then
-    echo "Stopping Running NEPI Docker Process ${RUNNING_NAME}:${RUNNING_TAG} ID:${RUNNING_ID}"
-    dstop $RUNNING_ID
-    export NEPI_RUNNING: 0
-    export NEPI_RUNNING_NAME: None
-    export NEPI_RUNNING_VERSION: uknown
-    export NEPI_RUNNING_TAG: uknown
-    export NEPI_RUNNING_ID: 0
-    export NEPI_RUNNING_LABEL: uknown
-fi 
+#fi 
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml

@@ -26,23 +26,16 @@ fi
 
 
 ########################
+NEPI_DOCKER_CONFIG_PATH=$(pwd)/nepi_docker_config.yaml
+#echo $NEPI_DOCKER_CONFIG_PATH
 
-  
 ### SET INACTIVE DATA AS ACTIVE DATA
-update_yaml_value "ACTIVE_NAME" "${INACTIVE_NAME}" "${CONFIG_SOURCE}"
-update_yaml_value "ACTIVE_VERSION" "${INACTIVE_VERSION}" "${CONFIG_SOURCE}"
-update_yaml_value "ACTIVE_UPLOAD_DATE" "${INACTIVE_UPLOAD_DATE}" "${CONFIG_SOURCE}"
-update_yaml_value "ACTIVE_TAG" "${INACTIVE_TAG}" "${CONFIG_SOURCE}"
-update_yaml_value "ACTIVE_ID" "${INACTIVE_ID}" "${CONFIG_SOURCE}"
-update_yaml_value "ACTIVE_ID" "${INACTIVE_LABEL}" "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_ACTUVE_FS" "${NEPI_INACTIVE_FS}" "${NEPI_DOCKER_CONFIG_PATH}"
+update_yaml_value "NEPI_INACTIVE_FS" "${NEPI_ACTUVE_FS}" "${NEPI_DOCKER_CONFIG_PATH}"
+update_yaml_value "NEPI_FS_SWITCH" 0 "${NEPI_DOCKER_CONFIG_PATH}"
 
-### SET ACTIVE DATA AS INACTIVE DATA
-update_yaml_value "INACTIVE_NAME" "${ACTIVE_NAME}" "${CONFIG_SOURCE}"
-update_yaml_value "INACTIVE_VERSION" "${ACTIVE_VERSION}" "${CONFIG_SOURCE}"
-update_yaml_value "INACTIVE_UPLOAD_DATE" "${ACTIVE_UPLOAD_DATE}" "${CONFIG_SOURCE}"
-update_yaml_value "INACTIVE_TAG" "${ACTIVE_TAG}" "${CONFIG_SOURCE}"
-update_yaml_value "INACTIVE_ID" "${ACTIVE_ID}" "${CONFIG_SOURCE}"
-update_yaml_value "ACTIVE_ID" "${ACTIVE_LABEL}" "${CONFIG_SOURCE}"
+
+source $(pwd)/load_docker_config.sh
 
 
 ########################
