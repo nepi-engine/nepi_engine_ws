@@ -40,3 +40,6 @@
 [submodule "src/zed-ros-wrapper"]
 	path = src/zed-ros-wrapper
 	url = git@github.com:nepi-engine/zed-ros-wrapper.git
+[submodule "src/nepi_edge_sdk_base"]
+	path = src/nepi_edge_sdk_base
+	url = git@github.com:nepi-engine/nepi_edge_sdk_base.git
