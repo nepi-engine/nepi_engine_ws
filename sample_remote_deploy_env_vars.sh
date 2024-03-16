@@ -31,5 +31,5 @@
 export NEPI_REMOTE_SETUP=1
 export NEPI_TARGET_IP=192.168.179.103
 export NEPI_TARGET_USERNAME=nepi
-export NEPI_SSH_KEY=~/.ssh/nepi_default_ssh_key_ed25519
+export NEPI_SSH_KEY=~/SSH_Keys/nepi_engine_default_private_ssh_key
 export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset, too
