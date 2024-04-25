@@ -58,3 +58,6 @@
 	path = src/zed-ros-wrapper
 	url = https://github.com/stereolabs/zed-ros-wrapper.git
 
+[submodule "src/ros_numpy"]
+	path = src/ros_numpy
+	url = git@github.com:nepi-engine/ros_numpy.git
