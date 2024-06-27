@@ -65,3 +65,6 @@
 [submodule "src/nepi_edge_sdk_idx"]
 	path = src/nepi_edge_sdk_idx
 	url = https://github.com/nepi-engine/nepi_edge_sdk_idx.git
+[submodule "src/nepi_edge_sdk_rbx"]
+	path = src/nepi_edge_sdk_rbx
+	url = https://github.com/nepi-engine/nepi_edge_sdk_rbx.git
