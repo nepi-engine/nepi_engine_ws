@@ -62,3 +62,6 @@
 	path = src/ros_numpy
 	url = git@github.com:nepi-engine/ros_numpy.git
 
+[submodule "src/nepi_edge_sdk_idx"]
+	path = src/nepi_edge_sdk_idx
+	url = https://github.com/nepi-engine/nepi_edge_sdk_idx.git
