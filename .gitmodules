@@ -54,17 +54,20 @@
 	path = src/nepi_link_ros_bridge
 	url = git@github.com:nepi-engine/nepi_link_ros_bridge.git
 	branch = ros1_main
-[submodule "src/zed-ros-wrapper"]
-	path = src/zed-ros-wrapper
-	url = https://github.com/stereolabs/zed-ros-wrapper.git
-
+[submodule "src/nepi_edge_sdk_idx"]
+	path = src/nepi_edge_sdk_idx
+	url = git@github.com:nepi-engine/nepi_edge_sdk_idx.git
+	branch = ros1_main
+[submodule "src/nepi_edge_sdk_rbx"]
+	path = src/nepi_edge_sdk_rbx
+	url = git@github.com:nepi-engine/nepi_edge_sdk_rbx.git
+	branch = ros1_main
 [submodule "src/ros_numpy"]
 	path = src/ros_numpy
 	url = git@github.com:nepi-engine/ros_numpy.git
+	branch = ros1_main
+	[submodule "src/zed-ros-wrapper"]
+	path = src/zed-ros-wrapper
+	url = https://github.com/stereolabs/zed-ros-wrapper.git
 
-[submodule "src/nepi_edge_sdk_idx"]
-	path = src/nepi_edge_sdk_idx
-	url = https://github.com/nepi-engine/nepi_edge_sdk_idx.git
-[submodule "src/nepi_edge_sdk_rbx"]
-	path = src/nepi_edge_sdk_rbx
-	url = https://github.com/nepi-engine/nepi_edge_sdk_rbx.git
+
