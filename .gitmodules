@@ -1,7 +1,7 @@
 [submodule "src/nepi_ros_interfaces"]
 	path = src/nepi_ros_interfaces
 	url = git@github.com:nepi-engine/nepi_ros_interfaces.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_base"]
 	path = src/nepi_edge_sdk_base
 	url = git@github.com:nepi-engine/nepi_edge_sdk_base.git
