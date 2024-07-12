@@ -5,55 +5,55 @@
 [submodule "src/nepi_edge_sdk_base"]
 	path = src/nepi_edge_sdk_base
 	url = git@github.com:nepi-engine/nepi_edge_sdk_base.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_link"]
 	path = src/nepi_edge_sdk_link
 	url = git@github.com:nepi-engine/nepi_edge_sdk_link.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi-bot"]
 	path = src/nepi-bot
 	url = git@github.com:nepi-engine/nepi-bot.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_rui"]
 	path = src/nepi_rui
 	url = git@github.com:nepi-engine/nepi_rui.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_lsx"]
 	path = src/nepi_edge_sdk_lsx
 	url = git@github.com:nepi-engine/nepi_edge_sdk_lsx.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_onvif"]
 	path = src/nepi_edge_sdk_onvif
 	url = git@github.com:nepi-engine/nepi_edge_sdk_onvif.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_ptx"]
 	path = src/nepi_edge_sdk_ptx
 	url = git@github.com:nepi-engine/nepi_edge_sdk_ptx.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_ai"]
 	path = src/nepi_edge_sdk_ai
 	url = git@github.com:nepi-engine/nepi_edge_sdk_ai.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_v4l2"]
 	path = src/nepi_edge_sdk_v4l2
 	url = git@github.com:nepi-engine/nepi_edge_sdk_v4l2.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_nav_pose"]
 	path = src/nepi_edge_sdk_nav_pose
 	url = git@github.com:nepi-engine/nepi_edge_sdk_nav_pose.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_edge_sdk_genicam"]
 	path = src/nepi_edge_sdk_genicam
 	url = git@github.com:nepi-engine/nepi_edge_sdk_genicam.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_automation_mgr"]
 	path = src/nepi_automation_mgr
 	url = git@github.com:nepi-engine/nepi_automation_mgr.git
-	branch = master
+	branch = ros1_main
 [submodule "src/nepi_link_ros_bridge"]
 	path = src/nepi_link_ros_bridge
 	url = git@github.com:nepi-engine/nepi_link_ros_bridge.git
-	branch = master
+	branch = ros1_main
 [submodule "src/zed-ros-wrapper"]
 	path = src/zed-ros-wrapper
 	url = https://github.com/stereolabs/zed-ros-wrapper.git
