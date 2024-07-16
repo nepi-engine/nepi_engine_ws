@@ -69,6 +69,11 @@
 [submodule "src/nepi_ai_detector_mgr"]
 	path = src/nepi_ai_detector_mgr
 	url = git@github.com:nepi-engine/nepi_ai_detector_mgr.git
+	branch = ros1_main
+[submodule "src/nepi_nav_pose_publisher"]
+	path = src/nepi_nav_pose_publisher
+	url = git@github.com:nepi-engine/nepi_nav_pose_publisher.git
+	branch = ros1_main
 	
 [submodule "src/ros_numpy"]
 	path = src/ros_numpy
@@ -77,6 +82,5 @@
 [submodule "src/zed-ros-wrapper"]
 	path = src/zed-ros-wrapper
 	url = https://github.com/stereolabs/zed-ros-wrapper.git
-
 
 
