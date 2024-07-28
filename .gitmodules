@@ -62,10 +62,6 @@
 	path = src/nepi_edge_sdk_rbx
 	url = git@github.com:nepi-engine/nepi_edge_sdk_rbx.git
 	branch = ros1_main
-[submodule "src/nepi_pointcloud_app"]
-	path = src/nepi_pointcloud_app
-	url = git@github.com:nepi-engine/nepi_pointcloud_app.git
-	branch = ros1_main
 [submodule "src/nepi_ai_detector_mgr"]
 	path = src/nepi_ai_detector_mgr
 	url = git@github.com:nepi-engine/nepi_ai_detector_mgr.git
@@ -84,3 +80,9 @@
 	url = https://github.com/stereolabs/zed-ros-wrapper.git
 
 
+[submodule "src/nepi_app_pointcloud"]
+	path = src/nepi_app_pointcloud
+	url = git@github.com:nepi-engine/nepi_app_pointcloud.git
+[submodule "src/nepi_app_image_viewer"]
+	path = src/nepi_app_image_viewer
+	url = git@github.com:nepi-engine/nepi_app_image_viewer.git
