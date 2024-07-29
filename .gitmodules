@@ -18,18 +18,6 @@
 	path = src/nepi_rui
 	url = git@github.com:nepi-engine/nepi_rui.git
 	branch = ros1_main
-[submodule "src/nepi_edge_sdk_ai"]
-	path = src/nepi_edge_sdk_ai
-	url = git@github.com:nepi-engine/nepi_edge_sdk_ai.git
-	branch = ros1_main
-[submodule "src/nepi_edge_sdk_v4l2"]
-	path = src/nepi_edge_sdk_v4l2
-	url = git@github.com:nepi-engine/nepi_edge_sdk_v4l2.git
-	branch = ros1_main
-[submodule "src/nepi_edge_sdk_genicam"]
-	path = src/nepi_edge_sdk_genicam
-	url = git@github.com:nepi-engine/nepi_edge_sdk_genicam.git
-	branch = ros1_main
 [submodule "src/nepi_link_ros_bridge"]
 	path = src/nepi_link_ros_bridge
 	url = git@github.com:nepi-engine/nepi_link_ros_bridge.git
