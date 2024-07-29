@@ -18,18 +18,6 @@
 	path = src/nepi_rui
 	url = git@github.com:nepi-engine/nepi_rui.git
 	branch = ros1_main
-[submodule "src/nepi_edge_sdk_lsx"]
-	path = src/nepi_edge_sdk_lsx
-	url = git@github.com:nepi-engine/nepi_edge_sdk_lsx.git
-	branch = ros1_main
-[submodule "src/nepi_edge_sdk_onvif"]
-	path = src/nepi_edge_sdk_onvif
-	url = git@github.com:nepi-engine/nepi_edge_sdk_onvif.git
-	branch = ros1_main
-[submodule "src/nepi_edge_sdk_ptx"]
-	path = src/nepi_edge_sdk_ptx
-	url = git@github.com:nepi-engine/nepi_edge_sdk_ptx.git
-	branch = ros1_main
 [submodule "src/nepi_edge_sdk_ai"]
 	path = src/nepi_edge_sdk_ai
 	url = git@github.com:nepi-engine/nepi_edge_sdk_ai.git
@@ -38,39 +26,14 @@
 	path = src/nepi_edge_sdk_v4l2
 	url = git@github.com:nepi-engine/nepi_edge_sdk_v4l2.git
 	branch = ros1_main
-[submodule "src/nepi_edge_sdk_nav_pose"]
-	path = src/nepi_edge_sdk_nav_pose
-	url = git@github.com:nepi-engine/nepi_edge_sdk_nav_pose.git
-	branch = ros1_main
 [submodule "src/nepi_edge_sdk_genicam"]
 	path = src/nepi_edge_sdk_genicam
 	url = git@github.com:nepi-engine/nepi_edge_sdk_genicam.git
-	branch = ros1_main
-[submodule "src/nepi_automation_mgr"]
-	path = src/nepi_automation_mgr
-	url = git@github.com:nepi-engine/nepi_automation_mgr.git
 	branch = ros1_main
 [submodule "src/nepi_link_ros_bridge"]
 	path = src/nepi_link_ros_bridge
 	url = git@github.com:nepi-engine/nepi_link_ros_bridge.git
 	branch = ros1_main
-[submodule "src/nepi_edge_sdk_idx"]
-	path = src/nepi_edge_sdk_idx
-	url = git@github.com:nepi-engine/nepi_edge_sdk_idx.git
-	branch = ros1_main
-[submodule "src/nepi_edge_sdk_rbx"]
-	path = src/nepi_edge_sdk_rbx
-	url = git@github.com:nepi-engine/nepi_edge_sdk_rbx.git
-	branch = ros1_main
-[submodule "src/nepi_ai_detector_mgr"]
-	path = src/nepi_ai_detector_mgr
-	url = git@github.com:nepi-engine/nepi_ai_detector_mgr.git
-	branch = ros1_main
-[submodule "src/nepi_nav_pose_publisher"]
-	path = src/nepi_nav_pose_publisher
-	url = git@github.com:nepi-engine/nepi_nav_pose_publisher.git
-	branch = ros1_main
-	
 [submodule "src/ros_numpy"]
 	path = src/ros_numpy
 	url = git@github.com:nepi-engine/ros_numpy.git
@@ -86,3 +49,33 @@
 [submodule "src/nepi_app_image_viewer"]
 	path = src/nepi_app_image_viewer
 	url = git@github.com:nepi-engine/nepi_app_image_viewer.git
+[submodule "src/nepi_mgr_nav_pose"]
+	path = src/nepi_mgr_nav_pose
+	url = git@github.com:nepi-engine/nepi_mgr_nav_pose.git
+[submodule "src/nepi_mgr_onvif"]
+	path = src/nepi_mgr_onvif
+	url = git@github.com:nepi-engine/nepi_mgr_onvif.git
+[submodule "src/nepi_app_nav_pose_publisher"]
+	path = src/nepi_app_nav_pose_publisher
+	url = git@github.com:nepi-engine/nepi_app_nav_pose_publisher.git
+[submodule "src/nepi_mgr_automation"]
+	path = src/nepi_mgr_automation
+	url = git@github.com:nepi-engine/nepi_mgr_automation.git
+[submodule "src/nepi_drivers_rbx"]
+	path = src/nepi_drivers_rbx
+	url = git@github.com:nepi-engine/nepi_drivers_rbx.git
+[submodule "src/nepi_drivers_idx"]
+	path = src/nepi_drivers_idx
+	url = git@github.com:nepi-engine/nepi_drivers_idx.git
+[submodule "src/nepi_drivers_ptx"]
+	path = src/nepi_drivers_ptx
+	url = git@github.com:nepi-engine/nepi_drivers_ptx.git
+[submodule "src/nepi_drivers_lsx"]
+	path = src/nepi_drivers_lsx
+	url = git@github.com:nepi-engine/nepi_drivers_lsx.git
+[submodule "src/nepi_app_image_sequencer"]
+	path = src/nepi_app_image_sequencer
+	url = git@github.com:nepi-engine/nepi_app_image_sequencer.git
+[submodule "src/nepi_mgr_ai"]
+	path = src/nepi_mgr_ai
+	url = git@github.com:nepi-engine/nepi_mgr_ai.git
