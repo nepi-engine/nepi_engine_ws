@@ -67,3 +67,6 @@
 [submodule "src/nepi_mgr_ai"]
 	path = src/nepi_mgr_ai
 	url = git@github.com:nepi-engine/nepi_mgr_ai.git
+[submodule "src/nepi_app_ai_targeting"]
+	path = src/nepi_app_ai_targeting
+	url = git@github.com:nepi-engine/nepi_app_ai_targeting.git
