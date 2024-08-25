@@ -73,3 +73,6 @@
 [submodule "src/nepi_mavros"]
 	path = src/nepi_mavros
 	url = git@github.com:nepi-engine/nepi_mavros.git
+[submodule "src/nepi_mgr_drivers"]
+	path = src/nepi_mgr_drivers
+	url = git@github.com:nepi-engine/nepi_mgr_drivers.git
