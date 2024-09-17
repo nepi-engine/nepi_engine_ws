@@ -49,18 +49,6 @@
 [submodule "src/nepi_mgr_automation"]
 	path = src/nepi_mgr_automation
 	url = git@github.com:nepi-engine/nepi_mgr_automation.git
-[submodule "src/nepi_drivers_rbx"]
-	path = src/nepi_drivers_rbx
-	url = git@github.com:nepi-engine/nepi_drivers_rbx.git
-[submodule "src/nepi_drivers_idx"]
-	path = src/nepi_drivers_idx
-	url = git@github.com:nepi-engine/nepi_drivers_idx.git
-[submodule "src/nepi_drivers_ptx"]
-	path = src/nepi_drivers_ptx
-	url = git@github.com:nepi-engine/nepi_drivers_ptx.git
-[submodule "src/nepi_drivers_lsx"]
-	path = src/nepi_drivers_lsx
-	url = git@github.com:nepi-engine/nepi_drivers_lsx.git
 [submodule "src/nepi_app_image_sequencer"]
 	path = src/nepi_app_image_sequencer
 	url = git@github.com:nepi-engine/nepi_app_image_sequencer.git
@@ -76,3 +64,6 @@
 [submodule "src/nepi_mgr_drivers"]
 	path = src/nepi_mgr_drivers
 	url = git@github.com:nepi-engine/nepi_mgr_drivers.git
+[submodule "src/nepi_drivers"]
+	path = src/nepi_drivers
+	url = git@github.com:nepi-engine/nepi_drivers.git
