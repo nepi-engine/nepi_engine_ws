@@ -60,13 +60,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   RSYNC_EXCLUDES="--exclude deploy_nepi_engine_source.sh --exclude .git* \
   --exclude .catkin_tools/profiles/*/packages \
   --exclude build_* --exclude devel_* --exclude logs_* --exclude install_* \
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/gpsd-* 
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/.sconf_temp \
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/contrib/ais-samples \
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/contrib/test \
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/man \
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/tests \
-  --exclude src/nepi_mgr_nav_pose/num_gpsd/test \
+  --exclude src/nepi_gpsd \
   --exclude src/nepi_rui"
 
   #echo "Excluding ${RSYNC_EXCLUDES}"

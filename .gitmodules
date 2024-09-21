@@ -2,68 +2,29 @@
 	path = src/nepi_ros_interfaces
 	url = git@github.com:nepi-engine/nepi_ros_interfaces.git
 	branch = ros1_main
+	
 [submodule "src/nepi_edge_sdk_base"]
 	path = src/nepi_edge_sdk_base
 	url = git@github.com:nepi-engine/nepi_edge_sdk_base.git
 	branch = ros1_main
-[submodule "src/nepi_edge_sdk_link"]
-	path = src/nepi_edge_sdk_link
-	url = git@github.com:nepi-engine/nepi_edge_sdk_link.git
-	branch = ros1_main
-[submodule "src/nepi-bot"]
-	path = src/nepi-bot
-	url = git@github.com:nepi-engine/nepi-bot.git
-	branch = ros1_main
+
+[submodule "src/nepi_drivers"]
+	path = src/nepi_drivers
+	url = git@github.com:nepi-engine/nepi_drivers.git
+	
+[submodule "src/nepi_apps"]
+	path = src/nepi_apps
+	url = git@github.com:nepi-engine/nepi_apps.git
+	
 [submodule "src/nepi_rui"]
 	path = src/nepi_rui
 	url = git@github.com:nepi-engine/nepi_rui.git
 	branch = ros1_main
-[submodule "src/nepi_link_ros_bridge"]
-	path = src/nepi_link_ros_bridge
-	url = git@github.com:nepi-engine/nepi_link_ros_bridge.git
-	branch = ros1_main
-[submodule "src/ros_numpy"]
-	path = src/ros_numpy
-	url = git@github.com:nepi-engine/ros_numpy.git
-
-[submodule "src/zed-ros-wrapper"]
-	path = src/zed-ros-wrapper
-	url = https://github.com/stereolabs/zed-ros-wrapper.git
-
-
-[submodule "src/nepi_app_pointcloud"]
-	path = src/nepi_app_pointcloud
-	url = git@github.com:nepi-engine/nepi_app_pointcloud.git
-[submodule "src/nepi_app_image_viewer"]
-	path = src/nepi_app_image_viewer
-	url = git@github.com:nepi-engine/nepi_app_image_viewer.git
-[submodule "src/nepi_mgr_nav_pose"]
-	path = src/nepi_mgr_nav_pose
-	url = git@github.com:nepi-engine/nepi_mgr_nav_pose.git
-[submodule "src/nepi_mgr_onvif"]
-	path = src/nepi_mgr_onvif
-	url = git@github.com:nepi-engine/nepi_mgr_onvif.git
-[submodule "src/nepi_app_nav_pose_publisher"]
-	path = src/nepi_app_nav_pose_publisher
-	url = git@github.com:nepi-engine/nepi_app_nav_pose_publisher.git
-[submodule "src/nepi_mgr_automation"]
-	path = src/nepi_mgr_automation
-	url = git@github.com:nepi-engine/nepi_mgr_automation.git
-[submodule "src/nepi_app_image_sequencer"]
-	path = src/nepi_app_image_sequencer
-	url = git@github.com:nepi-engine/nepi_app_image_sequencer.git
-[submodule "src/nepi_mgr_ai"]
-	path = src/nepi_mgr_ai
-	url = git@github.com:nepi-engine/nepi_mgr_ai.git
-[submodule "src/nepi_app_ai_targeting"]
-	path = src/nepi_app_ai_targeting
-	url = git@github.com:nepi-engine/nepi_app_ai_targeting.git
-[submodule "src/nepi_mavros"]
-	path = src/nepi_mavros
-	url = git@github.com:nepi-engine/nepi_mavros.git
-[submodule "src/nepi_mgr_drivers"]
-	path = src/nepi_mgr_drivers
-	url = git@github.com:nepi-engine/nepi_mgr_drivers.git
-[submodule "src/nepi_drivers"]
-	path = src/nepi_drivers
-	url = git@github.com:nepi-engine/nepi_drivers.git
+	
+[submodule "src/nepi_3rd_party"]
+	path = src/nepi_3rd_party
+	url = git@github.com:nepi-engine/nepi_3rd_party.git
+	
+[submodule "src/nepi_managers"]
+	path = src/nepi_managers
+	url = git@github.com:nepi-engine/nepi_managers.git
