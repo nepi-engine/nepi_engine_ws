@@ -22,6 +22,7 @@ export NFI='/mnt/nepi_storage/nepi_full_img'
 export NFIA='/mnt/nepi_storage/nepi_full_img_archive'
 export NEPI='/opt/nepi/ros'
 export NEPI_LIB='/opt/nepi/ros/lib'
+export NEPI_SHARE='/opt/nepi/ros/share'
 export NEPI_DRIVERS='/opt/nepi/ros/lib/nepi_drivers'
 export NEPI_MANAGERS='/opt/nepi/ros/lib/nepi_managers'
 export NEPI_PYTHON='/opt/nepi/ros/lib/python3/dist-packages/'
@@ -29,7 +30,7 @@ export NEPI_BASE='/opt/nepi/ros/lib/python3/dist-packages/nepi_edge_sdk_base'
 export NUID='/opt/nepi/nepi_link/nepi-bot/devinfo'
 export CONNECT='/opt/nepi/nepi_link/nepi-bot/lb/data'
 export RUI_ENV='/opt/nepi/nepi_rui'
-export RUI_SRC='/opt/nepi/nepi_rui/src/rui_webserver/rui-app'
+export NEPI_RUI='/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src'
 # Function to open sftp to location on nepi device
 # Example call: sftpnl $AUTO
 function sftpnl(){
