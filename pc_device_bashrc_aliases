@@ -3,13 +3,6 @@ parse_git_branch() {
 }
 export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 
-# NEPI Engine Deployment Env. Variables
-export NEPI_REMOTE_SETUP=1
-export NEPI_TARGET_IP=192.168.179.103
-export NEPI_TARGET_USERNAME=nepi
-export NEPI_SSH_KEY=~/SSH_Keys/nepi_engine_default_private_ssh_key
-export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset, too
-/home/engineering/SSH_Keys
 
 #NEPI folder shortcuts
 export AUTO='/mnt/nepi_storage/automation_scripts'
