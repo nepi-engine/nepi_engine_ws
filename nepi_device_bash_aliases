@@ -1,9 +1,17 @@
+#NEPI folder shortcuts
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export DATA="/mnt/nepi_storage/data"
+export AI="/mnt/nepi_storage/ai_models"
+export AIF="/opt/nepi/ros/share/nepi_ai_ifs"
+export INSTALLS="/mnt/nepi_storage/installs"
 export SRC="/mnt/nepi_storage/nepi_src"
+export SRC_NEPI="/mnt/nepi_storage/nepi_src/nepi_engine_ws"
 export TMP="/mnt/nepi_storage/tmp"
 export NFI="/mnt/nepi_storage/nepi_full_img"
 export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
 export NEPI="/opt/nepi/ros"
 export LIB="/opt/nepi/ros/lib"
+export SHARE="/opt/nepi/ros/share"
 export LAUNCH="/opt/nepi/ros/share/nepi_edge_sdk_base/launch"
 export NEPI_BASE="/opt/nepi/ros/lib/python3/dist-packages/nepi_edge_sdk_base"
 export NUID="/opt/nepi/nepi_link/nepi-bot/devinfo"
@@ -16,13 +24,16 @@ export RUI_SRC="/opt/nepi/nepi_rui/src/rui_webserver/rui-app"
 alias auto="cd $AUTO"
 alias data="cd $DATA"
 alias ai="cd $AI"
+alias aif="cd $AIF"
 alias installs="cd $INSTALLS"
 alias src="cd $SRC"
+alias src_nepi="cd $SRC_NEPI"
 alias tmp="cd $TMP"
 alias nfi="cd $NFI"
 alias nfia="cd $NFIA"
 alias nepi="cd $NEPI"
 alias lib="cd $LIB"
+alias share="cd $SHARE"
 alias launch="cd $LAUNCH"
 alias nepi_base="cd $NEPI_BASE"
 alias nuid="cd $NUID"
@@ -31,10 +42,18 @@ alias connect="cd $CONNECT"
 alias rui_env="cd $RUI_ENV"
 alias rui_src="cd $RUI_SRC"
 
+
+
 # NEPI build shortcuts
 alias nepibld="
 cd $SRC/nepi_engine_ws/
 ./nepi_engine_build_complete.sh"
+
+# NEPI build shortcuts
+alias codebld="
+cd $SRC/nepi_engine_ws/
+./nepi_engine_build_code.sh"
+
 
 alias ruibld="
 cd $RUI_ENV

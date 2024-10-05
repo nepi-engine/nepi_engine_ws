@@ -1,3 +1,4 @@
+#GIT Command Line Branch Display
 parse_git_branch() {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
@@ -14,7 +15,9 @@ export TMP='/mnt/nepi_storage/tmp'
 export NFI='/mnt/nepi_storage/nepi_full_img'
 export NFIA='/mnt/nepi_storage/nepi_full_img_archive'
 export NEPI='/opt/nepi/ros'
+export NEPI_ETC='/opt/nepi/ros/etc'
 export NEPI_LIB='/opt/nepi/ros/lib'
+export NEPI_AIF='/opt/nepi/ros/share/nepi_ai_ifs'
 export NEPI_SHARE='/opt/nepi/ros/share'
 export NEPI_DRIVERS='/opt/nepi/ros/lib/nepi_drivers'
 export NEPI_MANAGERS='/opt/nepi/ros/lib/nepi_managers'
@@ -24,6 +27,8 @@ export NUID='/opt/nepi/nepi_link/nepi-bot/devinfo'
 export CONNECT='/opt/nepi/nepi_link/nepi-bot/lb/data'
 export RUI_ENV='/opt/nepi/nepi_rui'
 export NEPI_RUI='/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src'
+
+
 # Function to open sftp to location on nepi device
 # Example call: sftpnl $AUTO
 function sftpnl(){
