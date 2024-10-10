@@ -57,9 +57,11 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
   fi
 
+  # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
+  RSYNC_EXCLUDES="--exclude .git* "
 
 # Push everything but the EXCLUDES to the specified source folder on the target
-rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ../nepi_engine_ws/src/nepi_3rd_party/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/nepi_3rd_party
+rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} ../nepi_engine_ws/src/nepi_3rd_party/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/nepi_3rd_party
 
 else
   echo "Invalid value ${NEPI_REMOTE_SETUP} for NEPI_REMOTE_SETUP. Must be 1 or 0"

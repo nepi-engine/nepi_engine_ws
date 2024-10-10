@@ -57,7 +57,9 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   fi
 
   # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-  RSYNC_EXCLUDES="--exclude deploy_nepi_engine_source.sh --exclude .git* \
+  RSYNC_EXCLUDES="--exclude deploy_nepi_engine_source.sh \
+  --exclude deploy_nepi_engine_3rd_party.sh \
+  --exclude .git* \
   --exclude .catkin_tools/profiles/*/packages \
   --exclude build_* --exclude devel_* --exclude logs_* --exclude install_* \
   --exclude src/nepi_3rd_party \
