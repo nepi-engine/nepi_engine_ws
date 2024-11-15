@@ -37,7 +37,7 @@ fi
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   # Generate the top-level version file
-  git describe --dirty > ./src/nepi_edge_sdk_base/etc/fw_version.txt
+  echo "Deploying NEPI 3rd Party Libraries"
 
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   if [[ -z "${NEPI_TARGET_IP}" ]]; then

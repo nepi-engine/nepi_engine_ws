@@ -34,7 +34,7 @@ fi
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   # Generate the top-level version file
-  git describe --dirty > ./src/nepi_edge_sdk_base/etc/fw_version.txt
+  git describe --DEV > ./src/nepi_edge_sdk_base/etc/fw_version.txt
 
   # Only need to copy nepi_rui to destination -- others can remain right in place
   rsync ./src/nepi_rui/ /opt/nepi/nepi_rui 

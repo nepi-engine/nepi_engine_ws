@@ -18,7 +18,7 @@ export NUID="/opt/nepi/nepi_link/nepi-bot/devinfo"
 export DRIVERS="/opt/nepi/ros/lib/nepi_drivers"
 export CONNECT="/opt/nepi/nepi_link/nepi-bot/lb/data"
 export RUI_ENV="/opt/nepi/nepi_rui"
-export RUI_SRC="/opt/nepi/nepi_rui/src/rui_webserver/rui-app"
+export RUI_SRC="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
 
 # NEPI navigation shortcuts
 alias auto="cd $AUTO"
@@ -43,17 +43,14 @@ alias rui_env="cd $RUI_ENV"
 alias rui_src="cd $RUI_SRC"
 
 
-
 # NEPI build shortcuts
 alias nepibld="
 cd $SRC/nepi_engine_ws/
 ./nepi_engine_build_complete.sh"
 
-# NEPI build shortcuts
 alias codebld="
 cd $SRC/nepi_engine_ws/
 ./nepi_engine_build_code.sh"
-
 
 alias ruibld="
 cd $RUI_ENV
@@ -67,3 +64,5 @@ deactivate"
 alias rosstop="sudo systemctl stop roslaunch"
 alias rosstart="sudo /opt/nepi/ros/etc/roslaunch.sh"
 
+# Inform that this is the target hardware
+export NEPI_REMOTE_SETUP=0
