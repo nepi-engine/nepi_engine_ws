@@ -1,3 +1,7 @@
+#########################
+NEPI Engine base software source code, which includes the following top level repos:
+nepi_edge_sdk_base,  nepi_ros_interfaces, nepi_ai_frameworks,  nepi_drivers,  nepi_managers       nepi_rui
+is licensed under the following license terms:
 
  Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
 
@@ -5,4 +9,24 @@
  (see https://github.com/nepi-engine).
 
  License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+ 
+#######################
+NEPI Engine applications source code (the nepi_apps repo) is licensed under the following license terms:
 
+ Copyright (c) 2024 Numurus <https://www.numurus.com>.
+
+ This file is part of nepi applications (nepi_apps) repo
+ (see https://https://github.com/nepi-engine/nepi_apps)
+
+ License: nepi applications are licensed under the "Numurus Software License", 
+ which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
+
+ Redistributions in source code must retain this top-level comment block.
+ Plagiarizing this software to sidestep the license obligations is illegal.
+
+ Contact Information:
+ ====================
+ - mailto:nepi@numurus.com
+
+#######################
+NEPI Engine 3rd party source code (the nepi_3rd_party repo) just pass on the original 3rd party repo's license terms.
