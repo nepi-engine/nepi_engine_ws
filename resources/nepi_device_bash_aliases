@@ -53,12 +53,9 @@ cd $SRC/nepi_engine_ws/
 ./nepi_engine_build_code.sh"
 
 alias ruibld="
-cd $RUI_ENV
-source devenv.sh
-sleep 1
-cd $RUI_SRC
-npm run build
-deactivate"
+cd $SRC/nepi_engine_ws/
+./nepi_engine_build_rui.sh"
+
 
 # NEPI ros stop and start shortcuts
 alias rosstop="sudo systemctl stop roslaunch"

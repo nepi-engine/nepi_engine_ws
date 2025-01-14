@@ -36,11 +36,6 @@ HIGHLIGHT='\033[1;34m' # LIGHT BLUE
 ERROR='\033[0;31m' # RED
 CLEAR='\033[0m'
 
-DO_SDK=1
-DO_RUI=1
-DO_BOT=1
-DO_LINK=1
-
 # Parse args
 while getopts s: arg 
 do
@@ -61,36 +56,15 @@ do
   esac
 done
 
-printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
+printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine Base *****${CLEAR}\n"
 
-###### ROS-based SDK Components #####
-if [ "${DO_SDK}" -eq "1" ]; then
-  printf "\n${HIGHLIGHT}*** Starting NEPI Engine ROS SDK Build ***${CLEAR}\n"
-  catkin build --profile=release
-  printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
-else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine ROS SDK Build by User Request ***${CLEAR}\n"
-fi
+###### Build and install NEPI ROS SDK Components #####
+printf "\n${HIGHLIGHT}*** Starting NEPI Engine ROS SDK Build ***${CLEAR}\n"
+catkin build --profile=release 
+printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
+
+
 #####################################
 
-######       NEPI RUI           #####
-if [ "${DO_RUI}" -eq "1" ]; then 
-  printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-  if ! [ -f /opt/nepi/nepi_rui/venv/bin/activate ]; then
-    printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
-    printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
-  else
-    cd /opt/nepi/nepi_rui
-    source ./devenv.sh
-    cd src/rui_webserver/rui-app/
-    npm run build
-    deactivate
-    cd ${NEPI_ENGINE_SRC_ROOTDIR}
-    printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
-  fi
-else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"
-fi
-#####################################
 
 

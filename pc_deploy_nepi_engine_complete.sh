@@ -9,7 +9,7 @@
 ##
 
 #######################################################################################################
-# Usage: $ ./deploy_nepi_engine_source.sh
+# Usage: $ ./deploy_nepi_engine_complete.sh
 #
 # This script copies the complete nepi_engine source code to proper filesystem locations on target
 # hardware in preparation for building nepi-engine from source. 
@@ -61,8 +61,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   --exclude deploy_nepi_engine_3rd_party.sh \
   --exclude .git* \
   --exclude .catkin_tools/profiles/*/packages \
-  --exclude build_* --exclude devel_* --exclude logs_* --exclude install_* \
-  --exclude src/nepi_rui "
+  --exclude build_* --exclude devel_* --exclude logs_* --exclude install_* "
 
   #echo "Excluding ${RSYNC_EXCLUDES}"
 
@@ -72,15 +71,4 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 # Push everything but the EXCLUDES to the specified source folder on the target
 rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 
-# RUI is rsync'd separately, since it has a very specific install location
-NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/nepi_rui"
-RUI_RSYNC_EXCLUDES="--exclude rsync_workspace_to_target.sh --exclude .git* \
---exclude venv --exclude src/rui_webserver/rui-app/node_modules"
-
-rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RUI_RSYNC_EXCLUDES} ./src/nepi_rui/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_RUI_TARGET_SRC_DIR}
-
-else
-  echo "Invalid value ${NEPI_REMOTE_SETUP} for NEPI_REMOTE_SETUP. Must be 1 or 0"
-  exit 1
 fi
-

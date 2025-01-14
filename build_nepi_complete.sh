@@ -31,13 +31,16 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+
+
+
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
 HIGHLIGHT='\033[1;34m' # LIGHT BLUE
 ERROR='\033[0;31m' # RED
 CLEAR='\033[0m'
 
 DO_SDK=1
-
+DO_RUI=1
 
 # Parse args
 while getopts s: arg 
@@ -69,7 +72,35 @@ if [ "${DO_SDK}" -eq "1" ]; then
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI Engine ROS SDK Build by User Request ***${CLEAR}\n"
 fi
+
 #####################################
 
+######       NEPI RUI           #####
+
+# RUI deploy
+NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
+sudo cp -R ./src/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
+printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished *** \n"
+
+if [ "${DO_RUI}" -eq "1" ]; then 
+  printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
+  if ! [ -f /opt/nepi/nepi_rui/venv/bin/activate ]; then
+    printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
+    printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
+  else
+    cd /opt/nepi/nepi_rui
+    source ~/.nvm/nvm.sh
+    source ./devenv.sh
+    cd src/rui_webserver/rui-app/
+    npm run build
+    deactivate
+    cd ${NEPI_ENGINE_SRC_ROOTDIR}
+    printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
+  fi
+else
+  printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"
+fi
+
+#####################################
 
 
