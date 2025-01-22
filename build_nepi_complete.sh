@@ -79,7 +79,7 @@ fi
 
 # RUI deploy
 NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
-sudo cp -R ./src/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
+sudo cp -R ./src/nepi_engine/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished *** \n"
 
 if [ "${DO_RUI}" -eq "1" ]; then 
