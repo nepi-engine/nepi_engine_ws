@@ -57,18 +57,17 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   fi
 
   # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-  RSYNC_EXCLUDES="--exclude deploy_nepi_engine_source.sh \
-  --exclude deploy_nepi_engine_3rd_party.sh \
-  --exclude .git* \
+  RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
+   --exclude .git* \
   --exclude .catkin_tools/profiles/*/packages \
-  --exclude build_* --exclude devel_* --exclude logs_* --exclude install_* "
+  --exclude devel_* --exclude logs_* --exclude install_* "
 
-  #echo "Excluding ${RSYNC_EXCLUDES}"
+  echo "Excluding ${RSYNC_EXCLUDES}"
 
   # Also generate the top-level version file here locally while we have a complete git repository
   git describe --dirty > ./src/nepi_edge_sdk_base/etc/fw_version.txt
 
-# Push everything but the EXCLUDES to the specified source folder on the target
-rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
+  # Push everything but the EXCLUDES to the specified source folder on the target
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 
 fi

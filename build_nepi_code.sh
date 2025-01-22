@@ -31,10 +31,16 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+
+
+
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
 HIGHLIGHT='\033[1;34m' # LIGHT BLUE
 ERROR='\033[0;31m' # RED
 CLEAR='\033[0m'
+
+DO_SDK=1
+
 
 # Parse args
 while getopts s: arg 
@@ -56,15 +62,17 @@ do
   esac
 done
 
-printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine Base *****${CLEAR}\n"
+printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 
-###### Build and install NEPI ROS SDK Components #####
-printf "\n${HIGHLIGHT}*** Starting NEPI Engine ROS SDK Build ***${CLEAR}\n"
-catkin build --profile=release 
-printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
+###### ROS-based SDK Components #####
+if [ "${DO_SDK}" -eq "1" ]; then
+  printf "\n${HIGHLIGHT}*** Starting NEPI Engine ROS SDK Build ***${CLEAR}\n"
+  catkin build --profile=release
+  printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
+else
+  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine ROS SDK Build by User Request ***${CLEAR}\n"
+fi
 
-
-#####################################
 
 
 

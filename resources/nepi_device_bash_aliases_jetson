@@ -1,3 +1,5 @@
+# Some helpful aliases for NEPI
+
 #NEPI folder shortcuts
 export AUTO="/mnt/nepi_storage/automation_scripts"
 export DATA="/mnt/nepi_storage/data"
@@ -42,19 +44,19 @@ alias connect="cd $CONNECT"
 alias rui_env="cd $RUI_ENV"
 alias rui_src="cd $RUI_SRC"
 
-
 # NEPI build shortcuts
 alias nepibld="
 cd $SRC/nepi_engine_ws/
-./nepi_engine_build_complete.sh"
+./build_nepi_complete.sh"
 
 alias codebld="
 cd $SRC/nepi_engine_ws/
-./nepi_engine_build_code.sh"
+./build_nepi_code.sh"
+
 
 alias ruibld="
 cd $SRC/nepi_engine_ws/
-./nepi_engine_build_rui.sh"
+./build_nepi_rui.sh"
 
 
 # NEPI ros stop and start shortcuts
@@ -63,3 +65,10 @@ alias rosstart="sudo /opt/nepi/ros/etc/roslaunch.sh"
 
 # Inform that this is the target hardware
 export NEPI_REMOTE_SETUP=0
+
+# CUDA Helpers (Open3D, etc)
+export CUDA_HOME=/usr/local/cuda-11
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64
+export PATH=$PATH:$CUDA_HOME/bin
+
+export PYTHONPATH=$PYTHONPATH:/mnt/nepi_storage/nepi_drivers
