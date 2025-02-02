@@ -32,7 +32,7 @@
 # Repeat -s <component> for additional components to skip
 
 
-
+export SETUPTOOLS_USE_DISTUTILS=stdlib
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
 HIGHLIGHT='\033[1;34m' # LIGHT BLUE
