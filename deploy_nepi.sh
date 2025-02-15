@@ -66,7 +66,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   echo "Excluding ${RSYNC_EXCLUDES}"
 
   # Also generate the top-level version file here locally while we have a complete git repository
-  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+  git describe --dirty > ./src/nepi_engine/nepi_env/etc/nepi_env/fw_version.txt
 
   # Push everything but the EXCLUDES to the specified source folder on the target
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
