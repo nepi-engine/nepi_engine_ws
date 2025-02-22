@@ -34,7 +34,7 @@ fi
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   # Generate the top-level version file
-  git describe --DEV > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+  git describe --DEV > ./src/nepi_engine/etc/fw_version.txt
 
   # Only need to copy nepi_rui to destination -- others can remain right in place
   rsync ./src/nepi_rui/ /opt/nepi/nepi_rui 
@@ -60,13 +60,12 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
   --exclude .git* \
   --exclude .catkin_tools/profiles/*/packages \
-  --exclude src/nepi_3rd_party \
   --exclude devel_* --exclude logs_* --exclude install_* "
 
   echo "Excluding ${RSYNC_EXCLUDES}"
 
   # Also generate the top-level version file here locally while we have a complete git repository
-  git describe --dirty > ./src/nepi_engine/nepi_env/etc/nepi_env/fw_version.txt
+  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
   # Push everything but the EXCLUDES to the specified source folder on the target
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
