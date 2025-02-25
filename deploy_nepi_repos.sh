@@ -28,7 +28,7 @@
 #                         at _/opt/nepi/nepi_rui_ as described in that submodule's README)
 #######################################################################################################
 
-REPOS="nepi_ai_frameworks nepi_engine"
+REPOS="nepi_ai_frameworks nepi_engine nepi_drivers"
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
