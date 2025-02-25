@@ -60,6 +60,9 @@ RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
 
 echo "Excluding ${RSYNC_EXCLUDES}"
 
+REPOS+=(.catkin_tools)
+
+
 for REPO in $REPOS; do
 
   echo "Syncing repo ${REPO}"
