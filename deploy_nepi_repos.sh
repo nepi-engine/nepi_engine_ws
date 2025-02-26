@@ -54,13 +54,20 @@ fi
 
 # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
 RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
---exclude .git* \
+--exclude .git \
+--exclude .gitmodules \
 --exclude .catkin_tools/profiles/*/packages \
 --exclude devel_* --exclude logs_* --exclude install_* "
 
 echo "Excluding ${RSYNC_EXCLUDES}"
 
-REPOS+=(.catkin_tools)
+echo "Syncing NEPI build tools"
+rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
+
+CATKIN=".catkin_tools"
+echo "Syncing repo ${CATKIN}"
+# Push everything but the EXCLUDES to the specified source folder on the target
+rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
 
 
 for REPO in $REPOS; do
