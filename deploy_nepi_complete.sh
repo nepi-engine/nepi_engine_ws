@@ -65,6 +65,13 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 
   echo "Excluding ${RSYNC_EXCLUDES}"
 
+  CATKIN=".catkin_tools"
+  echo "Syncing repo ${CATKIN}"
+  # Push everything but the EXCLUDES to the specified source folder on the target
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:/opt/nepi/ros/
+
+
+  echo "Syncing nepi workspace"
   # Also generate the top-level version file here locally while we have a complete git repository
   git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
