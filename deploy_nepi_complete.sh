@@ -27,7 +27,7 @@
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to (except _nepi_rui_, which must be located 
 #                         at _/opt/nepi/nepi_rui_ as described in that submodule's README)
 #######################################################################################################
-DEPLOY_3RD_PARTY= false
+DEPLOY_3RD_PARTY=false
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
@@ -82,7 +82,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   # Push everything but the EXCLUDES to the specified source folder on the target
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 
-  if [ "$DEPLOY_3RD_PARTY" = true ]; then
+  if [ ${DEPLOY_3RD_PARTY} == true ]; then
 
     # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
     RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
