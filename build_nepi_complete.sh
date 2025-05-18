@@ -64,6 +64,7 @@ done
 
 printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 
+#####################################
 ###### NEPI Config Files #####
 printf "\n${HIGHLIGHT}*** Copying NEPI Config folder to /opt/nepi/ ***${CLEAR}\n"
 NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
@@ -71,20 +72,31 @@ sudo cp -R ./src/nepi_engine/nepi_env/config ${NEPI_RUI_TARGET_SRC_DIR}
 printf "\n${HIGHLIGHT}*** NEPI Config Deploy Finished *** \n"
 
 
-
-###### ROS-based SDK Components #####
+#####################################
+###### NEPI Engine #####
 if [ "${DO_SDK}" -eq "1" ]; then
-  printf "\n${HIGHLIGHT}*** Starting NEPI Engine ROS SDK Build ***${CLEAR}\n"
+  printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
   catkin build --profile=release
-  printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
+  printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
 else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine ROS SDK Build by User Request ***${CLEAR}\n"
+  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine SDK Build by User Request ***${CLEAR}\n"
 fi
 
+
 #####################################
+######       NEPI Auto Scripts           #####
+# Auto Scripts deploy
+printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI config folder /opt/nepi/config/auto_scripts ***${CLEAR}\n"
+NEPI_AUTO_TARGET_SRC_DIR="/opt/nepi/config/auto_scripts"
+sudo cp -R ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_SRC_DIR}
+printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI user folder /mnt/nepi_storage/automation_scripts ***${CLEAR}\n"
+NEPI_AUTO_TARGET_USER_DIR="/mnt/nepi_storage/automation_scripts"
+sudo cp -R ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
+printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 
-######       NEPI RUI           #####
 
+#####################################
+######       NEPI RUI           #####\
 # RUI deploy
 NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
 sudo cp -R ./src/nepi_engine/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
