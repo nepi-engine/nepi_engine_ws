@@ -107,7 +107,7 @@ alias mgit=multiple_git_func
 ###################################
 # NEPI Engine Deployment Env. Variables
 
-export NEPI_SSH_KEY_PATH=/home/engineering/SSH_Keys/nepi_engine_default_private_ssh_key
+export NEPI_SSH_KEY_PATH=~/sshkeys/nepi_engine_default_private_ssh_key
 alias sshn="ssh -v -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
 alias scpn="scp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
 alias sftpn="sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
@@ -118,7 +118,7 @@ alias pingn="ping 192.168.179.103"
 export NEPI_REMOTE_SETUP=1
 export NEPI_TARGET_IP=192.168.179.103
 export NEPI_TARGET_USERNAME=nepi
-export NEPI_SSH_KEY=~/SSH_Keys/nepi_engine_default_private_ssh_key
+export NEPI_SSH_KEY=~/sshkeys/nepi_engine_default_private_ssh_key
 export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
 
 
