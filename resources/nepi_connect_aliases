@@ -4,19 +4,27 @@
 # - Open terminal on PC and open the /etc/hosts file in editor
 # sudo nano /etc/hosts
 # - Add the following line
-# 
-# 1) Copy this file to your home dir 
+# 192.168.179.103 nepi
+
+# 2) Download nepi ssh key
+# - Open a terminal on your pc and type
+# mkdir ~/ssh_keys
+# cd ~/ssh_keys
+# wget https://github.com/nepi-engine/nepi_engine/blob/ros1_main/nepi_env/ssh_keys/nepi_engine_default_private_ssh_key
+
+
+# 3) Copy this file to your home dir 
 # - Open a terminal in this files folder and type
 # cp nepi_connect_aliases ~/.nepi_aliases
 
-# 2) Add the following lines to your ~/.bashrc file 
+# 4) Add the following lines to your ~/.bashrc file 
 ###########################
 # NEPI bashrc aliases
 #if [ -f ~/.nepi_aliases ]; then
 #    . ~/.nepi_aliases
 #fi
 
-# 3) Open a new terminal and test a 
+# 5) Open a new terminal and test a 
 # NEPI sftp alias connection by typing, then 'exit' to exit
 # SDK
 
