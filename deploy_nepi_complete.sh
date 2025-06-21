@@ -27,7 +27,7 @@
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to (except _nepi_rui_, which must be located 
 #                         at _/opt/nepi/nepi_rui_ as described in that submodule's README)
 #######################################################################################################
-DEPLOY_3RD_PARTY=false
+DEPLOY_3RD_PARTY=true
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
