@@ -1,5 +1,0 @@
-gedit ~/.config/mimeapps.list
-
-text/x-python3=idle.desktop;org.gnome.gedit.desktop;code.desktop;
-
-
