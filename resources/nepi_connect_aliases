@@ -25,7 +25,10 @@
 #    . ~/.nepi_aliases
 #fi
 
-# 5) Open a new terminal and test a 
+# 5) source the updated bashrc
+# source ~/.bashrc
+
+# 6) In a terminal test a 
 # NEPI sftp alias connection by typing, then 'exit' to exit
 # SDK
 
@@ -138,7 +141,7 @@ export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if u
 
 
 # REMOTE ROS CONNECTION
-#source /opt/ros/noetic/setup.bash
+#source /opt/ros/noetic/setup.bashvi
 #source ~/nepi_catkin_ws/devel/setup.bash
 #export ROS_MASTER_URI=http://192.168.179.103:11311
 #export ROS_IP=192.168.179.5
@@ -146,17 +149,22 @@ export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if u
 ###################################
 #Dev Shortcuts
 # Function to search for text
-# Example call: find 'nepi_sdk.parse_header_msg'
 function ftext(){
 grep -r "$@" ./*
 }
 
-#Dev Shortcuts
 # Function to search for text
-# Example call: find 'nepi_sdk.parse_header_msg'
 function ffile(){
 find ./* -iname  "*$@*" 
 }
+
+
+function pushn(){
+git add --all
+git commit -m "*$@*" 
+git push
+}
+
 
 ###################################
 #NEPI sftp folder shortcuts
