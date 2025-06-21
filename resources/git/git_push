@@ -1,0 +1,52 @@
+git add --all
+git commit -m "3p2p0-RC5A"
+git push
+git checkout ros1_main
+git merge
+
+
+
+Commit All Folders
+
+parse_git_args()
+{
+    git_args=""
+    end_comment=""
+    for var in "$@"
+    do
+        if [[ $var == '-m' ]];
+        then
+            git_args+=" -m \""
+            end_comment="\"" 
+        else
+            git_args+=" $var"
+        fi
+    done
+    git_args+=$end_comment
+
+    echo $git_args
+}
+
+multiple_git_func()
+{
+    start=$(pwd)
+    git_args=$(parse_git_args $@)
+    root=`git rev-parse --show-toplevel` #find the repo from which the command was run
+
+    # go to root apply command and then go to sub repos (hardcoded location wrt root)
+    cd $root
+    echo "=============================="
+    echo "issuing git $git_args on $root"
+    eval "git $git_args"
+
+
+    cd repo2 # repo2 is installed in root, could be anywhere else relative to root
+    echo "=============================="
+    echo "issuing git $git_args on repo2"
+    eval "git $git_args"
+   
+    #go back to initial folder
+    cd $start
+}
+
+alias mgit=multiple_git_func

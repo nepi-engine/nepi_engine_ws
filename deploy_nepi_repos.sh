@@ -28,7 +28,7 @@
 #                         at _/opt/nepi/nepi_rui_ as described in that submodule's README)
 #######################################################################################################
 
-REPOS=" nepi_engine nepi_drivers nepi_ai_frameworks nepi_apps"
+REPOS=" nepi_engine nepi_drivers nepi_ai_frameworks nepi_apps nepi_3rd_party/nepi_gpsd_ros_client"
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"

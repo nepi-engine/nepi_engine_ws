@@ -1,0 +1,19 @@
+
+
+grep -r ros_ ./ > search
+
+
+find . -type f -exec perl -i -pe 's/str2replace/replace_str/g' {} +
+
+Example
+
+find . -type f -exec perl -i -pe 's/nepi_ros/nepi_sdk/g' {} +
+find . -type f -exec perl -i -pe 's/AbsolutePanTiltWaypoint/PanTiltAbsoluteWaypoint/g' {} +
+find . -type f -exec perl -i -pe 's/WifiCredentials/NetworkWifiCredentials/g' {} +
+find . -type f -exec perl -i -pe 's/SystemStatus/MgrSystemStatus/g' {} +
+find . -type f -exec perl -i -pe 's/TimeStatus/MgrTimeStatus/g' {} +
+find . -type f -exec perl -i -pe 's/AppsStatus/MgrAppsStatus/g' {} +
+find . -type f -exec perl -i -pe 's/DriversStatus/MgrDriversStatus/g' {} +
+find . -type f -exec perl -i -pe 's/AiMgrActiveModelsInfoQuery/AiModelsInfoQuery/g' {} +
+
+
