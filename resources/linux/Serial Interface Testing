@@ -1,0 +1,12 @@
+Terminal Serial Interface Testing
+
+##############################
+### Setup Listen Serial in another terminal
+cat -v < /dev/ttyUSB0
+##############################
+### Setup Send Serial in another terminal
+stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb
+
+#Send command Get Node ID
+echo "#AMRA0000R" > /dev/ttyUSB0
+
