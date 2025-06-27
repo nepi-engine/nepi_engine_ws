@@ -1,12 +1,21 @@
 Terminal Serial Interface Testing
 
-##############################
-### Setup Listen Serial in another terminal
-cat -v < /dev/ttyUSB0
-##############################
-### Setup Send Serial in another terminal
-stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb
 
-#Send command Get Node ID
-echo "#AMRA0000R" > /dev/ttyUSB0
+#########################
+# Setup if needed
+sudo minicom --setup
+# Select Screen and Keyboard
+# Press "Shift-P"
+# Press "Shift-Q"
+# Press "Shift-T"
+# Press "Esc"
+# Select Save setup as dfl
+
+##############################
+### Open serial connecton terminal
+sudo minicom -b 9600 -D /dev/ttyUSB0
+
+
+###Send/listen message 
+!AGSP000R
 
