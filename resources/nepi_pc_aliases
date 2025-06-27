@@ -322,7 +322,7 @@ function nepi(){
     rui_env = /opt/nepi/nepi_rui
     sdk = /opt/nepi/ros/lib/python3/dist-packages/nepi_sdk
     share = /opt/nepi/ros/share
-    src = /mnt/nepi_storage/nepi_src
+    src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
     tmp = /mnt/nepi_storage/tmp
     user = /mnt/nepi_storage/user_cfg
     "
