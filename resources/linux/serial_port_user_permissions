@@ -1,0 +1,25 @@
+sudo gpasswd --add ${USER} dialout
+# Then log out and back in
+
+# Can also try
+#sudo chmod a+rw /dev/ttyUSB0
+#sudo chown root:dialout /dev/ttyUSB0
+
+
+# Test
+# Start Listener in Terminal
+cat /dev/ttyUSB0
+
+# Send Message from a different Terminal
+echo -e "#AMRA0000R/r/n" > /dev/ttyUSB0
+
+echo -e "#AMRE0011R/r/n" > /dev/ttyUSB0
+echo -e "#AMEE0001W/r/n" > /dev/ttyUSB0
+echo -e "#AMRE0011R/r/n" > /dev/ttyUSB0
+
+echo -e "!001:INFO?
+
+
+
+
+
