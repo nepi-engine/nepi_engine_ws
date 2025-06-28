@@ -11,13 +11,15 @@ sudo gpasswd --add ${USER} dialout
 cat /dev/ttyUSB0
 
 # Send Message from a different Terminal
-echo -e "#AMRA0000R/r/n" > /dev/ttyUSB0
+echo -e '#AMRA0010W/r/n' > /dev/ttyUSB0
 
-echo -e "#AMRE0011R/r/n" > /dev/ttyUSB0
-echo -e "#AMEE0001W/r/n" > /dev/ttyUSB0
-echo -e "#AMRE0011R/r/n" > /dev/ttyUSB0
+echo -e '#AMMF0011R/r/n' > /dev/ttyUSB0
 
-echo -e "!001:INFO?
+echo -e '#AMRE0011R/r/n' > /dev/ttyUSB0
+echo -e '#AMEE0001W/r/n' > /dev/ttyUSB0
+echo -e '#AMRE0011R/r/n' > /dev/ttyUSB0
+
+echo -e '!001:INFO?/r/n' > /dev/ttyUSB0
 
 
 
