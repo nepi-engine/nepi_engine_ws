@@ -69,6 +69,7 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 printf "\n${HIGHLIGHT}*** Copying NEPI Config folder to /opt/nepi/ ***${CLEAR}\n"
 NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
 sudo cp -R ./src/nepi_engine/nepi_env/config ${NEPI_RUI_TARGET_SRC_DIR}
+sudo chown -R $USER:$USER ${NEPI_RUI_TARGET_SRC_DIR}/config/
 printf "\n${HIGHLIGHT}*** NEPI Config Deploy Finished *** \n"
 
 
