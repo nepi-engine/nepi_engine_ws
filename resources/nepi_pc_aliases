@@ -16,7 +16,7 @@
 # 3) Copy this file to your home dir 
 # - Open a terminal in this files folder and type
 # cp nepi_pc_aliases ~/.nepi_aliases
-
+# source ~/.nepi_aliases
 
 # 4) Add the following lines to your ~/.bashrc file 
 ###########################
