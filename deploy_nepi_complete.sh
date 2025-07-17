@@ -64,7 +64,9 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   --exclude .gitmodules \
   --exclude .catkin_tools/profiles/*/packages \
   --exclude src/nepi_3rd_party \
-  --exclude devel_* --exclude logs_* --exclude install_* "
+  --exclude devel_* --exclude logs_* --exclude install_* \
+  --exclude resources \
+  --exclude README* --exclude LICENSE* --exclude deploy_* "
 
 
   echo "Excluding ${RSYNC_EXCLUDES}"
@@ -89,7 +91,9 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     --exclude .git \
     --exclude .gitmodules \
     --exclude .catkin_tools/profiles/*/packages \
-    --exclude devel_* --exclude logs_* --exclude install_* "
+    --exclude devel_* --exclude logs_* --exclude install_* \
+    --exclude resources \
+    --exclude README* --exclude LICENSE* --exclude deploy_* "
 
     echo "Deploying nepi 3rd party repos"
 

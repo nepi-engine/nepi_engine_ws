@@ -57,7 +57,9 @@ RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
 --exclude .git \
 --exclude .gitmodules \
 --exclude .catkin_tools/profiles/*/packages \
---exclude devel_* --exclude logs_* --exclude install_* "
+--exclude devel_* --exclude logs_* --exclude install_*  \
+--exclude resources \
+--exclude README* --exclude LICENSE* --exclude deploy_* "
 
 echo "Excluding ${RSYNC_EXCLUDES}"
 
