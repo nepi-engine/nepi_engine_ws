@@ -166,8 +166,8 @@ git push
 }
 
 function pushnh(){
-head=git rev-parse HEAD
-pushn
+export head=$(git rev-parse HEAD)
+pushn($@)
 git checkout ros1_main
 git merge $head
 git push
