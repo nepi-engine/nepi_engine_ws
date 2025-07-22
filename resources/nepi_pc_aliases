@@ -2,39 +2,56 @@
 # SETUP
 # 1) Add nepi ip alias to your /etc/hosts file
 # - Open terminal on PC and open the /etc/hosts file in editor
-# sudo nano /etc/hosts
+: '
+sudo nano /etc/hosts
+'
 # - Add the following line
 # 192.168.179.103 nepi
 
 # 2) Download nepi ssh key
 # - Open a terminal on your pc and type
-# mkdir ~/ssh_keys
-# cd ~/ssh_keys
-# wget https://github.com/nepi-engine/nepi_engine/blob/ros1_main/nepi_env/ssh_keys/nepi_engine_default_private_ssh_key
+: '
+ mkdir ~/ssh_keys
+ sudo chmod 755 ~/ssh_keys
+ cd ~/ssh_keys
+ wget https://github.com/nepi-engine/nepi_engine/blob/ros1_main/nepi_env/ssh_keys/nepi_engine_default_private_ssh_key
+ sudo chmod 600 nepi_engine_default_private_ssh_key
+'
 
 
 # 3) Copy this file to your home dir 
 # - Open a terminal in this files folder and type
-# cp nepi_pc_aliases ~/.nepi_aliases
-# source ~/.nepi_aliases
+: '
+cp nepi_pc_aliases ~/.nepi_aliases
+'
 
 # 4) Add the following lines to your ~/.bashrc file 
 ###########################
 # NEPI bashrc aliases
-#if [ -f ~/.nepi_aliases ]; then
-#    . ~/.nepi_aliases
-#fi
+: '
+nano ~/.bashrc
+if [ -f ~/.nepi_aliases ]; then
+    . ~/.nepi_aliases
+fi
+'
 
 # 5) source the updated bashrc
-# source ~/.bashrc
+: '
+source ~/.bashrc
+'
 
 # 6) In a terminal test a 
-# NEPI sftp alias connection by typing, then 'exit' to exit
-# SDK
+# NEPI sftp alias connection by typing
+: '
+sdk
+'
+# then 'exit' to exit
 
 
 ###################################
-#NEPI Git Env Setup
+CURRENT_DIR=$(pwd)
+
+###################################
 # Start SSH Agent
 #----------------------------
 
@@ -67,59 +84,7 @@ fi
 
 alias gitroot="cd $(git rev-parse --show-toplevel)"
 
-###################################
-#NEPI Git Utility Functions
 
-#GIT Command Line Branch Display
-parse_git_branch() {
-     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-}
-export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
-
-
-# Commit all repos in folder
-parse_git_args()
-{
-    git_args=""
-    end_comment=""
-    for var in "$@"
-    do
-        if [[ $var == '-m' ]];
-        then
-            git_args+=" -m \""
-            end_comment="\"" 
-        else
-            git_args+=" $var"
-        fi
-    done
-    git_args+=$end_comment
-
-    echo $git_args
-}
-
-multiple_git_func()
-{
-    start=$(pwd)
-    git_args=$(parse_git_args $@)
-    root=`git rev-parse --show-toplevel` #find the repo from which the command was run
-
-    # go to root apply command and then go to sub repos (hardcoded location wrt root)
-    cd $root
-    echo "=============================="
-    echo "issuing git $git_args on $root"
-    eval "git $git_args"
-
-
-    cd repo2 # repo2 is installed in root, could be anywhere else relative to root
-    echo "=============================="
-    echo "issuing git $git_args on repo2"
-    eval "git $git_args"
-   
-    #go back to initial folder
-    cd $start
-}
-
-alias mgit=multiple_git_func
 
 ###################################
 # NEPI Engine Deployment Env. Variables
@@ -166,8 +131,8 @@ git push
 }
 
 function pushnh(){
-export head=$(git rev-parse HEAD)
-pushn($@)
+head=git rev-parse HEAD
+pushn
 git checkout ros1_main
 git merge $head
 git push
@@ -184,6 +149,7 @@ export APPS="/opt/nepi/ros/share/nepi_apps"
 export AUTO="/mnt/nepi_storage/automation_scripts"
 export CFG="/mnt/nepi_storage/user_cfg"
 export DATA="/mnt/nepi_storage/data"
+export DIST="/opt/nepi/ros/lib/python3/dist-packages"
 export DRIVERS="/opt/nepi/ros/lib/nepi_drivers"
 export ETC="/opt/nepi/ros/etc"
 export INSTALLS="/mnt/nepi_storage/installs"
@@ -230,7 +196,9 @@ function cfg(){
 function data(){
 	sftpnl $DATA
 }	
-
+function dist(){
+	sftpnl $DIST
+}	
 function drivers(){
 	sftpnl $DRIVERS
 }	
@@ -254,9 +222,6 @@ function nfi(){
 }	
 function nfia(){
 	sftpnl $NFIA
-}	
-function python(){
-	sftpnl $PYTHON
 }	
 function ros(){
 	sftpnl $ROS
@@ -313,6 +278,7 @@ function nepi(){
     auto = /mnt/nepi_storage/automation_scripts
     cfg = /mnt/nepi_storage/user_cfg
     data = /mnt/nepi_storage/data
+    dist = /opt/nepi/ros/lib/python3/dist-packages/
     drivers = /opt/nepi/ros/lib/nepi_drivers
     etc = /opt/nepi/ros/etc
     installs = /mnt/nepi_storage/installs
@@ -322,7 +288,6 @@ function nepi(){
     ros = /opt/nepi/ros
     nfi = /mnt/nepi_storage/nepi_full_img
     nfia = /mnt/nepi_storage/nepi_full_img_archive
-    python = /opt/nepi/ros/lib/python3/dist-packages/
     rui = /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
     rui_env = /opt/nepi/nepi_rui
     sdk = /opt/nepi/ros/lib/python3/dist-packages/nepi_sdk
@@ -334,3 +299,80 @@ function nepi(){
     echo "$text"
 }
 
+###################################
+#NEPI Git Utility Functions
+
+# Function to check if a folder is in a Git repository
+is_git_repo() {
+  echo "?"
+  local folder_path="$1"
+  if [ -d "$folder_path/.git" ]; then
+    # If .git directory exists directly, it's a repository root
+    return 0
+  fi
+
+  # Change to the folder and check if it's inside a work tree
+  (cd "$folder_path" 2>/dev/null && git rev-parse --is-inside-work-tree >/dev/null 2>&1)
+  return $? # Return the exit status of the git command
+}
+
+
+# Commit all repos in folder
+parse_git_args()
+{
+    git_args=""
+    end_comment=""
+    for var in "$@"
+    do
+        if [[ $var == '-m' ]];
+        then
+            git_args+=" -m \""
+            end_comment="\"" 
+        else
+            git_args+=" $var"
+        fi
+    done
+    git_args+=$end_comment
+
+    echo $git_args
+}
+
+multiple_git_func()
+{
+    start=$(pwd)
+    git_args=$(parse_git_args $@)
+    root=`git rev-parse --show-toplevel` #find the repo from which the command was run
+
+    # go to root apply command and then go to sub repos (hardcoded location wrt root)
+    cd $root
+    echo "=============================="
+    echo "issuing git $git_args on $root"
+    eval "git $git_args"
+
+
+    cd repo2 # repo2 is installed in root, could be anywhere else relative to root
+    echo "=============================="
+    echo "issuing git $git_args on repo2"
+    eval "git $git_args"
+   
+    #go back to initial folder
+    cd $start
+}
+
+alias mgit=multiple_git_func
+
+
+######################
+# Git branch info
+echo "Checking folder for git repo: $CURRENT_DIR"
+
+if is_git_repo "$CURRENT_DIR"; then
+  export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+
+  #GIT Command Line Branch Display
+  parse_git_branch() {
+      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+  }
+else
+  echo "The folder is NOT part of a Git repository."
+fi
