@@ -165,6 +165,7 @@ export RUI_ENV="/opt/nepi/nepi_rui"
 export SDK="/opt/nepi/ros/lib/python3/dist-packages/nepi_sdk"
 export SHARE="/opt/nepi/ros/share"
 export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
+export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src"
 export TMP="/mnt/nepi_storage/tmp"
 export DRIVE="/mnt/nepi_storage"
 
@@ -241,6 +242,9 @@ function share(){
 function src(){
 	sftpnl $SRC
 }	
+function srcrui(){
+	sftpnl $SRCRUI
+}
 function tmp(){
 	sftpnl $TMP
 }	
@@ -293,6 +297,7 @@ function nepi(){
     sdk = /opt/nepi/ros/lib/python3/dist-packages/nepi_sdk
     share = /opt/nepi/ros/share
     src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
+    srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src
     tmp = /mnt/nepi_storage/tmp
     drive = /mnt/nepi_storage
     "
