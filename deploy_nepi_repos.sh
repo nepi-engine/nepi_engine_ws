@@ -35,45 +35,57 @@ if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   exit 1
 fi
 
-if [[ -z "${NEPI_TARGET_IP}" ]]; then
-  echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
-  exit 1
-fi
-if [[ -z "${NEPI_TARGET_USERNAME}" ]]; then
-  echo "Remote setup requires env. variable NEPI_TARGET_USERNAME be assigned"
-  exit 1
-fi
-if [[ -z "${NEPI_SSH_KEY}" ]]; then
-  echo "Remote setup requires env. variable NEPI_SSH_KEY be assigned"
-  exit 1
-fi
-if [[ -z "${NEPI_TARGET_SRC_DIR}" ]]; then
-  NEPI_TARGET_SRC_DIR="/mnt/nepi_storage/nepi_src"
-  echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
-fi
+if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+  # Generate the top-level version file
+  git describe --DEV > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
-# Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
---exclude .git \
---exclude .gitmodules \
---exclude .catkin_tools/profiles/*/packages \
---exclude devel_* --exclude logs_* --exclude install_* "
+  # Only need to copy nepi_rui to destination -- others can remain right in place
+  # rsync ./src/nepi_rui/ /opt/nepi/nepi_rui 
 
-echo "Excluding ${RSYNC_EXCLUDES}"
+elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+  # Generate the top-level version file
+  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
-echo "Syncing NEPI build tools"
-rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
+  if [[ -z "${NEPI_TARGET_IP}" ]]; then
+    echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
+    exit 1
+  fi
+  if [[ -z "${NEPI_TARGET_USERNAME}" ]]; then
+    echo "Remote setup requires env. variable NEPI_TARGET_USERNAME be assigned"
+    exit 1
+  fi
+  if [[ -z "${NEPI_SSH_KEY}" ]]; then
+    echo "Remote setup requires env. variable NEPI_SSH_KEY be assigned"
+    exit 1
+  fi
+  if [[ -z "${NEPI_TARGET_SRC_DIR}" ]]; then
+    NEPI_TARGET_SRC_DIR="/mnt/nepi_storage/nepi_src"
+    echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
+  fi
 
-CATKIN=".catkin_tools"
-echo "Syncing repo ${CATKIN}"
-# Push everything but the EXCLUDES to the specified source folder on the target
-rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
-rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:/opt/nepi/ros/
+  # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
+  RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
+  --exclude .git \
+  --exclude .gitmodules \
+  --exclude .catkin_tools/profiles/*/packages \
+  --exclude devel_* --exclude logs_* --exclude install_* "
 
-for REPO in $REPOS; do
+  echo "Excluding ${RSYNC_EXCLUDES}"
 
-  echo "Syncing repo ${REPO}"
+  echo "Syncing NEPI build tools"
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
+
+  CATKIN=".catkin_tools"
+  echo "Syncing repo ${CATKIN}"
   # Push everything but the EXCLUDES to the specified source folder on the target
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:/opt/nepi/ros/
 
-done
+  for REPO in $REPOS; do
+
+    echo "Syncing repo ${REPO}"
+    # Push everything but the EXCLUDES to the specified source folder on the target
+    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+
+  done
+fi

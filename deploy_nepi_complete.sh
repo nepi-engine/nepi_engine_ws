@@ -36,11 +36,15 @@ fi
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   # Generate the top-level version file
-  git describe --DEV > ./src/nepi_engine/etc/fw_version.txt
+  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
   # Only need to copy nepi_rui to destination -- others can remain right in place
-  rsync ./src/nepi_rui/ /opt/nepi/nepi_rui 
+  # rsync ./src/nepi_rui/ /opt/nepi/nepi_rui 
+
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+  # Generate the top-level version file
+  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+
   if [[ -z "${NEPI_TARGET_IP}" ]]; then
     echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
     exit 1
