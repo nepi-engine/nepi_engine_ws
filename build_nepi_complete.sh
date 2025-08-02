@@ -72,6 +72,23 @@ sudo cp -R ./src/nepi_engine/nepi_env/config ${NEPI_RUI_TARGET_SRC_DIR}
 sudo chown -R $USER:$USER ${NEPI_RUI_TARGET_SRC_DIR}/config/
 printf "\n${HIGHLIGHT}*** NEPI Config Deploy Finished *** \n"
 
+#####################################
+######       NEPI RUI Files          #####\
+# RUI deploy
+NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
+sudo cp -R ./src/nepi_engine/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
+printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished *** \n"
+
+#####################################
+######       NEPI Auto Scripts           #####
+# Auto Scripts deploy
+printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI config folder /opt/nepi/config/auto_scripts ***${CLEAR}\n"
+NEPI_AUTO_TARGET_USER_DIR="/mnt/nepi_storage/automation_scripts"
+sudo cp -R ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
+printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
+
+
+
 
 #####################################
 ###### NEPI Engine #####
@@ -84,24 +101,11 @@ else
 fi
 
 
-#####################################
-######       NEPI Auto Scripts           #####
-# Auto Scripts deploy
-printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI config folder /opt/nepi/config/auto_scripts ***${CLEAR}\n"
-NEPI_AUTO_TARGET_SRC_DIR="/opt/nepi/config/auto_scripts"
-sudo cp -R ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_SRC_DIR}
-printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI user folder /mnt/nepi_storage/automation_scripts ***${CLEAR}\n"
-NEPI_AUTO_TARGET_USER_DIR="/mnt/nepi_storage/automation_scripts"
-sudo cp -R ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
-printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 
 
 #####################################
 ######       NEPI RUI           #####\
-# RUI deploy
-NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
-sudo cp -R ./src/nepi_engine/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
-printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished *** \n"
+# RUI build
 
 if [ "${DO_RUI}" -eq "1" ]; then 
   printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"

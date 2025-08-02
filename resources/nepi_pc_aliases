@@ -6,7 +6,9 @@
 sudo nano /etc/hosts
 '
 # - Add the following line
-# 192.168.179.103 nepi
+: '
+192.168.179.103 nepi
+'
 
 # 2) Download nepi ssh key
 # - Open a terminal on your pc and type
@@ -14,7 +16,7 @@ sudo nano /etc/hosts
  mkdir ~/ssh_keys
  sudo chmod 755 ~/ssh_keys
  cd ~/ssh_keys
- wget https://github.com/nepi-engine/nepi_engine/blob/ros1_main/nepi_env/ssh_keys/nepi_engine_default_private_ssh_key
+ wget 'https://www.dropbox.com/scl/fi/t1qcizpfjohqhlwls8il7/nepi_engine_default_private_ssh_key?rlkey=tunjq4u0qim6u2qzfwjnizui3&st=t6m7a6fe&dl=0' -O nepi_engine_default_private_ssh_key
  sudo chmod 600 nepi_engine_default_private_ssh_key
 '
 
@@ -27,9 +29,12 @@ cp nepi_pc_aliases ~/.nepi_aliases
 
 # 4) Add the following lines to your ~/.bashrc file 
 ###########################
-# NEPI bashrc aliases
+# Open bashrc file
 : '
 nano ~/.bashrc
+'
+# Add Lines to end of file
+: '
 if [ -f ~/.nepi_aliases ]; then
     . ~/.nepi_aliases
 fi
