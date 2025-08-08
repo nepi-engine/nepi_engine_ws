@@ -1,0 +1,369 @@
+#############
+# SETUP
+
+
+# 3) Copy this file to your home dir 
+# - Open a terminal in this files folder and type
+: '
+cp nepi_docker_host_aliases ~/.nepi_aliases
+'
+
+# 4) Add the following lines to your ~/.bashrc file 
+###########################
+# Open bashrc file
+: '
+nano ~/.bashrc
+'
+# Add Lines to end of file
+: '
+if [ -f ~/.nepi_aliases ]; then
+    . ~/.nepi_aliases
+fi
+'
+
+# 5) source the updated bashrc
+: '
+source ~/.bashrc
+'
+
+# 6) In a terminal test a 
+# NEPI sftp alias connection by typing
+: '
+sdk
+'
+# then 'exit' to exit
+
+
+###################################
+CURRENT_DIR=$(pwd)
+
+###################################
+# Start SSH Agent
+#----------------------------
+
+SSH_ENV="$HOME/.ssh/environment"
+
+function run_ssh_env {
+  . "${SSH_ENV}" > /dev/null
+}
+
+function start_ssh_agent {
+  echo "Initializing new SSH agent..."
+  ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+  echo "succeeded"
+  chmod 600 "${SSH_ENV}"
+
+  run_ssh_env;
+
+  ssh-add ~/.ssh/id_rsa;
+}
+
+if [ -f "${SSH_ENV}" ]; then
+  run_ssh_env;
+  ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+    start_ssh_agent;
+  }
+else
+  start_ssh_agent;
+fi
+
+
+alias gitroot="cd $(git rev-parse --show-toplevel)"
+
+
+
+###################################
+# NEPI Engine Deployment Env. Variables
+
+export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
+alias sshn="ssh -v -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias scpn="scp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias sftpn="sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+
+
+alias pingn="ping 192.168.179.103"
+
+export NEPI_REMOTE_SETUP=1
+export NEPI_TARGET_IP=192.168.179.103
+export NEPI_TARGET_USERNAME=nepi
+export NEPI_SSH_KEY=~/ssh_keys/nepi_engine_default_private_ssh_key
+export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
+
+
+
+# REMOTE ROS CONNECTION
+#source /opt/ros/noetic/setup.bashvi
+#source ~/nepi_catkin_ws/devel/setup.bash
+#export ROS_MASTER_URI=http://192.168.179.103:11311
+#export ROS_IP=192.168.179.5
+
+###################################
+#Dev Shortcuts
+# Function to search for text
+function ftext(){
+grep -r "$@" ./*
+}
+
+# Function to search for text
+function ffile(){
+find ./* -iname  "*$@*" 
+}
+
+
+function pushn(){
+git add --all
+git commit -m "*$@*" 
+git push
+}
+
+function pushnh(){
+head=git rev-parse HEAD
+pushn
+git checkout ros1_main
+git merge $head
+git push
+}
+
+
+###################################
+###################################
+#NEPI folder shortcuts
+export AI="/mnt/nepi_storage/ai_models"
+export AIF="/opt/nepi/ros/share/nepi_ai_ifs"
+export API="/opt/nepi/ros/lib/python3/dist-packages/nepi_api"
+export APPS="/opt/nepi/ros/share/nepi_apps"
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export CFG="/mnt/nepi_storage/user_cfg"
+export DATA="/mnt/nepi_storage/data"
+export DIST="/opt/nepi/ros/lib/python3/dist-packages"
+export DRIVERS="/opt/nepi/ros/lib/nepi_drivers"
+export ETC="/opt/nepi/ros/etc"
+export INSTALLS="/mnt/nepi_storage/installs"
+export LAUNCH="/opt/nepi/ros/share/nepi_env/launch"
+export LIB="/opt/nepi/ros/lib"
+export LIBSDK="/opt/nepi/ros/lib/nepi_sdk"
+export MANAGERS="/opt/nepi/ros/lib/nepi_managers"
+export NFI="/mnt/nepi_storage/nepi_full_img"
+export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
+export ROS="/opt/nepi/ros"
+export RUI="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
+export RUI_ENV="/opt/nepi/nepi_rui"
+export SDK="/opt/nepi/ros/lib/python3/dist-packages/nepi_sdk"
+export SHARE="/opt/nepi/ros/share"
+export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
+export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src"
+export TMP="/mnt/nepi_storage/tmp"
+export DRIVE="/mnt/nepi_storage"
+
+
+#NEPI sftp folder shortcuts
+# Function to open sftp to location on nepi device
+# Example call: sftpnl '/mnt/nepi_storage'
+function sftpnl(){
+sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi:../.."$@"
+}
+function ai(){
+	sftpnl $AI
+}	
+function aifs(){
+	sftpnl $AIFS
+}	
+function api(){
+	sftpnl $API
+}	
+function apps(){
+	sftpnl $APPS
+}
+function auto(){
+	sftpnl $AUTO
+}
+function cfg(){
+	sftpnl $CFG
+}	
+function data(){
+	sftpnl $DATA
+}	
+function dist(){
+	sftpnl $DIST
+}	
+function drivers(){
+	sftpnl $DRIVERS
+}	
+function etc(){
+	sftpnl $ETC
+}	
+function installs(){
+	sftpnl $INSTALLS
+}	
+function lib(){
+	sftpnl $LIB
+}	
+function libsdk(){
+	sftpnl $LIBSDK
+}	
+function managers(){
+	sftpnl $MANAGERS
+}	
+function nfi(){
+	sftpnl $NFI
+}	
+function nfia(){
+	sftpnl $NFIA
+}	
+function ros(){
+	sftpnl $ROS
+}	
+function rui(){
+	sftpnl $RUI
+}
+function rui_env(){
+	sftpnl $RUI_ENV
+}	
+function sdk(){
+	sftpnl $SDK
+}	
+function share(){
+	sftpnl $SHARE
+}	
+function src(){
+	sftpnl $SRC
+}	
+function srcrui(){
+	sftpnl $SRCRUI
+}
+function tmp(){
+	sftpnl $TMP
+}	
+function drive(){
+	sftpnl $DRIVE
+}
+
+# Print out the nepi shortcuts
+function nepi(){
+    text="
+    #############################
+    ## NEPI file shortcuts ##
+    #############################
+    # ftext = Find text in files recursively
+    # ffile = Find filenames with text match recursively
+    #
+    #############################
+    ## NEPI dev shortcuts ##
+    #############################
+    # pushn = add/commit/push current repo with comment
+    #
+    #############################
+    ## NEPI connect shortcuts ##
+    #############################
+    # sshn = ssh into nepi system
+    # sftpn = sftp into nepi system
+    #
+    ################################
+    ## NEPI sftp folder shortcuts ##
+    ################################
+    ai = /mnt/nepi_storage/ai_models
+    aifs = /opt/nepi/ros/share/nepi_aifs
+    api = /opt/nepi/ros/lib/python3/dist-packages/nepi_api
+    apps = /opt/nepi/ros/share/nepi_apps
+    auto = /mnt/nepi_storage/automation_scripts
+    cfg = /mnt/nepi_storage/user_cfg
+    data = /mnt/nepi_storage/data
+    dist = /opt/nepi/ros/lib/python3/dist-packages/
+    drivers = /opt/nepi/ros/lib/nepi_drivers
+    etc = /opt/nepi/ros/etc
+    installs = /mnt/nepi_storage/installs
+    lib = /opt/nepi/ros/lib
+    libsdk = /opt/nepi/ros/lib/sdk
+    managers = /opt/nepi/ros/lib/nepi_managers
+    ros = /opt/nepi/ros
+    nfi = /mnt/nepi_storage/nepi_full_img
+    nfia = /mnt/nepi_storage/nepi_full_img_archive
+    rui = /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
+    rui_env = /opt/nepi/nepi_rui
+    sdk = /opt/nepi/ros/lib/python3/dist-packages/nepi_sdk
+    share = /opt/nepi/ros/share
+    src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
+    srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src
+    tmp = /mnt/nepi_storage/tmp
+    drive = /mnt/nepi_storage
+    "
+    echo "$text"
+}
+
+###################################
+#NEPI Git Utility Functions
+
+# Function to check if a folder is in a Git repository
+is_git_repo() {
+  echo "?"
+  local folder_path="$1"
+  if [ -d "$folder_path/.git" ]; then
+    # If .git directory exists directly, it's a repository root
+    return 0
+  fi
+
+  # Change to the folder and check if it's inside a work tree
+  (cd "$folder_path" 2>/dev/null && git rev-parse --is-inside-work-tree >/dev/null 2>&1)
+  return $? # Return the exit status of the git command
+}
+
+
+# Commit all repos in folder
+parse_git_args()
+{
+    git_args=""
+    end_comment=""
+    for var in "$@"
+    do
+        if [[ $var == '-m' ]];
+        then
+            git_args+=" -m \""
+            end_comment="\"" 
+        else
+            git_args+=" $var"
+        fi
+    done
+    git_args+=$end_comment
+
+    echo $git_args
+}
+
+multiple_git_func()
+{
+    start=$(pwd)
+    git_args=$(parse_git_args $@)
+    root=`git rev-parse --show-toplevel` #find the repo from which the command was run
+
+    # go to root apply command and then go to sub repos (hardcoded location wrt root)
+    cd $root
+    echo "=============================="
+    echo "issuing git $git_args on $root"
+    eval "git $git_args"
+
+
+    cd repo2 # repo2 is installed in root, could be anywhere else relative to root
+    echo "=============================="
+    echo "issuing git $git_args on repo2"
+    eval "git $git_args"
+   
+    #go back to initial folder
+    cd $start
+}
+
+alias mgit=multiple_git_func
+
+
+######################
+# Git branch info
+echo "Checking folder for git repo: $CURRENT_DIR"
+
+if is_git_repo "$CURRENT_DIR"; then
+  export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+
+  #GIT Command Line Branch Display
+  parse_git_branch() {
+      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+  }
+else
+  echo "The folder is NOT part of a Git repository."
+fi
