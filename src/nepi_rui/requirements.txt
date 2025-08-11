@@ -1,0 +1,16 @@
+Flask==3.0.0
+Flask-Cors==3.0.4
+ipython==5.5.0
+PyYAML==3.13
+rospkg==1.1.7
+tornado==4.5.3
+pymongo==3.10.1
+typing==3.7.4.3
+Pillow==5.3.0
+Twisted==18.9.0
+empy==3.3.4
+pyOpenSSL==19.1.0
+autobahn==19.11.2
+pyasn1==0.4.8
+service_identity==18.1.0
+future

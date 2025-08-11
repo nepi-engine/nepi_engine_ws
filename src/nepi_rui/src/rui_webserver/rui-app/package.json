@@ -1,0 +1,44 @@
+{
+  "name": "rui-app",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": ".",
+  "devDependencies": {
+    "gh-pages": "2.0.1",
+    "prettier": "1.12.1",
+    "react-app-rewire-mobx": "1.0.9",
+    "react-app-rewired": "1.6.2",
+    "react-scripts": "1.1.5"
+  },
+  "dependencies": {
+    "cannon": "0.6.2",
+    "filesize": "3.6.1",
+    "inline-style-prefixer": "5.0.3",
+    "mobx": "5.6.0",
+    "mobx-react": "5.4.2",
+    "moment": "2.22.2",
+    "qrcode": "1.4.4",
+    "rc-slider": "8.6.9",
+    "rc-tooltip": "3.7.3",
+    "react": "16.5.2",
+    "react-beautiful-dnd": "10.0.2",
+    "react-circular-progressbar": "3.5",
+    "react-dom": "16.5.2",
+    "react-file-manager": "1.2.4",
+    "react-icons": "3.0.5",
+    "react-router-dom": "4.3.1",
+    "react-toggle": "4.0.2",
+    "react-typography": "0.16.13",
+    "roslib": "0.20.0",
+    "typography": "0.16.17",
+    "yaml": "2.3.1"
+  },
+  "scripts": {
+    "start": "PORT=3006 react-app-rewired start",
+    "stop": "npx kill-port 3000",
+    "build": "react-app-rewired build",
+    "eject": "react-app-rewired eject",
+    "lint": "prettier --write --no-semi *.js **/*.js",
+    "deploy": "npm run build && touch build/.nojekyll && gh-pages -d build"
+  }
+}
