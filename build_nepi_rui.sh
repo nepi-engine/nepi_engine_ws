@@ -37,16 +37,16 @@ CLEAR='\033[0m'
 
 # RUI deploy
 NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
-sudo cp -R ./src/nepi_engine/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
+sudo cp -R ./src/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 ######       NEPI RUI           #####
 printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-if ! [ -f /opt/nepi/nepi_rui/venv/bin/activate ]; then
+if ! [ -f /opt/nepi/rui/venv/bin/activate ]; then
   printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
   printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
 else
-  cd /opt/nepi/nepi_rui
+  cd /opt/nepi/rui
   source ~/.nvm/nvm.sh
   source ./devenv.sh
   cd src/rui_webserver/rui-app/

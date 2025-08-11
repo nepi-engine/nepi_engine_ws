@@ -58,7 +58,7 @@ Target username (as applicable)
 1. **NEPI_SSH_KEY**
 Private SSH key for SSH/Rsync to target (as applicable)
 1. **NEPI_TARGET_SRC_DIR**:
-Directory to deploy source code to (except _nepi_rui_, which must be located at _/opt/nepi/nepi_rui_ as described in that submodule's README). The usual
+Directory to deploy source code to (except _nepi_rui_, which must be located at _/opt/nepi/rui_ as described in that submodule's README). The usual
 location is on the NEPI user partition (_/mnt/nepi_storage_) at _/mnt/nepi_storage/
 
 

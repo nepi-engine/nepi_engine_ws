@@ -1,0 +1,15 @@
+
+OLD=ros1_main
+NEW=main
+
+git add --all
+git commit -m "New Branch from Head"
+git checkout ${OLD}
+git pushn
+
+git checkout -m ${NEW}
+git push origin --delete ${OLD}
+git push -u origin ${NEW}
+
+
+

@@ -24,8 +24,7 @@
 #    NEPI_TARGET_IP: Target IP address/hostname
 #    NEPI_TARGET_USERNAME: Target username
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
-#    NEPI_TARGET_SRC_DIR: Directory to deploy source code to (except _nepi_rui_, which must be located 
-#                         at _/opt/nepi/nepi_rui_ as described in that submodule's README)
+#    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
 #######################################################################################################
 DEPLOY_3RD_PARTY=true
 
@@ -37,9 +36,6 @@ fi
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   # Generate the top-level version file
   git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
-
-  # Only need to copy nepi_rui to destination -- others can remain right in place
-  # rsync ./src/nepi_rui/ /opt/nepi/nepi_rui 
 
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   # Generate the top-level version file
@@ -76,7 +72,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   CATKIN=".catkin_tools"
   echo "Syncing repo ${CATKIN}"
   # Push everything but the EXCLUDES to the specified source folder on the target
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:/opt/nepi/ros/
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:/opt/nepi/engine/
 
 
   echo "Syncing nepi workspace"

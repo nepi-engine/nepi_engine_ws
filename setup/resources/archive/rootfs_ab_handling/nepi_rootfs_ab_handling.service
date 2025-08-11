@@ -1,0 +1,18 @@
+[Unit]
+Description=NEPI Rootfs A/B Handling
+DefaultDependencies=no
+Conflicts=shutdown.target
+After=systemd-remount-fs.service
+Before=local-fs-pre.target local-fs.target shutdown.target
+Wants=local-fs-pre.target
+ConditionPathExists=/opt/nepi/nepi_rootfs_ab_custom_env.sh
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/nepi/nepi_rootfs_ab_handling.sh
+StandardOutput=file:/opt/nepi/nepi_rootfs_ab_handling.log
+StandardError=inherit
+
+[Install]
+WantedBy=default.target
