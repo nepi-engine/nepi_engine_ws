@@ -16,6 +16,10 @@
 [submodule "src/nepi_engine"]
 	path = src/nepi_engine
 	url = git@github.com:nepi-engine/nepi_engine.git
+	
 [submodule "src/nepi_auto_scripts"]
 	path = src/nepi_auto_scripts
 	url = git@github.com:nepi-engine/nepi_auto_scripts.git
+[submodule "src/nepi_rui"]
+	path = src/nepi_rui
+	url = git@github.com:nepi-engine/nepi_rui.git
