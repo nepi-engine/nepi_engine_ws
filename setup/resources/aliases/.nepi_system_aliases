@@ -82,6 +82,7 @@ export RUI="/opt/nepi/rui/src/rui_webserver/rui-app/src"
 export RUI_ENV="/opt/nepi/rui"
 export SDK="/opt/nepi/engine/lib/python3/dist-packages/nepi_sdk"
 export SHARE="/opt/nepi/engine/share"
+export BUILD="/mnt/nepi_storage/nepi_src/nepi_engine_ws"
 export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
 export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src"
 export TMP="/mnt/nepi_storage/tmp"
@@ -121,18 +122,18 @@ alias drive="cd $DRIVE"
 
 # NEPI build shortcuts
 alias nepibld="
-cd $SRC/..
-./build_nepi_complete.sh"
+cd $BUILD
+sudo ./build_nepi_complete.sh"
 
 # NEPI build shortcuts
 alias codebld="
-cd $SRC/..
-./build_nepi_code.sh"
+cd $BUILD
+sudo ./build_nepi_code.sh"
 
 # NEPI build shortcuts
 alias ruibld="
-cd $SRC/..
-./build_nepi_rui.sh"
+cd $BUILD
+sudo ./build_nepi_rui.sh"
 
 # NEPI stop and start shortcuts
 alias nepistop="sudo systemctl stop nepi_engine"
@@ -221,7 +222,7 @@ export PATH=$PATH:$CUDA_HOME/bin
 # Python Config
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:/opt/nepi/engine/lib/nepi_drivers/:$PYTHONPATH
-export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
+export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH
 
 # System Config
 export CMAKE_POLICY_VERSION_MINIMUM=3.5

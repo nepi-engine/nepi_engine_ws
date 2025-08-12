@@ -74,8 +74,9 @@ STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
 STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
 STORAGE['tmp']=${NEPI_STORAGE}/tmp
 
-STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
 STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
+STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
+
 
 
 ##############
@@ -842,6 +843,9 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
     echo " "
     echo "Updating system hostname"
+    sudo rm /etc/hosts
+    sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
+    sudo rm /etc/hostname
     sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
 
     ##############################################
