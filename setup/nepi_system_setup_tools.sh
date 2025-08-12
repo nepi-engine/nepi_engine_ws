@@ -843,16 +843,23 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
     echo " "
     echo "Updating system hostname"
-    sudo rm /etc/hosts
+
+    if [! -d /etc/hosts ]; then
+        sudo rm /etc/hosts
+    fi
     sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
-    sudo rm /etc/hostname
+
+    if [! -d /etc/hostname ]; then
+        sudo rm /etc/hostname
+    fi
     sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
+
 
     ##############################################
     # Update the Desktop background image
     echo ""
     echo "Updating Desktop background image"
-    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/home/nepi/nepi_wallpaper.png
+    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
 
     # Update the login screen background image - handled by a sys. config file
     # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
@@ -875,44 +882,36 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
     echo "NEPI Services Setup Complete"
 
-    #########################################
-    # Setup system scripts
-    echo ""
-    echo "Setting up NEPI Scripts"
-
-    sudo chmod +x ${NEPI_ETC}/scripts/*
-    sudo ln -sf ${NEPI_ETC}/scripts/nepi_start_all.sh /nepi_start_all.sh
-    sudo ln -sf ${NEPI_ETC}/scripts/nepi_engine_start.sh /nepi_engine_start.sh
-    sudo ln -sf ${NEPI_ETC}/scripts/nepi_rui_start.sh /nepi_rui_start.sh
-    sudo ln -sf ${NEPI_ETC}/scripts/nepi_samba_start.sh /nepi_samba_start.sh
-    sudo ln -sf ${NEPI_ETC}/scripts/nepi_storage_init.sh /nepi_storage_init.sh
-    sudo ln -sf ${NEPI_ETC}/scripts/nepi_license_start.sh /nepi_license_start.sh
-
-    echo "NEPI Script Setup Complete"
-
+    
     ###########################################
     # Set up SSH
     echo " "
     echo "Configuring SSH Keys"
 
-    sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
     # And link default public key - Make sure all ownership and permissions are as required by SSH
     sudo chown ${USER}:${USER} ${NEPI_ETC}/ssh/authorized_keys
     sudo chmod 0600 ${NEPI_ETC}/authorized_keys
-    ln -sf ${NEPI_ETC}/ssh/authorized_keys /home/nepi/.ssh/authorized_keys
-    sudo chown ${USER}:${USER} /home/nepi/.ssh/authorized_keys
-    sudo chmod 0600 /home/nepi/.ssh/authorized_keys
+
+    sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chown ${USER}:${USER} ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
 
     mkdir -p /home/nepi/.ssh
     sudo chown ${USER}:${USER} /home/nepi/.ssh
     chmod 0700 /home/nepi/.ssh
 
-
+    if [! -d /etc/ssh/sshd_config ]; then
+        sudo rm -r /etc/ssh/sshd_config
+    fi
+    sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
 
 
     ###########################################
     # Set up Samba
     echo "Configuring nepi storage Samba share drive"
+    if [! -d /etc/samba/smb.conf ]; then
+        sudo rm -r /etc/samba/smb.conf
+    fi
     sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
     printf "nepi\nepi\n" | sudo smbpasswd -a nepi
 
@@ -948,6 +947,10 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14
     ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
 
+
+    if [! -d /opt/baumer ]; then
+        sudo rm -r /opt/baumer
+    fi
     sudo ln -sf ${NEPI_ETC}opt/baumer /opt/baumer
     sudo chown ${USER}:${USER} /opt/baumer
 
@@ -958,15 +961,30 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
 
     # Set up static IP addr.
-
+    if [! -d /etc/network/interfaces.d ]; then
+        sudo rm -r /etc/network/interfaces.d
+    fi
     sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
+
+    if [! -d /etc/network/interfaces ]; then
+        sudo rm /etc/network/interfaces
+    fi
     sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
 
     # Set up DHCP
+    if [! -d /etc/dhcp/dhclient.conf ]; then
+        sudo rm /etc/dhcp/dhclient.conf
+    fi
     sudo ln -sf ${NEPI_ETC}/dhclient.conf /etc/dhcp/dhclient.conf
     sudo dhclient
 
+    # Set up WIFI
+    if [! -d /etc/wpa_supplicant/wpa_supplicant.conf ]; then
+        sudo rm /etc/wpa_supplicant/wpa_supplicant.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+    sudo dhclient
 
 
 
@@ -975,8 +993,54 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     # Install Manager File
     #sudo cp -R ${NEPI_CONFIG}/etc/license/nepi_check_license.py ${NEPI_ETC}/nepi_check_license.py
     sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
-    sudo ${NEPI_ETC}/license/setup_nepi_license.sh
+    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
+    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
+    sudo ln -sf ${NEPI_ETC}/license/nepi_check_license.service /etc/systemd/system/
+    sudo gpg --import ${NEPI_ETC}/license/nepi_license_management_public_key.gpg
+    sudo systemctl enable nepi_check_license
+    #gpg --import /opt/nepi/config/etc/nepi/nepi_license_management_public_key.gpg
 
+
+    ################################
+    # Update fstab
+    sudo ln -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
+    if [! -d /etc/fstab ]; then
+        sudo rm /etc/fstab
+    fi
+    sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
+    sudo cp ${NEPI_ETC}/fstabs/fstab.bak /etc/fstab.bak
+    
+    #########################################
+    # Setup system scripts
+    echo ""
+    echo "Setting up NEPI Supervisord and Scripts"
+    
+    if [! -d /etc/supervisor/conf.d/supervisord_nepi.conf ]; then
+        sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/supervisord/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
+
+    sudo chmod +x ${NEPI_ETC}/scripts/*
+    sudo ln -sf ${NEPI_ETC}/scripts/nepi_start_all.sh /nepi_start_all.sh
+    sudo ln -sf ${NEPI_ETC}/scripts/nepi_engine_start.sh /nepi_engine_start.sh
+    sudo ln -sf ${NEPI_ETC}/scripts/nepi_rui_start.sh /nepi_rui_start.sh
+    sudo ln -sf ${NEPI_ETC}/scripts/nepi_samba_start.sh /nepi_samba_start.sh
+    sudo ln -sf ${NEPI_ETC}/scripts/nepi_storage_init.sh /nepi_storage_init.sh
+    sudo ln -sf ${NEPI_ETC}/scripts/nepi_license_start.sh /nepi_license_start.sh
+
+
+    #########
+    #- add Gieode databases to FileSystem
+    :'
+    egm2008-2_5.pgm  egm2008-2_5.pgm.aux.xml  egm2008-2_5.wld  egm96-15.pgm  egm96-15.pgm.aux.xml  egm96-15.wld
+    from
+    https://www.3dflow.net/geoids/
+    to
+    /opt/nepi/databases/geoids
+    :'
+
+
+    echo "NEPI Script Setup Complete"
 
 
 
