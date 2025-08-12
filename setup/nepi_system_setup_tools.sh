@@ -10,8 +10,8 @@
 ##
 
 
-# This file sets up NEPI File System on device hosting a nepi file system 
-# or inside a docker container
+# This file sets up NEPI File System on a device hosted a nepi file system 
+# or inside a ubuntu docker container
 
 
 # NEPI Hardware Host Options: GENERIC,JETSON,RPI
@@ -43,8 +43,7 @@ CURRENT_FOLDER=$PWD
 # NEPI File System 
 NEPI_HOME=/home/${NEPI_USER}
 NEPI_BASE=/opt/nepi
-NEPI_RUI=${NEPI_BASE}/nepi_rui
-NEPI_CONFIG=${NEPI_BASE}/config
+NEPI_RUI=${NEPI_BASE}/rui
 NEPI_ENGINE=${NEPI_BASE}/engine
 NEPI_ETC=${NEPI_BASE}/etc
 
@@ -54,12 +53,20 @@ SYSTEMD_SERVICE_PATH=/etc/systemd/system
 # NEPI Storage Folders
 
 declare -A STORAGE
+
+STORAGE['nepi_fs_a']=${NEPI_FS_A}
+STORAGE['nepi_fs_b']=${NEPI_FS_B}
+STORAGE['nepi_staging']=${NEPI_FS_STAGING}
+STORAGE['nepi_storage']=${NEPI_STORAGE}
+STORAGE['nepi_config']=${NEPI_CONFIG}
+
 STORAGE['data']=${NEPI_STORAGE}/data
 STORAGE['ai_models']=${NEPI_STORAGE}/ai_models
 STORAGE['ai_training']=${NEPI_STORAGE}/ai_training
 STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts
 STORAGE['databases']=${NEPI_STORAGE}/databases
 STORAGE['install']=${NEPI_STORAGE}/install
+STORAGE['license']=${NEPI_STORAGE}/install
 STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_src
 STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img
 STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive
@@ -67,7 +74,7 @@ STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
 STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
 STORAGE['tmp']=${NEPI_STORAGE}/tmp
 
-STORAGE['nepi_cfg']=${NEPI_CONFIG}/nepi_cfg
+STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
 STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
 
 
@@ -77,7 +84,6 @@ STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
 INTERNET_REQ=false
 PARTS_REQ=false
 DOCKER_REQ=false
-
 
 ###############################
 ## NEPI Tool Options
@@ -387,11 +393,366 @@ if [ $SOFTWARE_ENV -o $SYS_DO_ALL]; then
 
       sudo pip install supervisor      
 
+    #___________________
+    #Install dependancies
+    sudo apt update
+    sudo apt upgrade
+
+    # Convenience applications
+    sudo apt install nano
+
+
+    #######################
+
+    # Uninstall ROS if reinstalling/updating
+    # sudo apt remove ros-noetic-*
+    # sudo apt-get autoremove
+    # After that, it's recommended to remove ROS-related environment variables from your .bashrc file 
+    # and delete the ROS installation directory, typically /opt/ros/noetic. 
+
+
+    # Install Python 
+    sudo apt update 
+
+    sudo apt-get install --reinstall ca-certificates
+    sudo apt-get install software-properties-common
+    sudo add-apt-repository ppa:deadsnakes/ppa
+    sudo apt update
+    sudo apt install python3.10 
+    sudo apt install python3.10-distutils -f
+
+    # Update python symlinks
+    cd /usr/bin
+    sudo ln -sfn python3.10 python3
+    sudo ln -sfn python3 python
+
+    sudo apt install python3.10-venv 
+    sudo apt install python3.10-dev 
+
+    # Install pip
+    curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.10
+    python3.10 -m pip --version
+
+
+
+
+    #create requirements file from current dev install then run both as normal and sudo user
+    # https://stackoverflow.com/questions/31684375/automatically-create-file-requirements-txt
+    # pip3 freeze > requirements.txt
+    # sed 's/==.*$//' requirements.txt > requirements_no_versions.txt
+    # then
+    # Copy to /mnt/nepi_storage/tmp
+    # ssh into tmp folder on nepi
+
+    #Install python requred packages
+    # 1) Copy nepi_env/config/home/nepi/requirements_no_versions to /mnt/nepi_storage/tmp
+    # 2) SSH into your nepi device and type
+
+
+
+    # Edit bashrc file
+    nano ~/.nepi_aliases
+    # Add to end of bashrc
+        export SETUPTOOLS_USE_DISTUTILS=stdlib
+        export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+        export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
+
+
+    ##_________________________
+    ## Setup ROS
+
+    sudo apt-get install lsb-release -y
+
+    #  Install ros
+    #  https://wiki.ros.org/noetic/Installation/Ubuntu
+
+    cd /mnt/nepi_storage/tmp
+    sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+    sudo apt install curl # if you haven't already installed curl
+    curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+    sudo apt update
+    ####################
+    # Do if ROS not installed
+    sudo apt install ros-noetic-desktop-full
+    source /opt/ros/noetic/setup.bash
+    sudo apt install python3-rosdep 
+    sudo apt install python3-rosinstall 
+    sudo apt install python3-rosinstall-generator 
+    sudo apt install python3-wstool build-essential
+    sudo rosdep init
+    rosdep update
+
+
+    # Then
+    #sudo apt-get install ros-noetic-catkin python-catkin-tools
+    #sudo pip3 install --user git+https://github.com/catkin/catkin_tools.git
+
+    ROS_VERSION=noetic
+
+    ADDITIONAL_ROS_PACKAGES="python3-catkin-tools \
+        ros-${ROS_VERSION}-rosbridge-server \
+        ros-${ROS_VERSION}-pcl-ros \
+        ros-${ROS_VERSION}-web-video-server \
+        ros-${ROS_VERSION}-camera-info-manager \
+        ros-${ROS_VERSION}-tf2-geometry-msgs \
+        ros-${ROS_VERSION}-mavros \
+        ros-${ROS_VERSION}-mavros-extras \
+        ros-${ROS_VERSION}-serial \
+        python3-rosdep" 
+
+        # Deprecated ROS packages?
+        #ros-${ROS_VERSION}-tf-conversions
+        #ros-${ROS_VERSION}-diagnostic-updater 
+        #ros-${ROS_VERSION}-vision-msgs
+
+    sudo apt install $ADDITIONAL_ROS_PACKAGES
+
+
+    sudo apt install ros-noetic-cv-bridge
+    sudo apt install ros-noetic-web-video-server
+
+    ####################
+    sudo pip install bagpy
+    sudo pip install pycryptodome-test-vectors
+
+
+    # 1) edit the following file: 
+    #sudo su
+    #cd /opt/ros/noetic/lib/rosbridge_server/
+    #cp rosbridge_websocket.py  rosbridge_websocket.bak
+    #vi rosbridge_websocket.py
+    # Add the following lines under import sys
+
+
+    # Mavros requires some additional setup for geographiclib
+    sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
+
+    # Need to change the default .ros folder permissions for some reason
+    //sudo mkdir /home/nepi/.ros
+    sudo chown -R nepi:nepi /home/nepi/.ros
+
+    # Setup rosdep
+    #sudo rm -r /etc/ros/rosdep/sources.list.d/20-default.list
+    #sudo rosdep init
+    #rosdep update
+
+    source /opt/ros/noetic/setup.bash
+
+
+    ############################################
+    # Maybe not
+    //- upgrade python hdf5
+    //sudo pip install --upgrade h5py
+
+    _________________________
+
+
+
+
+
+    #Manual installs some additinal packages in sudo one at a time
+    ################################
+    # Install some required packages
+    sudo apt-get install python-debian
+    sudo pip install cffi
+    pip install open3d --ignore-installed
+    sudo pip install open3d --ignore-installed
+
+    #sudo pip uninstall netifaces
+    sudo pip install netifaces
+    sudo apt-get install trash-cli
+    sudo apt-get install onboard
+    sudo apt-get install setools
+    sudo apt-get install ubuntu-advantage-tools
+
+    sudo apt-get install -y iproute2
+
+    sudo apt-get install scons # Required for num_gpsd
+    sudo apt-get install zstd # Required for Zed SDK installer
+    sudo apt-get install dos2unix # Required for robust automation_mgr
+    sudo apt-get install libv4l-dev v4l-utils # V4L Cameras (USB, etc.)
+    sudo apt-get install hostapd # WiFi access point setup
+    sudo apt-get install curl # Node.js installation below
+    sudo apt-get install v4l-utils
+    sudo apt-get install isc-dhcp-client
+    sudo apt-get install wpasupplicant
+    sudo apt-get install -y psmisc
+    sudo apt-get install scapy
+    sudo apt-get install minicom
+    sudo apt-get install dconf-editor
+
+
+    #############
+    # Other general python utilities
+    pip install --user labelImg # For onboard training
+    pip install --user licenseheaders # For updating license files and source code comments
+
+    # Install additional python requirements
+    # Copy the requirements files from nepi_engine/nepi_env/setup to /mnt/nepi_storage/tmp
+    cd /mnt/nepi_storage/tmp
+    sudo su
+    cat requirements_no_versions.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 python3.10 -m pip install
+    exit
+
+
+    # Revert numpy
+    sudo pip uninstall numpy
+    sudo pip3 install numpy=='1.24.4'
+
+
+    ## Maybe not needed with requirements
+            # NEPI runtime python3 dependencies. Must install these in system folders such that they are on root user's python path
+            sudo -H pip install pyserial 
+            sudo -H pip install websockets 
+            sudo -H pip install geographiclib 
+            sudo -H pip install PyGeodesy 
+            sudo -H pip install harvesters 
+            sudo -H pip install WSDiscovery 
+            sudo -H pip install python-gnupg 
+            sudo -H pip install onvif_zeep
+            sudo -H pip install onvif 
+            sudo -H pip install rospy_message_converter
+            sudo -H pip install PyUSB
+            sudo -H pip install jetson-stats
+
+
+            sudo -H pip install --user labelImg # For onboard training
+            sudo -H pip install --user licenseheaders # For updating license files and source code comments
+            #pip install --user labelImg # For onboard training
+            #pip install --user licenseheaders # For updating license files and source code comments
+
+
+            # NOT Sure
+            sudo apt-get install python3-scipy
+            #sudo -H pip install --upgrade scipy
+
+            sudo pip install yap
+            #pip install yap
+            sudo pip install yapf
+
+
+
+
+
+
+    sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
+
+
+
+
+
+
+    #########
+    # Work-around opencv path installation issue on Jetson (after jetpack installation)
+    sudo ln -s /usr/include/opencv4/opencv2/ /usr/include/opencv
+    sudo ln -s /usr/lib/aarch64-linux-gnu/cmake/opencv4 /usr/share/OpenCV
+
+
+
+
+
+
+
+
+    # Install Base Python Packages
+    echo "Installing base python packages"
+    sudo apt install python3-pip
+    pip install --user -U pip
+    pip install --user virtualenv
+    sudo apt install libffi-dev # Required for python cryptography library
+
+    # NEPI runtime python3 dependencies. Must install these in system folders such that they are on root user's python path
+    sudo -H pip install python-gnupg websockets onvif_zeep geographiclib PyGeodesy onvif harvesters WSDiscovery pyserial
+
+
+
+
+    sudo apt install scons # Required for num_gpsd
+    sudo apt install zstd # Required for Zed SDK installer
+    sudo apt install dos2unix # Required for robust automation_mgr
+    sudo apt install libv4l-dev v4l-utils # V4L Cameras (USB, etc.)
+    sudo apt install hostapd # WiFi access point setup
+    sudo apt install curl # Node.js installation below
+    sudo apt install gparted
+    sudo apt-get install chromium-browser # At least once, apt-get seemed to work for this where apt did not, hence the command here
+
+    # Install Base Node.js Tools and Packages (Required for RUI, etc.)
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    nvm install 8.11.1 # RUI-required Node version as of this script creation
+
+
+
+    # Mavros requires some additional setup for geographiclib
+    sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
+
+    # Setup rosdep
+    sudo rosdep init
+    rosdep update
+
+    # Install nepi-link dependencies
+    sudo apt install socat protobuf-compiler
+    pip install virtualenv
+
+
+    # Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
+    sudo systemctl disable NetworkManager
+
+
+
+
+    #################################
+    # Install Required Software
+    #################################
+
+
+    # Install and setup supervisor\\
+    #https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
+    #https://test-dockerrr.readthedocs.io/en/latest/admin/using_supervisord/
+
+    sudo apt install supervisor
+
+    #sudo supervisorctl status
+    #sudo supervisorctl stop all
+
+    ########
+    # install license managers
+
+    sudo apt-get install gnupg
+    sudo apt-get install kgpg
+
+
+    # install ssh server
+    sudo apt-get install -y openssh-server
+    sudo systemctl sshd
+
+    # Install and configure chrony
+    echo "Installing chrony for NTP services"
+    sudo apt install chrony
+    sudo systemctl enable --now chrony.service
+    systemctl enable chronyd
+    systemctl start chronyd
+
+
+
+    # Install static IP tools
+    echo "Installing static IP dependencies"
+    sudo apt install ifupdown net-tools
+
+
+
+
+
+
+
 fi
 
 
 #############################
 ## Configure NEPI Environment
+NEPI_ETC_SOURCE=./resources/etc
 NEPI_ALIASES_SOURCE=./resources/aliases/.nepi_system_aliases 
 NEPI_ALIASES=${NEPI_HOME}/.nepi_system_aliases
 
@@ -455,7 +816,6 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo "Creating system folders"
     sudo mkdir -p ${NEPI_BASE}
     sudo mkdir -p ${NEPI_RUI}
-    sudo mkdir -p ${NEPI_CONFIG}
     sudo mkdir -p ${NEPI_ENGINE}
     sudo mkdir -p ${NEPI_ETC}
 
@@ -463,19 +823,18 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     # Copy Config Files
     echo ""
     echo "Populating System Folders"
-    cp -R ${NEPI_CONFIG_SOURCE}/* ${NEPI_CONFIG}
-    sudo chown -R ${USER}:${USER} $NEPI_CONFIG
+    cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
+    sudo chown -R ${USER}:${USER} $NEPI_ETC
 
-    sudo cp -R ${NEPI_CONFIG}/etc ${NEPI_BASE}/
-    sudo cp -R ${NEPI_BASE}/etc ${NEPI_BASE}/etc.factory
+    sudo cp -R ${NEPI_ETC}/etc ${NEPI_BASE}/
     sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
 
 
     # Set up the NEPI sys env bash file
     echo "Updating system env bash file"
-    sudo cp ${NEPI_CONFIG}/sys_env.bash ${NEPI_BASE}/sys_env.bash
+    sudo cp ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
     sudo chmod +x ${NEPI_BASE}/sys_env.bash
-    sudo cp ${NEPI_CONFIG}/sys_env.bash ${NEPI_BASE}/sys_env.bash.bak
+    sudo cp ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash.bak
     sudo chmod +x ${NEPI_BASE}/sys_env.bash.bak
 
     ###################
@@ -506,7 +865,7 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     sudo chmod +x ${NEPI_ETC}/services/*
 
     sudo ln -sf ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
-     sudo systemctl enable nepi_engine
+    sudo systemctl enable nepi_engine
     sudo ln -sf ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
     sudo systemctl enable nepi_rui
 
@@ -532,11 +891,11 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo " "
     echo "Configuring SSH Keys"
 
-    sudo ln -sf ${NEPI_ETC}/sshd_config /etc/ssh/sshd_config
+    sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
     # And link default public key - Make sure all ownership and permissions are as required by SSH
-    sudo chown ${USER}:${USER} ${NEPI_ETC}/authorized_keys
+    sudo chown ${USER}:${USER} ${NEPI_ETC}/ssh/authorized_keys
     sudo chmod 0600 ${NEPI_ETC}/authorized_keys
-    ln -sf ${NEPI_ETC}/authorized_keys /home/nepi/.ssh/authorized_keys
+    ln -sf ${NEPI_ETC}/ssh/authorized_keys /home/nepi/.ssh/authorized_keys
     sudo chown ${USER}:${USER} /home/nepi/.ssh/authorized_keys
     sudo chmod 0600 /home/nepi/.ssh/authorized_keys
 
@@ -567,9 +926,9 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo " "
     echo "Setting up udev rules"
       # IQR Pan/Tilt
-    sudo ln -sf ${NEPI_ETC}/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
       # USB Power Saving on Cameras Disabled
-    sudo ln -sf ${NEPI_ETC}/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
 
 
 
@@ -585,14 +944,26 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14
     ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
 
-    sudo cp -R ${NEPI_CONFIG}/opt/baumer ${NEPI_ETC}/baumer
-    sudo ln -sf ${NEPI_ETC}/baumer /opt/baumer
+    sudo ln -sf ${NEPI_ETC}opt/baumer /opt/baumer
     sudo chown ${USER}:${USER} /opt/baumer
 
 
 
     # Disable apport to avoid crash reports on a display
     sudo systemctl disable apport
+
+
+    # Set up static IP addr.
+
+    sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
+
+    sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
+
+    # Set up DHCP
+    sudo ln -sf ${NEPI_ETC}/dhclient.conf /etc/dhcp/dhclient.conf
+    sudo dhclient
+
+
 
 
 
@@ -605,23 +976,6 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
 
 
-    #################################
-    # Install Required Software
-    #################################
-
-
-    # Install and setup supervisor\\
-    #https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
-    #https://test-dockerrr.readthedocs.io/en/latest/admin/using_supervisord/
-
-
-
-    sudo supervisorctl status
-    sudo supervisorctl stop all
-
-    sudo apt update && sudo apt install supervisor
-    sudo vi /etc/supervisor/conf.d/nepi.conf
-    # Add these lines
 
 
 fi

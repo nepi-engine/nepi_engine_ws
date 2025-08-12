@@ -9,7 +9,7 @@ devel_space: devel_release
 extend_path: null
 extends: null
 install: true
-install_space: /opt/nepi/ros
+install_space: /opt/nepi/engine
 isolate_install: false
 jobs_args: []
 licenses:

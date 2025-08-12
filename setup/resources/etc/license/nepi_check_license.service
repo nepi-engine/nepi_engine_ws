@@ -5,7 +5,7 @@ After=remote-fs.target
 [Service]
 Type=simple
 User=root
-ExecStart=/opt/nepi/config/etc/license/nepi_check_license.py
+ExecStart=/opt/nepi/etc/license/nepi_check_license.py
 Restart=always
 
 [Install]

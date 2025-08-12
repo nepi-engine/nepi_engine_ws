@@ -135,13 +135,9 @@ cd $SRC/..
 ./build_nepi_rui.sh"
 
 # NEPI stop and start shortcuts
-alias nepistop="sudo systemctl stop roslaunch"
-alias nepistart="sudo /opt/nepi/engine/etc/nepi_env/roslaunch.sh"
+alias nepistop="sudo systemctl stop nepi_engine"
+alias nepistart="sudo /opt/nepi/engine/etc/nepi_env/nepi_launch.sh"
 
-
-# NEPI ros stop and start shortcuts
-alias rosstop="sudo systemctl stop roslaunch"
-alias rosstart="sudo /opt/nepi/engine/etc/nepi_env/roslaunch.sh"
 
 
 # Print out the nepi shortcuts
@@ -232,6 +228,10 @@ export CMAKE_POLICY_VERSION_MINIMUM=3.5
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 export LD_PRELOAD=/usr/local/lib/libOpen3D.so
 export PATH="/opt/nepi/engine/etc/":$PATH
+
+# Source ROS Env
+source /opt/nepi/engine/setup.bash
+
 
 # Inform if this is the target hardware
 export NEPI_REMOTE_SETUP=0

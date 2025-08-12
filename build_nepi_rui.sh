@@ -36,8 +36,8 @@ CLEAR='\033[0m'
 
 
 # RUI deploy
-NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/"
-sudo cp -R ./src/nepi_rui/ ${NEPI_RUI_TARGET_SRC_DIR}
+NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/rui"
+sudo cp -R ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 ######       NEPI RUI           #####

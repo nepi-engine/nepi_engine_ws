@@ -9,4 +9,4 @@
 ##
 
 # Start NEPI ROS
-sudo python /opt/nepi/config/etc/license/nepi_check_license.py
+sudo python /opt/nepi/etc/license/nepi_check_license.py
