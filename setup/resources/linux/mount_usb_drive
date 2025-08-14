@@ -1,19 +1,41 @@
+
+############################
+# IF NEEDED: Find your drive dev path if needed
+
 # run without drive pluged in
 sudo ls -l /dev/disk/by-label/
 # then run again with drive plugged in
 sudo ls -l /dev/disk/by-label/
 
+#################
 # Mount the drive
-DRIVE=sdb2
+
+sudo su
+DRIVE=sda2 #sba2
 MOUNT=usbd
 cd /mnt
-sudo mkdir $MOUNT
-sudo chown ${USER}:${USER} $MOUNT
-sudo mount $DRIVE $MOUNT
+mkdir $MOUNT
+chown ${USER}:${USER} $MOUNT
+mount /dev/$DRIVE $MOUNT
+exit
 cd $MOUNT
 
 
+#################
+# Copy nepi img to nfi
+
+sudo cp *.raw ${NFI}/
+sudo chown nepi:nepi ${NFI}/*
+
+#################
+# Copy nepi img from nfi
+
+sudo cp ${NFI}/*.raw ./
+sudo chown nepi:nepi ./*.raw
+
+###################
 # Unmount Drive
+
 MOUNT=usbd
 cd /mnt
 sudo umount $MOUNTc
