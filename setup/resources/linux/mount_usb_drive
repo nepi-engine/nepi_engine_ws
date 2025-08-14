@@ -1,0 +1,20 @@
+# run without drive pluged in
+sudo ls -l /dev/disk/by-label/
+# then run again with drive plugged in
+sudo ls -l /dev/disk/by-label/
+
+# Mount the drive
+DRIVE=sdb2
+MOUNT=usbd
+cd /mnt
+sudo mkdir $MOUNT
+sudo chown ${USER}:${USER} $MOUNT
+sudo mount $DRIVE $MOUNT
+cd $MOUNT
+
+
+# Unmount Drive
+MOUNT=usbd
+cd /mnt
+sudo umount $MOUNTc
+ 

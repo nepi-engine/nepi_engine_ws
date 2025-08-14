@@ -91,7 +91,8 @@ NEPI_ALIASES_SOURCE=./resources/aliases/.nepi_system_aliases
 NEPI_ALIASES=${NEPI_HOME}/.nepi_system_aliases
 BASHRC=${NEPI_HOME}/.bashrc
 
-if [ true ]; then
+if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
+
     echo ""
     echo "Setting up NEPI Environment"
 
@@ -100,20 +101,19 @@ if [ true ]; then
     # Add nepi aliases to bashrc
     echo "Updating NEPI aliases file"
 
-
+    BASHRC=~/.bashrc
     echo ""
     echo "Installing NEPI aliases file ${NEPI_ALIASES} "
     cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES
+    sudo chown -R ${USER}:${USER} $NEPI_ALIASES
 
     echo "Updating bashrc file"
     if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
         echo "Done"
     else
-    	echo "" | sudo tee -a $BASHRC
         echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-        echo "if [ -f ~/.nepi_system_aliases ]; then" | sudo tee -a $BASHRC
-        echo "    . ~/.nepi_system_aliases" | sudo tee -a $BASHRC
+        echo "if [ -f ~/.nepi_system_config ]" | sudo tee -a $BASHRC
+        echo "    . ~/.nepi_system_config" | sudo tee -a $BASHRC
         echo "fi" | sudo tee -a $BASHRC
         echo "Done"
     fi
@@ -152,14 +152,16 @@ if [ true ]; then
     sudo mkdir -p ${NEPI_RUI}
     sudo mkdir -p ${NEPI_ENGINE}
     sudo mkdir -p ${NEPI_ETC}
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+
     ###################
     # Copy Config Files
     echo ""
     echo "Populating System Folders"
-    cp -R ${NEPI_ETC_SOURCE} ${NEPI_BASE}/
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_ETC}
-  
+    cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
+    sudo chown -R ${USER}:${USER} $NEPI_ETC
+
+    sudo cp -R ${NEPI_ETC}/etc ${NEPI_BASE}/
+    sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
 
 
     # Set up the NEPI sys env bash file
@@ -174,7 +176,17 @@ if [ true ]; then
     # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
     echo " "
     echo "Updating system hostname"
-    sudo ln -sf ${NEPI_ETC}/hostname/hostsname /etc/hostname
+
+    if [! -d /etc/hosts ]; then
+        sudo rm /etc/hosts
+    fi
+    sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
+
+    if [! -d /etc/hostname ]; then
+        sudo rm /etc/hostname
+    fi
+    sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
+
 
     ##############################################
     # Update the Desktop background image
@@ -185,7 +197,8 @@ if [ true ]; then
     # Update the login screen background image - handled by a sys. config file
     # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
     #echo "Updating login screen background image"
-    #sudo ln -sf ${NEPI_ETC}/usr/share/gnome-shell/theme/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
+    #sudo cp ${NEPI_CONFIG}/usr/share/gnome-shell/theme/ubuntu.css ${NEPI_ETC}/ubuntu.css
+    #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
 
 
     #########################################
@@ -195,42 +208,43 @@ if [ true ]; then
 
     sudo chmod +x ${NEPI_ETC}/services/*
 
-    sudo ln -sf ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
-     sudo systemctl enable nepi_engine
-    sudo ln -sf ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
+    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
+    sudo systemctl enable nepi_engine
+    sudo cp ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
     sudo systemctl enable nepi_rui
 
     echo "NEPI Services Setup Complete"
 
+    
     ###########################################
     # Set up SSH
     echo " "
     echo "Configuring SSH Keys"
 
-
-
     # And link default public key - Make sure all ownership and permissions are as required by SSH
-    mkdir -p ${NEPI_HOME}/.ssh
-    chmod 0700 /home/nepi/.ssh
+    sudo chown ${USER}:${USER} ${NEPI_ETC}/ssh/authorized_keys
+    sudo chmod 0600 ${NEPI_ETC}/authorized_keys
 
     sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chown ${USER}:${USER} ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
 
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh
-    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh/authorized_keys
-    sudo chmod 0600 ${NEPI_HOME}/.authorized_keys
-    
+    mkdir -p /home/nepi/.ssh
+    sudo chown ${USER}:${USER} /home/nepi/.ssh
+    chmod 0700 /home/nepi/.ssh
+
+    if [! -d /etc/ssh/sshd_config ]; then
+        sudo rm -r /etc/ssh/sshd_config
+    fi
     sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
-
-
-    ################################
-    # Set up Chrony
-    sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
-
 
 
     ###########################################
     # Set up Samba
     echo "Configuring nepi storage Samba share drive"
+    if [! -d /etc/samba/smb.conf ]; then
+        sudo rm -r /etc/samba/smb.conf
+    fi
     sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
     printf "nepi\nepi\n" | sudo smbpasswd -a nepi
 
@@ -238,7 +252,7 @@ if [ true ]; then
     #sudo chown -R nepi:sambashare ${NEPI_STORAGE}
     #sudo chmod -R 0775 ${NEPI_STORAGE}
 
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+    sudo chown -R ${USER}:${USER} ${NEPI_STORAGE}
     sudo chown nepi:sambashare ${NEPI_STORAGE}
     sudo chmod -R 0775 ${NEPI_STORAGE}
 
@@ -254,18 +268,24 @@ if [ true ]; then
 
 
 
+
     #############################################
     # Setting up Baumer GenTL Producers (Genicam support)
     echo " "
     echo "Setting up Baumer GAPI SDK GenTL Producers"
-    # Set up the shared object links in case they werent copied properly when this repo was moved to target
-    sudo ln -sf ${NEPI_ETC}/opt/baumer /opt/baumer
-    NEPI_BAUMER_PATH=${NEPI_ETC}/opt/baumer/gentl_producers
-    sudo ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14
-    sudo ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_usb.cti
-    sudo ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14
-    sudo ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
+    # Set up the shared object links in case they weren't copied properly when this repo was moved to target
+    NEPI_BAUMER_PATH=${NEPI_CONFIG}/opt/baumer/gentl_producers
+    ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14
+    ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_usb.cti
+    ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14
+    ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
 
+
+    if [! -d /opt/baumer ]; then
+        sudo rm -r /opt/baumer
+    fi
+    sudo ln -sf ${NEPI_ETC}opt/baumer /opt/baumer
+    sudo chown ${USER}:${USER} /opt/baumer
 
 
 
@@ -274,15 +294,30 @@ if [ true ]; then
 
 
     # Set up static IP addr.
-
+    if [! -d /etc/network/interfaces.d ]; then
+        sudo rm -r /etc/network/interfaces.d
+    fi
     sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
+
+    if [! -d /etc/network/interfaces ]; then
+        sudo rm /etc/network/interfaces
+    fi
     sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
 
     # Set up DHCP
-    sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+    if [! -d /etc/dhcp/dhclient.conf ]; then
+        sudo rm /etc/dhcp/dhclient.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/dhclient.conf /etc/dhcp/dhclient.conf
     sudo dhclient
 
+    # Set up WIFI
+    if [! -d /etc/wpa_supplicant/wpa_supplicant.conf ]; then
+        sudo rm /etc/wpa_supplicant/wpa_supplicant.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+    sudo dhclient
 
 
 
@@ -301,17 +336,21 @@ if [ true ]; then
 
     ################################
     # Update fstab
+    sudo ln -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
+    if [! -d /etc/fstab ]; then
+        sudo rm /etc/fstab
+    fi
     sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
-    sudo cp -p ${NEPI_ETC}/fstabs/fstab ${NEPI_ETC}/fstabs/fstab.bak
-    sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
-    sudo ln -sf ${NEPI_ETC}/fstabs/fstab.bak /etc/fstab.bak
+    sudo cp ${NEPI_ETC}/fstabs/fstab.bak /etc/fstab.bak
     
     #########################################
     # Setup system scripts
     echo ""
     echo "Setting up NEPI Supervisord and Scripts"
     
-    
+    if [! -d /etc/supervisor/conf.d/supervisord_nepi.conf ]; then
+        sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+    fi
     sudo ln -sf ${NEPI_ETC}/supervisord/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
 
     sudo chmod +x ${NEPI_ETC}/scripts/*
@@ -335,7 +374,6 @@ if [ true ]; then
 
 
     echo "NEPI Script Setup Complete"
-
 
 
 fi

@@ -875,9 +875,9 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
     sudo chmod +x ${NEPI_ETC}/services/*
 
-    sudo ln -sf ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
+    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
     sudo systemctl enable nepi_engine
-    sudo ln -sf ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
+    sudo cp ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
     sudo systemctl enable nepi_rui
 
     echo "NEPI Services Setup Complete"
