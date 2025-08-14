@@ -43,7 +43,7 @@ CURRENT_FOLDER=$PWD
 # NEPI File System 
 NEPI_HOME=/home/${NEPI_USER}
 NEPI_BASE=/opt/nepi
-NEPI_RUI=${NEPI_BASE}/rui
+NEPI_RUI=${NEPI_BASE}/nepi_rui
 NEPI_ENGINE=${NEPI_BASE}/engine
 NEPI_ETC=${NEPI_BASE}/etc
 
@@ -789,13 +789,7 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo " "
     echo "NEPI Bash Aliases Setup Complete"
     echo " "
-    # Source nepi aliases before exit
-    echo " "
-    echo "Sourcing bashrc with new nepi_aliases"
-    sleep 1 & source $BASHRC
-    wait
-    # Print out nepi aliases
-    . ${NEPI_ALIASES} && nepi
+
 
 
     ###################################
@@ -827,8 +821,6 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
     sudo chown -R ${USER}:${USER} $NEPI_ETC
 
-    sudo cp -R ${NEPI_ETC}/etc ${NEPI_BASE}/
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
 
 
     # Set up the NEPI sys env bash file
@@ -844,12 +836,12 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo " "
     echo "Updating system hostname"
 
-    if [! -d /etc/hosts ]; then
+    if [ ! -d /etc/hosts ]; then
         sudo rm /etc/hosts
     fi
     sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
 
-    if [! -d /etc/hostname ]; then
+    if [ ! -d /etc/hostname ]; then
         sudo rm /etc/hostname
     fi
     sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
@@ -1008,7 +1000,7 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
         sudo rm /etc/fstab
     fi
     sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
-    sudo cp ${NEPI_ETC}/fstabs/fstab.bak /etc/fstab.bak
+    sudo cp ${NEPI_ETC}/fstabs/fstab /etc/fstab.bak
     
     #########################################
     # Setup system scripts
@@ -1042,12 +1034,17 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
     echo "NEPI Script Setup Complete"
 
-
+    # Source nepi aliases before exit
+    echo " "
+    echo "Sourcing bashrc with new nepi_aliases"
+    sleep 1 & source $BASHRC
+    wait
+    # Print out nepi aliases
+    . ${NEPI_ALIASES} && nepi
 
 
 
 fi
-
 
 
 

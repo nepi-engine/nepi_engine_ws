@@ -105,14 +105,15 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo ""
     echo "Installing NEPI aliases file ${NEPI_ALIASES} "
     cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES
-    sudo chown -R ${USER}:${USER} $NEPI_ALIASES
+    sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES
 
     echo "Updating bashrc file"
     if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
         echo "Done"
     else
+        echo " "
         echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-        echo "if [ -f ~/.nepi_system_config ]" | sudo tee -a $BASHRC
+        echo "if [ -f ~/.nepi_system_config ]; then" | sudo tee -a $BASHRC
         echo "    . ~/.nepi_system_config" | sudo tee -a $BASHRC
         echo "fi" | sudo tee -a $BASHRC
         echo "Done"
@@ -122,13 +123,7 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo " "
     echo "NEPI Bash Aliases Setup Complete"
     echo " "
-    # Source nepi aliases before exit
-    echo " "
-    echo "Sourcing bashrc with new nepi_aliases"
-    sleep 1 & source $BASHRC
-    wait
-    # Print out nepi aliases
-    . ${NEPI_ALIASES} && nepi
+
 
 
     ###################################
@@ -158,10 +153,8 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo ""
     echo "Populating System Folders"
     cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
-    sudo chown -R ${USER}:${USER} $NEPI_ETC
+    sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 
-    sudo cp -R ${NEPI_ETC}/etc ${NEPI_BASE}/
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
 
 
     # Set up the NEPI sys env bash file
@@ -177,12 +170,12 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     echo " "
     echo "Updating system hostname"
 
-    if [! -d /etc/hosts ]; then
+    if [ ! -f /etc/hosts ]; then
         sudo rm /etc/hosts
     fi
     sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
 
-    if [! -d /etc/hostname ]; then
+    if [ ! -f "/etc/hostname" ]; then
         sudo rm /etc/hostname
     fi
     sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
@@ -217,23 +210,30 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
     
     ###########################################
+    # Set up Chrony
+    echo " "
+    echo "Configuring Chrony"
+    sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
+
+    ###########################################
     # Set up SSH
     echo " "
     echo "Configuring SSH Keys"
 
     # And link default public key - Make sure all ownership and permissions are as required by SSH
-    sudo chown ${USER}:${USER} ${NEPI_ETC}/ssh/authorized_keys
-    sudo chmod 0600 ${NEPI_ETC}/authorized_keys
+    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_ETC}/ssh/authorized_keys
+    sudo chmod 0600 ${NEPI_ETC}/ssh/authorized_keys
+
+
 
     sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
-    sudo chown ${USER}:${USER} ${NEPI_HOME}/.ssh/authorized_keys
+    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh/authorized_keys
     sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
 
-    mkdir -p /home/nepi/.ssh
-    sudo chown ${USER}:${USER} /home/nepi/.ssh
-    chmod 0700 /home/nepi/.ssh
+    sudo chmod 0700 ${NEPI_HOME}.ssh
+    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}.ssh
 
-    if [! -d /etc/ssh/sshd_config ]; then
+    if [ ! -f "/etc/ssh/sshd_config" ]; then
         sudo rm -r /etc/ssh/sshd_config
     fi
     sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
@@ -242,19 +242,19 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     ###########################################
     # Set up Samba
     echo "Configuring nepi storage Samba share drive"
-    if [! -d /etc/samba/smb.conf ]; then
+    if [ ! -f "/etc/samba/smb.conf" ]; then
         sudo rm -r /etc/samba/smb.conf
     fi
     sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
-    printf "nepi\nepi\n" | sudo smbpasswd -a nepi
+    #printf "nepi\nepi\n" | sudo smbpasswd -a nepi
 
     # Create the mountpoint for samba shares (now that sambashare group exists)
     #sudo chown -R nepi:sambashare ${NEPI_STORAGE}
     #sudo chmod -R 0775 ${NEPI_STORAGE}
 
-    sudo chown -R ${USER}:${USER} ${NEPI_STORAGE}
-    sudo chown nepi:sambashare ${NEPI_STORAGE}
-    sudo chmod -R 0775 ${NEPI_STORAGE}
+    #sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+    #sudo chown nepi:sambashare ${NEPI_STORAGE}
+    #sudo chmod -R 0775 ${NEPI_STORAGE}
 
 
     #############################################
@@ -281,39 +281,37 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
 
 
-    if [! -d /opt/baumer ]; then
+    if [ ! -f "/opt/baumer" ]; then
         sudo rm -r /opt/baumer
     fi
     sudo ln -sf ${NEPI_ETC}opt/baumer /opt/baumer
-    sudo chown ${USER}:${USER} /opt/baumer
-
-
+    sudo chown ${NEPI_USER}:${NEPI_USER} /opt/baumer
 
     # Disable apport to avoid crash reports on a display
     sudo systemctl disable apport
 
 
     # Set up static IP addr.
-    if [! -d /etc/network/interfaces.d ]; then
+    if [ ! -f "/etc/network/interfaces.d" ]; then
         sudo rm -r /etc/network/interfaces.d
     fi
     sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
 
-    if [! -d /etc/network/interfaces ]; then
+    if [ ! -f "/etc/network/interfaces" ]; then
         sudo rm /etc/network/interfaces
     fi
     sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
 
     # Set up DHCP
-    if [! -d /etc/dhcp/dhclient.conf ]; then
+    if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
         sudo rm /etc/dhcp/dhclient.conf
     fi
     sudo ln -sf ${NEPI_ETC}/dhclient.conf /etc/dhcp/dhclient.conf
     sudo dhclient
 
     # Set up WIFI
-    if [! -d /etc/wpa_supplicant/wpa_supplicant.conf ]; then
+    if [ ! -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
         sudo rm /etc/wpa_supplicant/wpa_supplicant.conf
     fi
     sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
@@ -337,18 +335,18 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
     ################################
     # Update fstab
     sudo ln -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
-    if [! -d /etc/fstab ]; then
+    if [ ! -f "/etc/fstab" ]; then
         sudo rm /etc/fstab
     fi
     sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
-    sudo cp ${NEPI_ETC}/fstabs/fstab.bak /etc/fstab.bak
+    sudo cp ${NEPI_ETC}/fstabs/fstab /etc/fstab.bak
     
     #########################################
     # Setup system scripts
     echo ""
     echo "Setting up NEPI Supervisord and Scripts"
     
-    if [! -d /etc/supervisor/conf.d/supervisord_nepi.conf ]; then
+    if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
         sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
     fi
     sudo ln -sf ${NEPI_ETC}/supervisord/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
@@ -364,16 +362,25 @@ if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
 
     #########
     #- add Gieode databases to FileSystem
-    :'
-    egm2008-2_5.pgm  egm2008-2_5.pgm.aux.xml  egm2008-2_5.wld  egm96-15.pgm  egm96-15.pgm.aux.xml  egm96-15.wld
-    from
-    https://www.3dflow.net/geoids/
-    to
-    /opt/nepi/databases/geoids
-    :'
+    
+    #egm2008-2_5.pgm  egm2008-2_5.pgm.aux.xml  egm2008-2_5.wld  egm96-15.pgm  egm96-15.pgm.aux.xml  egm96-15.wld
+    #from
+    #https://www.3dflow.net/geoids/
+    #to
+    #/opt/nepi/databases/geoids
+    #:'
 
 
     echo "NEPI Script Setup Complete"
+
+    # Source nepi aliases before exit
+    echo " "
+    echo "Sourcing bashrc with new nepi_aliases"
+    sleep 1 & source $BASHRC
+    wait
+    # Print out nepi aliases
+    . ${NEPI_ALIASES} && nepi
+
 
 
 fi

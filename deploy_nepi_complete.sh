@@ -26,7 +26,7 @@
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
 #######################################################################################################
-DEPLOY_3RD_PARTY=true
+DEPLOY_3RD_PARTY=false
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"

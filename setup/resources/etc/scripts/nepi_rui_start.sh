@@ -9,6 +9,6 @@
 ##
 
 echo "Starting NEPI RUI"
-source /opt/nepi/rui/etc/start_rui.sh
+source /opt/nepi/nepi_rui/etc/start_rui.sh
 
 

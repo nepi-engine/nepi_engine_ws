@@ -5,7 +5,7 @@ After=nepi_engine.service
 [Service]
 Type=simple
 User=root
-ExecStart=/opt/nepi/rui/etc/start_rui.sh
+ExecStart=/opt/nepi/nepi_rui/etc/start_rui.sh
 Restart=always
 
 [Install]

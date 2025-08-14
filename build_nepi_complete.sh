@@ -67,7 +67,7 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 #####################################
 ######       NEPI RUI Files          #####\
 # RUI deploy
-NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/rui"
+NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/nepi_rui"
 sudo cp -R ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished *** \n"
 
@@ -101,12 +101,12 @@ fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
   printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-  if ! [ -f /opt/nepi/rui/venv/bin/activate ]; then
+  if ! [ -f /opt/nepi/nepi_rui/venv/bin/activate ]; then
     printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
     printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
   else
-    cd /opt/nepi/rui
-    source ~/.nvm/nvm.sh
+    cd /opt/nepi/nepi_rui
+    source /home/nepi/.nvm/nvm.sh
     source ./devenv.sh
     cd src/rui_webserver/rui-app/
     npm run build

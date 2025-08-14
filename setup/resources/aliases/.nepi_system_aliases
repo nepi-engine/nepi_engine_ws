@@ -123,17 +123,17 @@ alias drive="cd $DRIVE"
 # NEPI build shortcuts
 alias nepibld="
 cd $BUILD
-sudo ./build_nepi_complete.sh"
+./build_nepi_complete.sh"
 
 # NEPI build shortcuts
 alias codebld="
 cd $BUILD
-sudo ./build_nepi_code.sh"
+./build_nepi_code.sh"
 
 # NEPI build shortcuts
 alias ruibld="
 cd $BUILD
-sudo ./build_nepi_rui.sh"
+./build_nepi_rui.sh"
 
 # NEPI stop and start shortcuts
 alias nepistop="sudo systemctl stop nepi_engine"
@@ -190,8 +190,8 @@ function nepi(){
     managers = /opt/nepi/engine/lib/nepi_managers
     nfi = /mnt/nepi_storage/nepi_full_img
     nfia = /mnt/nepi_storage/nepi_full_img_archive
-    rui = /opt/nepi/rui/src/rui_webserver/rui-app/src
-    rui_env = /opt/nepi/rui
+    rui = /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
+    rui_env = /opt/nepi/nepi_rui
     sdk = /opt/nepi/engine/lib/python3/dist-packages/nepi_sdk
     share = /opt/nepi/engine/share
     src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
