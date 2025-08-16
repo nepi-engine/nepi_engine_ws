@@ -31,6 +31,34 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+# Set NEPI folder variables if not configured by nepi aliases bash script
+if [[ ! -v NEPI_USER ]]; then
+    NEPI_USER=nepi
+fi
+if [[ ! -v NEPI_HOME ]]; then
+    NEPI_HOME=/home/${NEPI_USER}
+fi
+if [[ ! -v NEPI_DOCKER ]]; then
+    NEPI_DOCKER=/mnt/nepi_docker
+fi
+if [[ ! -v NEPI_STORAGE ]]; then
+   NEPI_STORAGE=/mnt/nepi_storage
+fi
+if [[ ! -v NEPI_CONFIG ]]; then
+    NEPI_CONFIG=/mnt/nepi_config
+fi
+if [[ ! -v NEPI_BASE ]]; then
+    NEPI_BASE=/opt/nepi
+fi
+if [[ ! -v NEPI_RUI ]]; then
+    NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_ENGINE ]]; then
+    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
+fi
+if [[ ! -v NEPI_ETC ]]; then
+    NEPI_ETC=${NEPI_BASE}/etc
+fi
 
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 

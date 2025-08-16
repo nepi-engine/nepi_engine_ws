@@ -7,7 +7,7 @@ devel_layout: linked
 devel_space: devel_release
 extend_path: null
 install: true
-install_space: /opt/nepi/engine
+install_space: /opt/nepi/nepi_engine
 isolate_install: false
 jobs_args: []
 log_space: logs_release

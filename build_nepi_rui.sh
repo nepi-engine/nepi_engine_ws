@@ -25,7 +25,34 @@
 # run these steps in parallel in different terminals. Similarly, once everything has been built
 # once for a system, it will be more efficient to build individual components that are modified.
 
-
+# Set NEPI folder variables if not configured by nepi aliases bash script
+if [[ ! -v NEPI_USER ]]; then
+    NEPI_USER=nepi
+fi
+if [[ ! -v NEPI_HOME ]]; then
+    NEPI_HOME=/home/${NEPI_USER}
+fi
+if [[ ! -v NEPI_DOCKER ]]; then
+    NEPI_DOCKER=/mnt/nepi_docker
+fi
+if [[ ! -v NEPI_STORAGE ]]; then
+   NEPI_STORAGE=/mnt/nepi_storage
+fi
+if [[ ! -v NEPI_CONFIG ]]; then
+    NEPI_CONFIG=/mnt/nepi_config
+fi
+if [[ ! -v NEPI_BASE ]]; then
+    NEPI_BASE=/opt/nepi
+fi
+if [[ ! -v NEPI_RUI ]]; then
+    NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_ENGINE ]]; then
+    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
+fi
+if [[ ! -v NEPI_ETC ]]; then
+    NEPI_ETC=${NEPI_BASE}/etc
+fi
 
 # RUI build
 
@@ -36,18 +63,18 @@ CLEAR='\033[0m'
 
 
 # RUI deploy
-NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/nepi_rui"
-sudo cp -R ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
+NEPI_RUI_TARGET_SRC_DIR=$NEPI_RUI
+sudo cp -R -p ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 ######       NEPI RUI           #####
 printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-if ! [ -f /opt/nepi/nepi_rui/venv/bin/activate ]; then
+if ! [ -f ${NEPI_RUI}/venv/bin/activate ]; then
   printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
   printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
 else
-  cd /opt/nepi/nepi_rui
-  source /home/nepi/.nvm/nvm.sh
+  cd $NEPI_RUI
+  source ${NEPI_HOME}/.nvm/nvm.sh
   source ./devenv.sh
   cd src/rui_webserver/rui-app/
   npm run build

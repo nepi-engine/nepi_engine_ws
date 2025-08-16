@@ -28,6 +28,39 @@
 #######################################################################################################
 DEPLOY_3RD_PARTY=false
 
+
+# Set NEPI folder variables if not configured by nepi aliases bash script
+if [[ ! -v NEPI_USER ]]; then
+    NEPI_USER=nepi
+fi
+if [[ ! -v NEPI_HOME ]]; then
+    NEPI_HOME=/home/${NEPI_USER}
+fi
+if [[ ! -v NEPI_DOCKER ]]; then
+    NEPI_DOCKER=/mnt/nepi_docker
+fi
+if [[ ! -v NEPI_STORAGE ]]; then
+   NEPI_STORAGE=/mnt/nepi_storage
+fi
+if [[ ! -v NEPI_CONFIG ]]; then
+    NEPI_CONFIG=/mnt/nepi_config
+fi
+if [[ ! -v NEPI_BASE ]]; then
+    NEPI_BASE=/opt/nepi
+fi
+if [[ ! -v NEPI_RUI ]]; then
+    NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_ENGINE ]]; then
+    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
+fi
+if [[ ! -v NEPI_ETC ]]; then
+    NEPI_ETC=${NEPI_BASE}/etc
+fi
+
+
+
+
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
   exit 1
@@ -54,7 +87,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     exit 1
   fi
   if [[ -z "${NEPI_TARGET_SRC_DIR}" ]]; then
-    NEPI_TARGET_SRC_DIR="/mnt/nepi_storage/nepi_src"
+    NEPI_TARGET_SRC_DIR="$NEPI_STORAGE/nepi_src"
     echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
   fi
 
@@ -72,7 +105,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   CATKIN=".catkin_tools"
   echo "Syncing repo ${CATKIN}"
   # Push everything but the EXCLUDES to the specified source folder on the target
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:/opt/nepi/engine/
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_ENGINE}
 
 
   echo "Syncing nepi workspace"

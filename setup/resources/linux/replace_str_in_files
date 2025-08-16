@@ -7,6 +7,6 @@ find . -type f -exec perl -i -pe 's|str2replace|replace_str|g' {} +
 
 Example
 
-find . -type f -exec perl -i -pe 's|nepi/rui|nepi/rui|g' {} +
+find . -type f -exec perl -i -pe 's|nepi/engine|nepi/nepi_engine|g' {} +
 
 

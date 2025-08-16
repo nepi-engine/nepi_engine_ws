@@ -56,7 +56,7 @@ sudo chown -R ${USER}:${USER} $NEPI_SSH_DIR
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
-NEPI_ALIASES=~/.nepi_aliases
+NEPI_ALIASES=~/.nepi_pc_aliases
 BASHRC=~/.bashrc
 echo "Installing NEPI aliases file ${NEPI_ALIASES} "
 cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES
@@ -66,8 +66,9 @@ echo "Updating bashrc file"
 if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
     echo "Done"
 else
+    echo " " | sudo tee -a $BASHRC
     echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-    echo "if [ -f ~/.nepi_aliases ]; then" | sudo tee -a $BASHRC
+    echo "if [ -f ~/.nepi_pc_aliases ]; then" | sudo tee -a $BASHRC
     echo "    . ~/.nepi_aliases" | sudo tee -a $BASHRC
     echo "fi" | sudo tee -a $BASHRC
     echo "Done"

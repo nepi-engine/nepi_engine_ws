@@ -30,6 +30,37 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+
+# Set NEPI folder variables if not configured by nepi aliases bash script
+if [[ ! -v NEPI_USER ]]; then
+    NEPI_USER=nepi
+fi
+if [[ ! -v NEPI_HOME ]]; then
+    NEPI_HOME=/home/${NEPI_USER}
+fi
+if [[ ! -v NEPI_DOCKER ]]; then
+    NEPI_DOCKER=/mnt/nepi_docker
+fi
+if [[ ! -v NEPI_STORAGE ]]; then
+   NEPI_STORAGE=/mnt/nepi_storage
+fi
+if [[ ! -v NEPI_CONFIG ]]; then
+    NEPI_CONFIG=/mnt/nepi_config
+fi
+if [[ ! -v NEPI_BASE ]]; then
+    NEPI_BASE=/opt/nepi
+fi
+if [[ ! -v NEPI_RUI ]]; then
+    NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_ENGINE ]]; then
+    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
+fi
+if [[ ! -v NEPI_ETC ]]; then
+    NEPI_ETC=${NEPI_BASE}/etc
+fi
+
+
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 
 
@@ -67,16 +98,16 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 #####################################
 ######       NEPI RUI Files          #####\
 # RUI deploy
-NEPI_RUI_TARGET_SRC_DIR="/opt/nepi/nepi_rui"
-sudo cp -R ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
-printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished *** \n"
+NEPI_RUI_TARGET_SRC_DIR=$NEPI_RUI
+sudo cp -R -p ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
+printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 #####################################
 ######       NEPI Auto Scripts           #####
 # Auto Scripts deploy
-printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI config folder /opt/nepi/config/auto_scripts ***${CLEAR}\n"
-NEPI_AUTO_TARGET_USER_DIR="/mnt/nepi_storage/automation_scripts"
-sudo cp -R ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
+printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI Storage ***${CLEAR}\n"
+NEPI_AUTO_TARGET_USER_DIR="${NEPI_STORAGE}/automation_scripts"
+sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
 printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 
 
@@ -100,13 +131,16 @@ fi
 # RUI build
 
 if [ "${DO_RUI}" -eq "1" ]; then 
+
+
+  ######       NEPI RUI           #####
   printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-  if ! [ -f /opt/nepi/nepi_rui/venv/bin/activate ]; then
-    printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
-    printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
-  else
-    cd /opt/nepi/nepi_rui
-    source /home/nepi/.nvm/nvm.sh
+if ! [ -f ${NEPI_RUI}/venv/bin/activate ]; then
+  printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
+  printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
+else
+    cd $NEPI_RUI
+    source ${NEPI_HOME}/.nvm/nvm.sh
     source ./devenv.sh
     cd src/rui_webserver/rui-app/
     npm run build
@@ -114,6 +148,7 @@ if [ "${DO_RUI}" -eq "1" ]; then
     cd ${NEPI_ENGINE_SRC_ROOTDIR}
     printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
   fi
+
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"
 fi

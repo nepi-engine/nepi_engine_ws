@@ -19,6 +19,36 @@
 
 # Note, this script deploys the Auto Scripts to on host system
 
+
+# Set NEPI folder variables if not configured by nepi aliases bash script
+if [[ ! -v NEPI_USER ]]; then
+    NEPI_USER=nepi
+fi
+if [[ ! -v NEPI_HOME ]]; then
+    NEPI_HOME=/home/${NEPI_USER}
+fi
+if [[ ! -v NEPI_DOCKER ]]; then
+    NEPI_DOCKER=/mnt/nepi_docker
+fi
+if [[ ! -v NEPI_STORAGE ]]; then
+   NEPI_STORAGE=/mnt/nepi_storage
+fi
+if [[ ! -v NEPI_CONFIG ]]; then
+    NEPI_CONFIG=/mnt/nepi_config
+fi
+if [[ ! -v NEPI_BASE ]]; then
+    NEPI_BASE=/opt/nepi
+fi
+if [[ ! -v NEPI_RUI ]]; then
+    NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_ENGINE ]]; then
+    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
+fi
+if [[ ! -v NEPI_ETC ]]; then
+    NEPI_ETC=${NEPI_BASE}/etc
+fi
+
 # Auto Scripts build
 
 
@@ -30,12 +60,8 @@ CLEAR='\033[0m'
 
 #####################################
 ######       NEPI Auto Scripts           #####
-# Auto Scripts deploy
-printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI config folder /opt/nepi/config/auto_scripts ***${CLEAR}\n"
-NEPI_AUTO_TARGET_SRC_DIR="/opt/nepi/config/auto_scripts"
-sudo cp -R ./src/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_SRC_DIR}
-printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI user folder /mnt/nepi_storage/automation_scripts ***${CLEAR}\n"
-NEPI_AUTO_TARGET_USER_DIR="/mnt/nepi_storage/automation_scripts"
+printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI Storage ***${CLEAR}\n"
+NEPI_AUTO_TARGET_USER_DIR="${NEPI_STORAGE}/automation_scripts"
 sudo cp -R ./src/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
 printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 

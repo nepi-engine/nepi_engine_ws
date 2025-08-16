@@ -44,7 +44,7 @@ CURRENT_FOLDER=$PWD
 NEPI_HOME=/home/${NEPI_USER}
 NEPI_BASE=/opt/nepi
 NEPI_RUI=${NEPI_BASE}/nepi_rui
-NEPI_ENGINE=${NEPI_BASE}/engine
+NEPI_ENGINE=${NEPI_BASE}/nepi_engine
 NEPI_ETC=${NEPI_BASE}/etc
 
 SYSTEMD_SERVICE_PATH=/etc/systemd/system
@@ -85,17 +85,17 @@ STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
 ##############
 # Requirments
 
-INTERNET_REQ=false
-PARTS_REQ=false
-DOCKER_REQ=false
+INTERNET_REQ=0
+PARTS_REQ=0
+DOCKER_REQ=0
 
 ###############################
 ## NEPI Tool Options
 ###############################
-NEPI_STORAGE_TOOLS=false
-NEPI_DOCKER_TOOLS=false
-NEPI_SOFTWARE_TOOLS=false
-NEPI_CONFIG_Tools=false
+NEPI_STORAGE_TOOLS=0
+NEPI_DOCKER_TOOLS=0
+NEPI_SOFTWARE_TOOLS=0
+NEPI_CONFIG_Tools=0
 
 OP_SELECTION='NEPI Config Tools'
 
@@ -104,10 +104,10 @@ echo ""
 echo "Select NEPI Tools option:"
 select yn in 'NEPI Drive Tools' 'NEPI Docker Tools' 'NEPI Software Tools' 'NEPI Config Tools'; do
     case $yn in
-        NEPI Drive Tools )  NEPI_STORAGE_TOOLS=true;;
-        NEPI Docker Tools ) INTERNET_REQ=true; PARTS_REQ=true; NEPI_DOCKER_TOOLS=true;;
-        NEPI Software Tools ) INTERNET_REQ=true; PARTS_REQ=true; NEPI_SOFTWARE_TOOLS=true;;
-        NEPI Config Tools ) NEPI_CONFIG_Tools=true;;
+        NEPI Drive Tools )  NEPI_STORAGE_TOOLS=1;;
+        NEPI Docker Tools ) INTERNET_REQ=1; PARTS_REQ=1; NEPI_DOCKER_TOOLS=1;;
+        NEPI Software Tools ) INTERNET_REQ=1; PARTS_REQ=1; NEPI_SOFTWARE_TOOLS=1;;
+        NEPI Config Tools ) NEPI_CONFIG_Tools=1;;
     esac
     OP_SELECTION=${yn}
 done
@@ -132,19 +132,19 @@ done
 
 ###################
 ## Check Internet
-if [ $INTERNET_REQ ]; then
+if [ "$INTERNET_REQ" -eq 1 ]; then
     echo "Checking for rerquired internet connection"
-    check=false
-    while [$check == false]
+    check=0
+    while [$check == 0]
     do
         if ! ping -c 2 google.com; then
             echo "No Internet Connection"
-            check=false
+            check=0
         else
             echo "Internet Connected"
-            check=true
+            check=1
         fi
-        if [ $check == false]; then
+        if [ "$check" -eq 0]; then
             echo "Connect to internet and Try Again or Quit Setup"
             select yn in "Yes" "No"; do
                 case $yn in
@@ -168,37 +168,37 @@ DOCKER_MIN_GB=100
 STORAGE_MIN_GB=150
 CONFIG_MIN_GB=1
 
-if [ $PARTS_REQ ]; then
+if [ "$PARTS_REQ" -eq 1 ]; then
     echo "Checking for rerquired NEPI SSD Folders"
-    check=false
-    while [$check == false]
+    check=0
+    while [$check == 0]
     do
-        check = false
+        check = 0
         if [! -d ${NEPI_DOCKER} ]; then
             check = 
             echo "Missing required folder: ${NEPI_DOCKER} with min size ${DOCKER_MIN_GB} GB"
-            check=false
+            check=0
         else
-            check=true
+            check=1
         fi
 
         if [! -d ${NEPI_STORAGE} ]; then
             check = 
             echo "Missing required folder: ${NEPI_STORAGE} with min size ${STORAGE_MIN_GB} GB"
-            check=false
+            check=0
         else
-            check=true
+            check=1
         fi
 
         if [! -d ${NEPI_CONFIG} ]; then
             check = 
             echo "Missing required folder: ${NEPI_CONFIG} with min size ${STORAGE_MIN_GB} GB"
-            check=false
+            check=0
         else
-            check=true
+            check=1
         fi
 
-        if [ $check == false]; then
+        if [ "$check" -eq 0]; then
             echo "Please create missing nepi folders with required minumum space"
             select yn in "Yes" "No"; do
                 case $yn in
@@ -211,17 +211,17 @@ if [ $PARTS_REQ ]; then
 
 ###################
 ## Check HARDWARE
-if [ $DOCKER_REQ ]; then
+if [ "$DOCKER_REQ" -eq 1 ]; then
     echo "Checking for rerquired internet connection"
-    check=false
+    check=0
     if [ -f /.dockerenv ]; then
         echo "Running in Docker"
-        check=true
+        check=1
     else
         echo "Internet Connected"
-        check=true
+        check=1
     fi
-    if [ $check == false]; then
+    if [ "$check" -eq 0]; then
         echo "Connect to internet and Try Again or Quit Setup"
         select yn in "Yes" "No"; do
             case $yn in
@@ -239,20 +239,20 @@ if [ $DOCKER_REQ ]; then
 ## Docker Tools
 #################################
 
-SETUP_DOCKER=false
-BUILD_CONTAINER=false
+SETUP_DOCKER=0
+BUILD_CONTAINER=0
 
 DK_SELECTION='Build New Container'
 
-if [ $NEPI_DOCKER_TOOLS]; then
+if [ "$NEPI_DOCKER_TOOLS" -eq 1 ]; then
 
     echo ""
     echo ""
     echo "Select the file system task, or select DO ALL to run all processes:"
     select yn in 'Setup Docker Env' 'Build New Container' ; do
         case $yn in            
-            Setup Docker Env ) SETUP_DOCKER=true;;
-            Build New Container ) BUILD_CONTAINER=true;;
+            Setup Docker Env ) SETUP_DOCKER=1;;
+            Build New Container ) BUILD_CONTAINER=1;;
         esac
         DK_SELECTION=${yn}
     done
@@ -277,30 +277,28 @@ fi
 #################################
 ## NEPI_SOFTWARE_SETUP Options
 #################################
-USER_ENV=false
-SOFTWARE_ENV=false
-CUDA_SOFTWARE=false
-NEPI_ENV=false
-NEPI_SOFTWARE=false
-NEPI_STORAGE=false
-SYS_DO_ALL=false
+SOFTWARE_ENV=0
+CUDA_SOFTWARE=0
+NEPI_ENV=0
+NEPI_SOFTWARE=0
+NEPI_STORAGE=0
+SYS_DO_ALL=0
 
 SW_SELECTION='DO ALL'
 
 
-if [ $NEPI_SOFTWARE_TOOLS]; then
+if [ "$NEPI_SOFTWARE_TOOLS" -eq 1 ]; then
 
     echo ""
     echo ""
     echo "Select the file system task, or select DO ALL to run all processes:"
-    select yn in 'User Environment'  'Software Environment' 'CUDA Software' 'NEPI Environment' 'NEPI Software' 'DO ALL'; do
+    select yn in 'Software Environment' 'CUDA Software' 'NEPI Environment' 'NEPI Software' 'DO ALL'; do
         case $yn in
-            User Environment ) USER_ENV=true;;
-            Software Environment ) SOFTWARE_ENV=true;;
-            NEPI Environment ) NEPI_ENV=true;;
-            NEPI Software ) NEPI_SOFTWARE=true;;
-            NEPI Storage ) NEPI_STORAGE=true;;
-            DO ALL )  SYS_DO_ALL=true;;
+            Software Environment ) SOFTWARE_ENV=1;;
+            NEPI Environment ) NEPI_ENV=1;;
+            NEPI Software ) NEPI_SOFTWARE=1;;
+            NEPI Storage ) NEPI_STORAGE=1;;
+            DO ALL )  SYS_DO_ALL=1;;
         esac
         SW_SELECTION=${yn}
     done
@@ -317,56 +315,12 @@ if [ $NEPI_SOFTWARE_TOOLS]; then
     done
 fi
 
-##################
-# Setup NEPI User
-
-# Add nepi user and group if does not exist
-if [ $USER_ENV == true -o $SYS_DO_ALL == true]; then
-    echo ""
-    echo "Setting up nepi user account"
-    group="nepi"
-    user="nepi"
-    if grep -q $group /etc/group;  then
-          echo "group exists"
-    else
-          echo "group $group does not exist, creating"
-          addgroup nepi
-    fi
-
-    if id -u "$user" >/dev/null 2>&1; then
-      echo "User $user exists."
-    else
-      echo "User $user does not exist, creating"
-      adduser --ingroup nepi nepi
-      echo "nepi ALL=(ALL:ALL) ALL" >> /etc/sudoers
-
-      su nepi
-      passwd
-      nepi
-      nepi
-    fi
-
-    # Add nepi user to dialout group to allow non-sudo serial connections
-    sudo adduser nepi dialout
-
-    #or //https://arduino.stackexchange.com/questions/74714/arduino-dev-ttyusb0-permission-denied-even-when-user-added-to-group-dialout-o
-    #Add your standard user to the group "dialout'
-    sudo usermod -a -G dialout nepi
-    #Add your standard user to the group "tty"
-    sudo usermod -a -G tty nepi
-
-    # Clear the Desktop
-    sudo rm /home/nepi/Desktop/*
-
-    echo "User Account Setup Complete"
-fi
-
 
 
 #######################################
 ## Configure NEPI Software Requirements
 
-if [ $SOFTWARE_ENV == true -o $SYS_DO_ALL == true ]; then
+if [ "$SOFTWARE_ENV" -eq 1 -o "$SYS_DO_ALL" -eq 1 ]; then
  
     sudo source ${SETUP_SCRIPTS_PATH}/nepi_software_setup.sh
 
@@ -380,7 +334,7 @@ NEPI_ALIASES_SOURCE=./resources/aliases/.nepi_system_aliases
 NEPI_ALIASES=${NEPI_HOME}/.nepi_system_aliases
 
 
-if [  $NEPI_ENV -o $SYS_DO_ALL ]; then
+if [  "$NEPI_ENV" -eq 1 -o "$SYS_DO_ALL" -eq 1 ]; then
 
     sudo source ${SETUP_SCRIPTS_PATH}/nepi_environment_setup.sh
 
@@ -393,25 +347,25 @@ fi
 #################################
 ## System Config Options
 #################################
-INSTALL_CONTAINER=false
-CONFIGURE_LAUNCH=false
-CONFIGURE_FACTORY=false
-CONFIGURE_SETTINGS=false
+INSTALL_CONTAINER=0
+CONFIGURE_LAUNCH=0
+CONFIGURE_FACTORY=0
+CONFIGURE_SETTINGS=0
 
 CF_SELECTION='Configure NEPI Settings'
 
 
-if [ $NEPI_CONFIG_TOOLS]; then
+if [ "$NEPI_CONFIG_TOOLS" -eq 1 ]; then
 
     echo ""
     echo ""
     echo "Select the file system task, or select DO ALL to run all processes:"
     select yn in 'Install NEPI Container' 'Configure NEPI Launch' 'Configure System Factory' 'Configure NEPI Settings' ; do
         case $yn in
-            Install NEPI Container ) INSTALL_CONTAINER=true;;
-            Configure NEPI Launch) CONFIGURE_LAUNCH=true;;
-            Configure System Factory) CONFIGURE_FACTORY=true;;
-            Configure NEPI Settings) CONFIGURE_SETTINGS=true;;
+            Install NEPI Container ) INSTALL_CONTAINER=1;;
+            Configure NEPI Launch) CONFIGURE_LAUNCH=1;;
+            Configure System Factory) CONFIGURE_FACTORY=1;;
+            Configure NEPI Settings) CONFIGURE_SETTINGS=1;;
         esac
         CF_SELECTION=${yn}
     done
