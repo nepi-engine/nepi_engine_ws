@@ -63,9 +63,7 @@ NEPI_ALIASES_FILE=.nepi_system_aliases
 
 declare -A STORAGE
 
-STORAGE['nepi_fs_a']=${NEPI_FS_A}
-STORAGE['nepi_fs_b']=${NEPI_FS_B}
-STORAGE['nepi_staging']=${NEPI_FS_STAGING}
+STORAGE['nepi_docker']=${NEPI_DOCKER}
 STORAGE['nepi_storage']=${NEPI_STORAGE}
 STORAGE['nepi_config']=${NEPI_CONFIG}
 
@@ -76,13 +74,13 @@ STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts
 STORAGE['databases']=${NEPI_STORAGE}/databases
 STORAGE['install']=${NEPI_STORAGE}/install
 STORAGE['license']=${NEPI_STORAGE}/install
-STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_src
+STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_srcacc
 STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img
 STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive
 STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
-STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
 STORAGE['tmp']=${NEPI_STORAGE}/tmp
 
+STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
 STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
 STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
 

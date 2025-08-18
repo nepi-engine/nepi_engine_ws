@@ -25,9 +25,9 @@ echo ""
 echo "Installing Software Requirements"
 
 # Change to tmp install folder
-cd /mnt/nepi_storage
-mkdir tmp
-cd tmp
+TMP=${STORAGE["tmp"]}
+mkdir $TMP
+cd $TMP
 
 
 # Download and install required software
@@ -40,68 +40,70 @@ sudo apt-get update
 
 #### Install Software
 sudo apt-get install lsb-release -y
-sudo apt-get install nano
+sudo apt-get install nano -y
 sudo apt-get install git -y
-sudo apt-get install nano
+sudo apt-get install nano -y
 
 
-sudo apt-get install trash-cli
-sudo apt-get install onboard
-sudo apt-get install setools
-sudo apt-get install ubuntu-advantage-tools
+sudo apt-get install trash-cli -y
+sudo apt-get install onboard -y
+sudo apt-get install setools -y
+sudo apt-get install ubuntu-advantage-tools -y
 
-sudo apt-get install -y iproute2
+sudo apt-get install iproute2 -y
 
-sudo apt-get install scons # Required for num_gpsd
-sudo apt-get install zstd # Required for Zed SDK installer
-sudo apt-get install dos2unix # Required for robust automation_mgr
-sudo apt-get install libv4l-dev v4l-utils # V4L Cameras (USB, etc.)
-sudo apt-get install hostapd # WiFi access point setup
-sudo apt-get install curl # Node.js installation below
-sudo apt-get install v4l-utils
-sudo apt-get install isc-dhcp-client
-sudo apt-get install wpasupplicant
-sudo apt-get install -y psmisc
-sudo apt-get install scapy
-sudo apt-get install minicom
-sudo apt-get install dconf-editor
-sudo apt-get install python-debian
+sudo apt-get install scons -y # Required for num_gpsd
+sudo apt-get install zstd -y # Required for Zed SDK installer
+sudo apt-get install dos2unix -y # Required for robust automation_mgr
+sudo apt-get install libv4l-dev v4l-utils -y # V4L Cameras (USB, etc.)
+sudo apt-get install hostapd -y # WiFi access point setup
+sudo apt-get install curl -y # Node.js installation below
+sudo apt-get install v4l-utils -y
+sudo apt-get install isc-dhcp-client -y
+sudo apt-get install wpasupplicant -y
+sudo apt-get install psmisc -y
+sudo apt-get install scapy -y
+sudo apt-get install minicom -y
+sudo apt-get install dconf-editor -y
+sudo apt-get install python-debian -y
 
-sudo apt-get install python3-scipy
+sudo apt-get install python3-scipy -y
 #sudo -H pip install --upgrade scipy
 
-sudo apt-get install libffi-dev # Required for python cryptography library
-sudo apt-get install scons # Required for num_gpsd
-sudo apt-get install zstd # Required for Zed SDK installer
-sudo apt-get install dos2unix # Required for robust automation_mgr
-sudo apt-get install libv4l-dev v4l-utils # V4L Cameras (USB, etc.)
-sudo apt-get install hostapd # WiFi access point setup
-sudo apt-get install curl # Node.js installation below
-sudo apt-get install gparted
-sudo apt-get install chromium-browser # At least once, apt-get seemed to work for this where apt-get did not, hence the command here
-sudo apt-get install socat protobuf-compiler
+sudo apt-get install libffi-dev -y # Required for python cryptography library
+sudo apt-get install scons -y # Required for num_gpsd
+sudo apt-get install zstd -y # Required for Zed SDK installer
+sudo apt-get install dos2unix -y # Required for robust automation_mgr
+sudo apt-get install libv4l-dev v4l-utils -y # V4L Cameras (USB, etc.)
+sudo apt-get install hostapd -y # WiFi access point setup
+sudo apt-get install curl -y # Node.js installation below
+sudo apt-get install gparted -y
+sudo apt-get install chromium-browser -y # At least once, apt-get seemed to work for this where apt-get did not, hence the command here
+sudo apt-get install socat protobuf-compiler -y
 
-sudo apt-get install gnupg
-sudo apt-get install kgpg
+sudo apt-get install gnupg -y
+sudo apt-get install kgpg -y
 
 ### Install NEPI Managed Services 
-sudo apt-get install supervisor
-sudo systemctl enable supervisor
+sudo apt-get install supervisor -y
 
-sudo apt-get install -y openssh-server
+
+sudo apt-get install openssh-server -y
 #sudo systemctl enable sshd
 
 echo "Installing chrony for NTP services"
-sudo apt-get install chrony
+sudo apt-get install chrony -y
 #sudo systemctl enable --now chrony.service
 
-sudo apt-get install samba
+sudo apt-get install samba -y
 #systemctl enable samba
 
 ### Install static IP tools
 echo "Installing static IP dependencies"
-sudo apt-get install ifupdown net-tools
+sudo apt-get install ifupdown -y 
+sudo apt-get install net-tools -y 
     
+
 
 
 I
@@ -131,22 +133,52 @@ sudo apt-get update
 
 sudo apt-get install --reinstall ca-certificates
 sudo apt-get install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa
+sudo add-apt-repository ppa:deadsnakes/ppa -y 
 sudo apt-get update
-sudo apt-get install python3.10 
-sudo apt-get install python3.10-distutils -f
+sudo apt-get install python3.10 -y 
+
+# Install pip
+curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.10
+
+
+sudo apt-get install python3.10-distutils -y
+sudo apt-get install python3.10-venv -y
+sudo apt-get install python3.10-dev -y 
+
+
 
 # Update python symlinks
 sudo ln -sfn /usr/bin/python3.10 /usr/bin/python3
 sudo ln -sfn /usr/bin/python3 /usr/bin/python
+sudo python3.10 -m pip --version
 
-sudo apt-get install python3.10-venv 
-sudo apt-get install python3.10-dev 
 
-# Install pip
-curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.10
-python3.10 -m pip --version
 
+#Manual installs some additinal packages in sudo one at a time
+################################
+# Install some required packages
+
+#sudo pip uninstall wheel
+#sudo pip install --no-input wheel
+#python setup.py bdist_wheel 
+
+sudo pip install --no-input cffi
+sudo pip uninstall netifaces
+sudo pip install --no-input netifaces
+
+
+
+#sudo pip uninstall psutil
+#sudo pip uninstall --no-input psutil
+
+sudo pip install --upgrade setuptools
+
+
+
+#############
+# Other general python utilities
+pip install --no-input --user labelImg # For onboard training
+pip install --no-input --user licenseheaders # For updating license files and source code comments
 
 
 #create requirements file from current dev install then run both as normal and sudo user
@@ -227,26 +259,17 @@ sudo apt-get install ros-noetic-web-video-server
 ####################
 # Try and fix issues
 
-#sudo pip install bagpy
-#sudo pip install pycryptodome-test-vectors
+#sudo pip install --no-input bagpy
+#sudo pip install --no-input pycryptodome-test-vectors
 
 # Fix some issues
-sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
 # Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
-sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
+#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 # Line 69 Add "if _raw_cpuid_lib is not None:" befor try:
 
 
-cd ${FOLDER}
-
-
-
-# 1) edit the following file: 
-#sudo su
-#cd /opt/ros/noetic/lib/rosbridge_server/
-#cp rosbridge_websocket.py  rosbridge_websocket.bak
-#vi rosbridge_websocket.py
-# Add the following lines under import sys
+#cd ${FOLDER}
 
 
 # Mavros requires some additional setup for geographiclib
@@ -266,75 +289,59 @@ sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
 source /opt/ros/noetic/setup.bash
 
 
+
+
+
+
 ############################################
 # Maybe not
 # upgrade python hdf5
-# pip install --upgrade h5py
-
+# sudo pip install --no-input --upgrade h5py
+sudo pip install --no-input open3d --ignore-installed
+sudo pip install --upgrade tornado
 _________________________
-
-
-
-
-
-#Manual installs some additinal packages in sudo one at a time
-################################
-# Install some required packages
-
-sudo pip install cffi
-pip install open3d --ignore-installed
-sudo pip install open3d --ignore-installed
-
-#sudo pip uninstall netifaces
-sudo pip install netifaces
-
-
-
-#############
-# Other general python utilities
-pip install --user labelImg # For onboard training
-pip install --user licenseheaders # For updating license files and source code comments
 
 # Install additional python requirements
 # Copy the requirements files from nepi_engine/nepi_env/setup to /mnt/nepi_storage/tmp
-cd /mnt/nepi_storage/tmp
-sudo su
-cat requirements_no_versions.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 python3.10 -m pip install
-exit
+NEPI_REQ_SOURCE=$(dirname "$(pwd)")/resources/requirements
+sudo cp ${NEPI_REQ_SOURCE}/requirements.txt ./
+cat requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo python3.10 -m pip install
+
+
+
+
+
 
 
 # Revert numpy
 sudo pip uninstall numpy
 sudo pip3 install numpy=='1.24.4'
 
-sudo pip install supervisor 
+sudo pip install --no-input supervisor 
 ## Maybe not needed with requirements
         # NEPI runtime python3 dependencies. Must install these in system folders such that they are on root user's python path
-        sudo -H pip install pyserial 
-        sudo -H pip install websockets 
-        sudo -H pip install geographiclib 
-        sudo -H pip install PyGeodesy 
-        sudo -H pip install harvesters 
-        sudo -H pip install WSDiscovery 
-        sudo -H pip install python-gnupg 
-        sudo -H pip install onvif_zeep
-        sudo -H pip install onvif 
-        sudo -H pip install rospy_message_converter
-        sudo -H pip install PyUSB
-        sudo -H pip install jetson-stats
+        sudo -H pip install --no-input pyserial 
+        sudo -H pip install --no-input websockets 
+        sudo -H pip install --no-input geographiclib 
+        sudo -H pip install --no-input PyGeodesy 
+        sudo -H pip install --no-input harvesters 
+        sudo -H pip install --no-input WSDiscovery 
+        sudo -H pip install --no-input python-gnupg 
+        sudo -H pip install --no-input onvif_zeep
+        sudo -H pip install --no-input onvif 
+        sudo -H pip install --no-input rospy_message_converter
+        sudo -H pip install --no-input PyUSB
+        sudo -H pip install --no-input jetson-stats
 
 
-        sudo -H pip install --user labelImg # For onboard training
-        sudo -H pip install --user licenseheaders # For updating license files and source code comments
-        #pip install --user labelImg # For onboard training
-        #pip install --user licenseheaders # For updating license files and source code comments
+        sudo -H pip install --no-input --user labelImg # For onboard training
+        sudo -H pip install --no-input --user licenseheaders # For updating license files and source code comments
 
 
 
 
-        sudo pip install yap
-        #pip install yap
-        sudo pip install yapf
+        sudo pip install --no-input yap
+        sudo pip install --no-input yapf
 
 
 
@@ -348,8 +355,8 @@ sudo ln -s /usr/lib/aarch64-linux-gnu/cmake/opencv4 /usr/share/OpenCV
 
 
 
-#pip install --user -U pip
-#pip install --user virtualenv
+#pip install --no-input --user -U pip
+#pip install --no-input --user virtualenv
 
 
 # NEPI runtime python3 dependencies. Must install these in system folders such that they are on root user's python path

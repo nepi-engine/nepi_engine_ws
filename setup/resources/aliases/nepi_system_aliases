@@ -222,7 +222,7 @@ export PATH=$PATH:$CUDA_HOME/bin
 # Python Config
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:/opt/nepi/nepi_engine/lib/nepi_drivers/:$PYTHONPATH
-export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH
+export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
 
 # System Config
 export CMAKE_POLICY_VERSION_MINIMUM=3.5
