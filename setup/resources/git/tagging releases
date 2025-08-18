@@ -1,5 +1,4 @@
-git tag -a 3.2.3-RC1 -m "3.2.3-RC1"
+git tag -a 3.2.3-RC1b -m "3.2.3-RC1b"
 
 To create a release in github
-git push origin 3.2.3-RC1
-
+git push origin 3.2.3-RC1b

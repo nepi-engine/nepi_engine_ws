@@ -10,77 +10,11 @@
 ##
 
 
-# This file sets up NEPI File System on a device hosted a nepi file system 
+# This file sets up NEPI File System on a device hosted a file system 
 # or inside a ubuntu docker container
 
-
-# NEPI Hardware Host Options: GENERIC,JETSON,RPI
-NEPI_HW=JETSON
-
-
-###################################
-# System Setup Variables
-##################################
-NEPI_IP=192.168.179.103
-NEPI_USER=nepi
-
-# NEPI PARTITIONS
-NEPI_FS_A=/mnt/nepi_fs_a
-NEPI_FS_B=/mnt/nepi_fs_b
-NEPI_FS_STAGING=/mnt/nepi_staging
-NEPI_STORAGE=/mnt/nepi_storage
-NEPI_CONFIG=/mnt/nepi_config
-
-DOCKER_MIN_GB=50
-STORAGE_MIN_GB=150
-CONFIG_MIN_GB=1
-
-##########################
-# Process Folders
-CURRENT_FOLDER=$PWD
-
-##########################
-# NEPI File System 
-NEPI_HOME=/home/${NEPI_USER}
-NEPI_BASE=/opt/nepi
-NEPI_RUI=${NEPI_BASE}/nepi_rui
-NEPI_ENGINE=${NEPI_BASE}/nepi_engine
-NEPI_ETC=${NEPI_BASE}/etc
-
-SYSTEMD_SERVICE_PATH=/etc/systemd/system
-
-SETUP_SCRIPTS_PATH=./resources/scripts
-sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
-
-#################
-# NEPI Storage Folders
-
-declare -A STORAGE
-
-STORAGE['nepi_fs_a']=${NEPI_FS_A}
-STORAGE['nepi_fs_b']=${NEPI_FS_B}
-STORAGE['nepi_staging']=${NEPI_FS_STAGING}
-STORAGE['nepi_storage']=${NEPI_STORAGE}
-STORAGE['nepi_config']=${NEPI_CONFIG}
-
-STORAGE['data']=${NEPI_STORAGE}/data
-STORAGE['ai_models']=${NEPI_STORAGE}/ai_models
-STORAGE['ai_training']=${NEPI_STORAGE}/ai_training
-STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts
-STORAGE['databases']=${NEPI_STORAGE}/databases
-STORAGE['install']=${NEPI_STORAGE}/install
-STORAGE['license']=${NEPI_STORAGE}/install
-STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_src
-STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img
-STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive
-STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
-STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
-STORAGE['tmp']=${NEPI_STORAGE}/tmp
-
-STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
-STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
-
-
+source ./scripts/nepi_variales_setup.sh
+echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 ##############
 # Requirments
@@ -279,9 +213,10 @@ fi
 #################################
 SOFTWARE_ENV=0
 CUDA_SOFTWARE=0
-NEPI_ENV=0
-NEPI_SOFTWARE=0
 NEPI_STORAGE=0
+NEPI_ENGINE=0
+NEPI_RUI=0
+NEPI_CONFIG=0
 SYS_DO_ALL=0
 
 SW_SELECTION='DO ALL'
@@ -292,12 +227,14 @@ if [ "$NEPI_SOFTWARE_TOOLS" -eq 1 ]; then
     echo ""
     echo ""
     echo "Select the file system task, or select DO ALL to run all processes:"
-    select yn in 'Software Environment' 'CUDA Software' 'NEPI Environment' 'NEPI Software' 'DO ALL'; do
+    select yn in 'Software Environment' 'Upgrade CUDA Software' 'NEPI Storage' 'NEPI Engine' 'NEPI RUI' 'NEPI Config' 'DO ALL'; do
         case $yn in
             Software Environment ) SOFTWARE_ENV=1;;
-            NEPI Environment ) NEPI_ENV=1;;
-            NEPI Software ) NEPI_SOFTWARE=1;;
+            Upgrade CUDA Software ) CUDA_SOFTWARE=1;;
             NEPI Storage ) NEPI_STORAGE=1;;
+            NEPI Engine ) NEPI_ENGINE=1;;
+            NEPI RUI ) NEPI_RUI=1;;
+            NEPI CONFIG ) NEPI_CONFIG=1;;
             DO ALL )  SYS_DO_ALL=1;;
         esac
         SW_SELECTION=${yn}

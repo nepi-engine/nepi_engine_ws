@@ -10,72 +10,11 @@
 ##
 
 
-# This file sets up NEPI File System on a device hosted a nepi file system 
-# or inside a ubuntu docker container
+# This file sets up the OS software requirements for a NEPI File System installation
 
 
-# NEPI Hardware Host Options: GENERIC,JETSON,RPI
-if [[ ! -v NEPI_HW ]]; then
-    # NEPI Hardware Host Options: GENERIC,JETSON,RPI
-    NEPI_HW=JETSON
-
-
-    ###################################
-    # System Setup Variables
-    ##################################
-    NEPI_IP=192.168.179.103
-    NEPI_USER=nepi
-
-    # NEPI PARTITIONS
-    NEPI_DOCKER=/mnt/nepi_docker
-    NEPI_STORAGE=/mnt/nepi_storage
-    NEPI_CONFIG=/mnt/nepi_config
-
-    FS_MIN_GB=50
-    STORAGE_MIN_GB=150
-    CONFIG_MIN_GB=1
-
-    ##########################
-    # Process Folders
-    CURRENT_FOLDER=$PWD
-
-    ##########################
-    # NEPI File System 
-    NEPI_HOME=/home/${NEPI_USER}
-    NEPI_BASE=/opt/nepi
-    NEPI_RUI=${NEPI_BASE}/nepi_rui
-    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
-    NEPI_ETC=${NEPI_BASE}/etc
-
-    SYSTEMD_SERVICE_PATH=/etc/systemd/system
-
-    #################
-    # NEPI Storage Folders
-
-    declare -A STORAGE
-    STORAGE['data']=${NEPI_STORAGE}/data
-    STORAGE['ai_models']=${NEPI_STORAGE}/ai_models
-    STORAGE['ai_training']=${NEPI_STORAGE}/ai_training
-    STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts
-    STORAGE['databases']=${NEPI_STORAGE}/databases
-    STORAGE['install']=${NEPI_STORAGE}/install
-    STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_src
-    STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img
-    STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive
-    STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
-    STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
-    STORAGE['tmp']=${NEPI_STORAGE}/tmp
-
-    STORAGE['nepi_cfg']=${NEPI_CONFIG}/nepi_cfg
-    STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
-
-
-    NEPI_ETC_SOURCE=./../etc
-    NEPI_ALIASES_SOURCE=./../aliases/.nepi_system_aliases
-    NEPI_ALIASES=${NEPI_HOME}/.nepi_system_aliases
-    BASHRC=${NEPI_HOME}/.bashrc
-fi
-
+source ./nepi_variales_setup.sh
+echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 
 #######################################
@@ -210,7 +149,6 @@ python3.10 -m pip --version
 
 
 
-
 #create requirements file from current dev install then run both as normal and sudo user
 # https://stackoverflow.com/questions/31684375/automatically-create-file-requirements-txt
 # pip3 freeze > requirements.txt
@@ -235,8 +173,8 @@ python3.10 -m pip --version
 
 ##_________________________
 ## Setup ROS
-sudo apt-get update
-sudo apt-cache policy python-rospkg
+
+
 
 #  Install ros
 #  https://wiki.ros.org/noetic/Installation/Ubuntu
@@ -289,8 +227,8 @@ sudo apt-get install ros-noetic-web-video-server
 ####################
 # Try and fix issues
 
-sudo pip install bagpy
-sudo pip install pycryptodome-test-vectors
+#sudo pip install bagpy
+#sudo pip install pycryptodome-test-vectors
 
 # Fix some issues
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
@@ -420,7 +358,7 @@ sudo -H pip install python-gnupg websockets onvif_zeep geographiclib PyGeodesy o
 
 # Install Base Node.js Tools and Packages (Required for RUI, etc.)
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
-export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="${NEPI_HOME}/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 nvm install 8.11.1 # RUI-required Node version as of this script creation

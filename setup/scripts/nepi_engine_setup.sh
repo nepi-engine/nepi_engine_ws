@@ -10,74 +10,14 @@
 ##
 
 
-# This file sets up NEPI File System on device hosting a nepi file system 
-# or inside a docker container
+# This file installs the NEPI Engine File System installation
 
-if [[ ! -v NEPI_HW ]]; then
-    # NEPI Hardware Host Options: GENERIC,JETSON,RPI
-    NEPI_HW=JETSON
-
-
-    ###################################
-    # System Setup Variables
-    ##################################
-    NEPI_IP=192.168.179.103
-    NEPI_USER=nepi
-
-    # NEPI PARTITIONS
-    NEPI_DOCKER=/mnt/nepi_docker
-    NEPI_STORAGE=/mnt/nepi_storage
-    NEPI_CONFIG=/mnt/nepi_config
-
-    FS_MIN_GB=50
-    STORAGE_MIN_GB=150
-    CONFIG_MIN_GB=1
-
-    ##########################
-    # Process Folders
-    CURRENT_FOLDER=$PWD
-
-    ##########################
-    # NEPI File System 
-    NEPI_HOME=/home/${NEPI_USER}
-    NEPI_BASE=/opt/nepi
-    NEPI_RUI=${NEPI_BASE}/nepi_rui
-    NEPI_ENGINE=${NEPI_BASE}/nepi_engine
-    NEPI_ETC=${NEPI_BASE}/etc
-
-    SYSTEMD_SERVICE_PATH=/etc/systemd/system
-
-    #################
-    # NEPI Storage Folders
-
-    declare -A STORAGE
-    STORAGE['data']=${NEPI_STORAGE}/data
-    STORAGE['ai_models']=${NEPI_STORAGE}/ai_models
-    STORAGE['ai_training']=${NEPI_STORAGE}/ai_training
-    STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts
-    STORAGE['databases']=${NEPI_STORAGE}/databases
-    STORAGE['install']=${NEPI_STORAGE}/install
-    STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_src
-    STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img
-    STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive
-    STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
-    STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
-    STORAGE['tmp']=${NEPI_STORAGE}/tmp
-
-    STORAGE['nepi_cfg']=${NEPI_CONFIG}/nepi_cfg
-    STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
-
-
-    NEPI_ETC_SOURCE=$(dirname "$CURRENT_FOLDER")/etc
-    NEPI_ALIASES_SOURCE=$(dirname "$CURRENT_FOLDER")/aliases/nepi_system_aliases
-    NEPI_ALIASES=${NEPI_HOME}/.nepi_system_aliases
-    BASHRC=${NEPI_HOME}/.bashrc
-fi
-
+source ./nepi_variales_setup.sh
+echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 
 echo ""
-echo "Setting up NEPI Environment"
+echo "Setting up NEPI Engine"
 
 
 ###################################
@@ -122,40 +62,51 @@ echo "User Account Setup Complete"
 
 #####################################
 # Add nepi aliases to bashrc
-echo $PWD
-echo $NEPI_ALIASES_SOURCE
+
 BASHRC=~/.bashrc
+NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/aliases/nepi_system_aliases
+NEPI_ALIASES_DEST=${NEPI_HOME}/${NEPI_ALIASES_FILE}
 echo ""
-echo "Installing NEPI aliases file ${NEPI_ALIASES} "
-sudo cp $NEPI_ALIASES_SOURCE ${NEPI_ALIASES}
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES
+echo "Populating System Folders from ${NEPI_ALIASES_SOURCE}"
+echo ""
+echo "Installing NEPI aliases file to ${NEPI_ALIASES_DEST} "
+sudo cp $NEPI_ALIASES_SOURCE ${NEPI_ALIASES_DEST}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
 
 echo "Updating nepi aliases file"
-if grep -qnw $NEPI_ALIASES -e ${NEPI_HW} ; then
+if grep -qnw $NEPI_ALIASES_DEST -e "##### NEPI Env Variables #####" ; then
     echo "Done"
 else
-    echo " " | sudo tee -a $NEPI_ALIASES
-    echo "##### NEPI Env Variables #####" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_HW=${NEPI_HW}" | sudo tee -a $NEPI_ALIASES
+    echo " " | sudo tee -a $NEPI_ALIASES_DEST
+    echo "##### NEPI Env Variables #####" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_HW=${NEPI_HW}" | sudo tee -a $NEPI_ALIASES_DEST
 
-    echo "NEPI_IP=${NEPI_IP}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_USER=${NEPI_USER}" | sudo tee -a $NEPI_ALIASES
+echo "NEPI_CONTAINER=${NEPI_CONTAINER}" | sudo tee -a $NEPI_ALIASES_DEST
 
-    echo "NEPI_DOCKER=${NEPI_DOCKER}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_STORAGE=${NEPI_STORAGE}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_CONFIG=${NEPI_CONFIG}" | sudo tee -a $NEPI_ALIASES
+echo "NEPI_MANAGE_SYSTEM_SSH=${NEPI_MANAGE_SYSTEM_SSH}" | sudo tee -a $NEPI_ALIASES_DEST
+echo "NEPI_MANAGE_SYSTEM_SHARE=${NEPI_MANAGE_SYSTEM_SHARE}" | sudo tee -a $NEPI_ALIASES_DEST
+echo "NEPI_MANAGE_SYSTEM_TIM=${NEPI_MANAGE_SYSTEM_TIM}" | sudo tee -a $NEPI_ALIASES_DEST
+echo "NEPI_MAGAGE_SUSTEM_NETWORK=${NEPI_MAGAGE_SUSTEM_NETWORK}" | sudo tee -a $NEPI_ALIASES_DEST
 
-    echo "NEPI_HOME=${NEPI_HOME}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_BASE=${NEPI_BASE}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_RUI=${NEPI_RUI}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_ENGINE=${NEPI_ENGINE}" | sudo tee -a $NEPI_ALIASES
-    echo "NEPI_ETC=${NEPI_ETC}" | sudo tee -a $NEPI_ALIASES
+    echo "NEPI_IP=${NEPI_IP}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_USER=${NEPI_USER}" | sudo tee -a $NEPI_ALIASES_DEST
 
-    echo "SYSTEMD_SERVICE_PATH=${SYSTEMD_SERVICE_PATH}" | sudo tee -a $NEPI_ALIASES
+    echo "NEPI_DOCKER=${NEPI_DOCKER}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_STORAGE=${NEPI_STORAGE}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_CONFIG=${NEPI_CONFIG}" | sudo tee -a $NEPI_ALIASES_DEST
+
+    echo "NEPI_HOME=${NEPI_HOME}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_BASE=${NEPI_BASE}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_RUI=${NEPI_RUI}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_ENGINE=${NEPI_ENGINE}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_ETC=${NEPI_ETC}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_SCRIPTS=${NEPI_SCRIPTS}" | sudo tee -a $NEPI_ALIASES_DEST
+
+    echo "SYSTEMD_SERVICE_PATH=${SYSTEMD_SERVICE_PATH}" | sudo tee -a $NEPI_ALIASES_DEST
 
 
-    echo "declare -A STORAGE" | sudo tee -a $NEPI_ALIASES
-    echo "STORAGE=${STORAGE}" | sudo tee -a $NEPI_ALIASES
+    echo "declare -A STORAGE" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "STORAGE=${STORAGE}" | sudo tee -a $NEPI_ALIASES_DEST
 
     echo "Done"
 fi
@@ -167,15 +118,11 @@ if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
 else
     echo " " | sudo tee -a $BASHRC
     echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-    echo "if [ -f ~/${NEPI_ALIASES} ]; then" | sudo tee -a $BASHRC
-    echo "    . ~/${NEPI_ALIASES}" | sudo tee -a $BASHRC
+    echo "if [ -f ~/${NEPI_ALIASES_DEST} ]; then" | sudo tee -a $BASHRC
+    echo "    . ~/${NEPI_ALIASES_DEST}" | sudo tee -a $BASHRC
     echo "fi" | sudo tee -a $BASHRC
     echo "Done"
 fi
-
-
-
-
 
 echo " "
 echo "NEPI Bash Aliases Setup Complete"
@@ -204,12 +151,14 @@ sudo mkdir -p ${NEPI_BASE}
 sudo mkdir -p ${NEPI_RUI}
 sudo mkdir -p ${NEPI_ENGINE}
 sudo mkdir -p ${NEPI_ETC}
+sudo mkdir -p ${NEPI_SCRITPS}
 
 ###################
 # Copy Config Files
+NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
 echo ""
-echo "Populating System Folders"
-cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
+echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
+sudo cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 
 
@@ -254,16 +203,15 @@ gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/
 #########################################
 # Setup system services
 echo ""
-echo "Setting up NEPI Services"
+echo "Setting up NEPI Engine Service"
 
 sudo chmod +x ${NEPI_ETC}/services/*
 
 sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
 sudo systemctl enable nepi_engine
-sudo cp ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
-sudo systemctl enable nepi_rui
 
-echo "NEPI Services Setup Complete"
+
+echo "NEPI Engine Service Setup Complete"
 
 
 ###########################################
@@ -399,23 +347,25 @@ fi
 sudo cp ${NEPI_ETC}/fstabs/fstab /etc/fstab.bak
 
 #########################################
-# Setup system scripts
+# Setup supervisor
 echo ""
-echo "Setting up NEPI Supervisord and Scripts"
+echo "Setting up NEPI Supervisord"
 
 if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
     sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
 fi
 sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
 
-sudo chmod +x ${NEPI_ETC}/scripts/*
-sudo ln -sf ${NEPI_ETC}/scripts/nepi_start_all.sh /nepi_start_all.sh
-sudo ln -sf ${NEPI_ETC}/scripts/nepi_engine_start.sh /nepi_engine_start.sh
-sudo ln -sf ${NEPI_ETC}/scripts/nepi_rui_start.sh /nepi_rui_start.sh
-sudo ln -sf ${NEPI_ETC}/scripts/nepi_samba_start.sh /nepi_samba_start.sh
-sudo ln -sf ${NEPI_ETC}/scripts/nepi_storage_init.sh /nepi_storage_init.sh
-sudo ln -sf ${NEPI_ETC}/scripts/nepi_license_start.sh /nepi_license_start.sh
+#########################################
+# Setup system scripts
+NEPI_SCRIPTS_SOURCE=$(dirname "$(pwd)")/resources/scripts
+echo ""
+echo "Populating System Scripts from ${NEPI_SCRIPTS_SOURCE}"
 
+sudo cp -R ${NEPI_SCRIPTS_SOURCE} $NEPI_BASE/
+sudo chmod +x ${NEPI_SCRIPTS}/*
+
+echo "NEPI Script Setup Complete"
 
 #########
 #- add Gieode databases to FileSystem
@@ -428,12 +378,10 @@ sudo ln -sf ${NEPI_ETC}/scripts/nepi_license_start.sh /nepi_license_start.sh
 #:'
 
 
-echo "NEPI Script Setup Complete"
-
 # Source nepi aliases before exit
 echo " "
-echo "Sourcing bashrc with new nepi_aliases"
+echo "Sourcing bashrc with new NEPI_ALIASES_DEST"
 sleep 1 & source $BASHRC
 wait
 # Print out nepi aliases
-. ${NEPI_ALIASES} && nepi
+. ${NEPI_ALIASES_DEST} && nepi
