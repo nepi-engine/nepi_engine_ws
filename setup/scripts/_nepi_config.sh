@@ -86,6 +86,7 @@ STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
 STORAGE['tmp']=${NEPI_STORAGE}/tmp
 
 STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
+STORAGE['docker_cfg']=${NEPI_CONFIG}/docker_cfg
 STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg
 STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg
 

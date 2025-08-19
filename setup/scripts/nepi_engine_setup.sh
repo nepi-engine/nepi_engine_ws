@@ -106,6 +106,31 @@ else
 
     echo "SYSTEMD_SERVICE_PATH=${SYSTEMD_SERVICE_PATH}" | sudo tee -a $NEPI_ALIASES_DEST
 
+    echo "SYSTEMD_SERVICE_PATH=${declare -A STORAGE" | sudo tee -a $NEPI_ALIASES_DEST
+
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['nepi_docker']=${NEPI_DOCKER}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['nepi_storage']=${NEPI_STORAGE}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['nepi_config']=${NEPI_CONFIG}" | sudo tee -a $NEPI_ALIASES_DEST
+
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['data']=${NEPI_STORAGE}/data" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['ai_models']=${NEPI_STORAGE}/ai_models" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['ai_training']=${NEPI_STORAGE}/ai_training" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['databases']=${NEPI_STORAGE}/databases" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['install']=${NEPI_STORAGE}/install" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['license']=${NEPI_STORAGE}/install" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_srcacc" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['sample_data']=${NEPI_STORAGE}/sample_data" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['tmp']=${NEPI_STORAGE}/tmp" | sudo tee -a $NEPI_ALIASES_DEST
+
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['docker_cfg']=${NEPI_CONFIG}/docker_cfg" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['factory_cfg']=${NEPI_CONFIG}/factory_cfg" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "SYSTEMD_SERVICE_PATH=${STORAGE['system_cfg']=${NEPI_CONFIG}/system_cfg" | sudo tee -a $NEPI_ALIASES_DEST
+
+
     echo "Done"
 fi
 
