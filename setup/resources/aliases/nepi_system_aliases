@@ -14,33 +14,71 @@ function ffile(){
 find ./* -iname  "*$@*" 
 }
 
+NEEDS_ROS=1
+# Function to search for topic containing string
+function sros(){
+# Source ROS Env
+source /opt/nepi/nepi_engine/setup.bash
+NEEDS_ROS=0
+}
+
 # Function to search for topic containing string
 function ftopic(){
+if [ $NEEDS_ROS == 1 ]; then
+  sleep 1 & sros
+  wait
+  NEEDS_ROS=0
+fi
 rostopic list | grep "$@" 
 }
 
 # Function to print all topics out
-function ftopics(){
+function ltopics(){
+if [ $NEEDS_ROS == 1 ]; then
+  sleep 1 & sros
+  wait
+  NEEDS_ROS=0
+fi
 rostopic list
 }
 
 # Function to listen to topic
 function ctopic(){
+if [ $NEEDS_ROS == 1 ]; then
+  sleep 1 & sros
+  wait
+  NEEDS_ROS=0
+fi
 rostopic echo "$@" 
 }
 
 # Function to search for service containing string
 function fservice(){
+if [ $NEEDS_ROS == 1 ]; then
+  sleep 1 & sros
+  wait
+  NEEDS_ROS=0
+fi
 rosservice list | grep "$@" 
 }
 
 # Function to print all services out
-function fservices(){
+function lservices(){
+if [ $NEEDS_ROS == 1 ]; then
+  sleep 1 & sros
+  wait
+  NEEDS_ROS=0
+fi
 rosservice list
 }
 
 # to call service
 function cservice(){
+if [ $NEEDS_ROS == 1 ]; then
+  sleep 1 & sros
+  wait
+  NEEDS_ROS=0
+fi
 rosservice call "$@"
 }
 
@@ -78,8 +116,8 @@ export MANAGERS="/opt/nepi/nepi_engine/lib/nepi_managers"
 export NFI="/mnt/nepi_storage/nepi_full_img"
 export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
 export ENGINE="/opt/nepi/nepi_engine"
-export RUI="/opt/nepi/rui/src/rui_webserver/rui-app/src"
-export RUI_ENV="/opt/nepi/rui"
+export RUI="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
+export RUI_ENV="/opt/nepi/nepi_rui"
 export SDK="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk"
 export SHARE="/opt/nepi/nepi_engine/share"
 export BUILD="/mnt/nepi_storage/nepi_src/nepi_engine_ws"
@@ -149,10 +187,11 @@ function nepi(){
     #############################
     # ftext = Find text in files recursively
     # ffile = Find filenames with text match recursively
-    # ftopics = List all active topics
+    # sros = source ros bash setup
+    # ltopics = List all active topics
     # ftopic = Find topics containing provided string
     # ctopic = Listen to provided topic
-    # fservices = List all active services
+    # lservices = List all active services
     # fservice = Find services containing provided string
     # cservice = Call service
     # pingi = Check for internet
@@ -227,8 +266,7 @@ export SETUPTOOLS_USE_DISTUTILS=stdlib
 export LD_PRELOAD=/usr/local/lib/libOpen3D.so
 export PATH="/opt/nepi/nepi_engine/etc/":$PATH
 
-# Source ROS Env
-source /opt/nepi/nepi_engine/setup.bash
+
 
 
 # Inform if this is the target hardware
