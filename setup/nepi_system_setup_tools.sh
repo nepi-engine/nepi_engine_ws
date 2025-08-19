@@ -108,7 +108,7 @@ if [ "$PARTS_REQ" -eq 1 ]; then
     while [$check == 0]
     do
         check = 0
-        if [! -d ${NEPI_DOCKER} ]; then
+        if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER == 1]; then
             check = 
             echo "Missing required folder: ${NEPI_DOCKER} with min size ${DOCKER_MIN_GB} GB"
             check=0

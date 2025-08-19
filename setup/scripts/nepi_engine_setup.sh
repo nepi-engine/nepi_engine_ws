@@ -176,6 +176,11 @@ sudo mkdir -p ${NEPI_ENGINE}
 sudo mkdir -p ${NEPI_ETC}
 sudo mkdir -p ${NEPI_SCRITPS}
 
+sudo mkdir -p ${NEPI_USR_CONFIG}
+sudo mkdir -p ${NEPI_FACTORY_CONFIG}
+sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
+
+
 ###################
 # Copy Config Files
 NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
