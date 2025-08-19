@@ -8,5 +8,16 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 
-# Start NEPI samba drive share service
-sudo smbd -D
+# Start NEPI Samba drive share service
+if [[ -v NEPI_MANAGES_SHARE ]]; then
+  if [ NEPI_MANAGES_SHARE == 1 ]; then
+    echo "Starting NEPI Drive Share Management Services."
+    sudo smbd -D
+  else
+    echo "NEPI Drive Share Management Disabled."
+  fi
+
+else
+  echo "NEPI Drive Share Management Disabled."
+fi
+

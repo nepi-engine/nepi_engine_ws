@@ -13,7 +13,7 @@
 # This file sets up the OS software requirements for a NEPI File System installation
 
 
-source ./nepi_variales_setup.sh
+source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 
@@ -30,9 +30,7 @@ mkdir $TMP
 cd $TMP
 
 
-# Download and install required software
-sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.1.0/MSCL_arm64_Python3.10_v67.1.0.deb
-sudo dpkg -i MSCL*
+
 
 
 
@@ -68,7 +66,6 @@ sudo apt-get install dconf-editor -y
 sudo apt-get install python-debian -y
 
 sudo apt-get install python3-scipy -y
-#sudo -H pip install --upgrade scipy
 
 sudo apt-get install libffi-dev -y # Required for python cryptography library
 sudo apt-get install scons -y # Required for num_gpsd
@@ -89,14 +86,28 @@ sudo apt-get install supervisor -y
 
 
 sudo apt-get install openssh-server -y
-#sudo systemctl enable sshd
+if [ $NEPI_MANAGES_SSH == 1 ]; then
+    sudo systemctl enable --now sshd.service
+fi
 
 echo "Installing chrony for NTP services"
 sudo apt-get install chrony -y
-#sudo systemctl enable --now chrony.service
+if [ $NEPI_MANAGES_TIME == 1 ]; then
+    sudo systemctl enable --now chrony.service
+fi
 
 sudo apt-get install samba -y
-#systemctl enable samba
+if [ $NEPI_MANAGES_SHARE == 1 ]; then
+    sudo systemctl enable --now samba.service
+fi
+
+# Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
+
+if [ $NEPI_MANAGES_NETWORK == 1 ]; then
+    sudo systemctl disable NetworkManager
+fi
+
+sudo apt-get -y install python3-pip libopenblas-dev
 
 ### Install static IP tools
 echo "Installing static IP dependencies"
@@ -104,82 +115,24 @@ sudo apt-get install ifupdown -y
 sudo apt-get install net-tools -y 
     
 
+    
+#sudo apt --fix-broken install
+
+# Install MSCL lib
+#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.0.1/MSCL_arm64_Python3.10_v67.0.1.deb
+sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.1.0/MSCL_arm64_Python3.10_v67.1.0.deb
+sudo dpkg -i MSCL*
 
 
-I
-
-# Maybe?
-#sudo apt-get upgrade
-
+# Set Container Install Conditional Configs
+if [ $NEPI_IN_CONTAINER == 0 ]; then
+    sudo apt install usbmount -y
+fi
 
 
 #######################
-# Remove old pythons
-#sudo apt-get remove --purge python3.x
-#sudo rm -r /usr/bin/python*
-#sudo rm -r /usr/lib/python*
-#sudo apt-get autoremove
-
-
-# Uninstall ROS if reinstalling/updating
-# sudo apt-get remove ros-noetic-*
-# sudo apt-get autoremove
-# After that, it's recommended to remove ROS-related environment variables from your .bashrc file 
-# and delete the ROS installation directory, typically /opt/ros/noetic. 
-
-
-# Install Python 
-sudo apt-get update 
-
-sudo apt-get install --reinstall ca-certificates
-sudo apt-get install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa -y 
-sudo apt-get update
-sudo apt-get install python3.10 -y 
-
-# Install pip
-curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.10
-
-
-sudo apt-get install python3.10-distutils -y
-sudo apt-get install python3.10-venv -y
-sudo apt-get install python3.10-dev -y 
-
-
-
-# Update python symlinks
-sudo ln -sfn /usr/bin/python3.10 /usr/bin/python3
-sudo ln -sfn /usr/bin/python3 /usr/bin/python
-sudo python3.10 -m pip --version
-
-
-
-#Manual installs some additinal packages in sudo one at a time
-################################
-# Install some required packages
-
-#sudo pip uninstall wheel
-#sudo pip install --no-input wheel
-#python setup.py bdist_wheel 
-
-sudo pip install --no-input cffi
-sudo pip uninstall netifaces
-sudo pip install --no-input netifaces
-
-
-
-#sudo pip uninstall psutil
-#sudo pip uninstall --no-input psutil
-
-sudo pip install --upgrade setuptools
-
-
-
-#############
-# Other general python utilities
-pip install --no-input --user labelImg # For onboard training
-pip install --no-input --user licenseheaders # For updating license files and source code comments
-
+# To Updgrade from an existing python version
+#######################
 
 #create requirements file from current dev install then run both as normal and sudo user
 # https://stackoverflow.com/questions/31684375/automatically-create-file-requirements-txt
@@ -189,10 +142,41 @@ pip install --no-input --user licenseheaders # For updating license files and so
 # Copy to /mnt/nepi_storage/tmp
 # ssh into tmp folder on nepi
 
-#Install python requred packages
-# 1) Copy nepi_env/config/home/nepi/requirements_no_versions to /mnt/nepi_storage/tmp
-# 2) SSH into your nepi device and type
+# Remove old pythons
+#sudo apt-get remove --purge python3.x
+#sudo rm -r /usr/bin/python*
+#sudo rm -r /usr/lib/python*
+#sudo apt-get autoremove
 
+# Uninstall ROS if reinstalling/updating
+# sudo apt-get remove ros-noetic-*
+# sudo apt-get autoremove
+# After that, it's recommended to remove ROS-related environment variables from your .bashrc file 
+# and delete the ROS installation directory, typically /opt/ros/noetic. 
+
+#######################
+# Install Python 
+#######################
+sudo apt-get update 
+
+sudo apt-get install --reinstall ca-certificates
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa -y 
+sudo apt-get update
+sudo apt-get install python3.10 -f -y 
+
+# Install pip
+curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.10
+
+#sudo apt-get install python3.10-distutils -y
+sudo apt-get install python3.10-venv -y
+sudo apt-get install python3.10-dev -y 
+
+
+# Update python symlinks
+sudo ln -sfn /usr/bin/python3.10 /usr/bin/python3
+sudo ln -sfn /usr/bin/python3 /usr/bin/python
+sudo python3.10 -m pip --version
 
 
 # Edit bashrc file
@@ -202,10 +186,85 @@ pip install --no-input --user licenseheaders # For updating license files and so
 #    export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 #    export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
 
+#############
+#Manual installs some additinal packages in sudo one at a time
 
-##_________________________
+sudo -H  pip install --upgrade setuptools
+
+sudo -H  pip uninstall --no-input wheel
+sudo -H  pip install --no-input wheel
+
+sudo -H  pip install --no-input cffi
+sudo -H  pip uninstall --no-input netifaces
+sudo -H  pip install --no-input netifaces
+
+sudo -H pip install --no-input pyserial 
+sudo -H pip install --no-input websockets 
+sudo -H pip install --no-input geographiclib 
+sudo -H pip install --no-input PyGeodesy 
+sudo -H pip install --no-input harvesters 
+sudo -H pip install --no-input WSDiscovery 
+sudo -H pip install --no-input python-gnupg 
+sudo -H pip install --no-input onvif_zeep
+sudo -H pip install --no-input onvif 
+sudo -H pip install --no-input rospy_message_converter
+sudo -H pip install --no-input PyUSB
+sudo -H pip install --no-input jetson-stats
+
+sudo -H pip install --no-input --user labelImg # For onboard training
+sudo -H pip install --no-input --user licenseheaders # For updating license files and source code comments
+
+sudo -H  pip install --no-input yap
+sudo -H  pip install --no-input yapf
+
+sudo -H pip install --no-input python-gnupg
+
+sudo -H pip install --upgrade --no-input tornado
+sudo -H pip install --no-input Flask
+sudo -H pip install --no-input supervisor 
+
+sudo -H pip install --upgrade --no-input scipy
+
+# upgrade python hdf5
+# sudo pip install --no-input --upgrade h5py
+
+sudo pip install cupy-cuda11x
+#sudo python -c "import cupy; print(cupy)"
+
+#############
+# Other general python utilities
+pip install --no-input --user labelImg # For onboard training
+pip install --no-input --user licenseheaders # For updating license files and source code comments
+
+#############
+# Cuda Dependant Install Options
+if [ $NEPI_HAS_CUDA == 0 ]; then
+    sudo pip install --no-input opencv-python
+    sudo pip install --no-input torch
+    sudo pip install --no-input torchvision
+    sudo pip install --no-input open3d --ignore-installed
+else
+    sudo ./nepi_cuda_setup.sh
+fi
+
+################
+# Maybe
+# Revert numpy
+#sudo pip uninstall numpy
+#sudo pip3 install numpy=='1.24.4'
+
+#############
+# Install additional python requirements
+# Copy the requirements files from nepi_engine/nepi_env/setup to /mnt/nepi_storage/tmp
+NEPI_REQ_SOURCE=$(dirname "$(pwd)")/resources/requirements
+sudo cp ${NEPI_REQ_SOURCE}/nepi_requirements.txt ./
+cat nepi_requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo python3.10 -m pip install
+
+
+
+############################################
 ## Setup ROS
-
+############################################
 
 
 #  Install ros
@@ -256,35 +315,8 @@ sudo apt-get install $ADDITIONAL_ROS_PACKAGES
 sudo apt-get install ros-noetic-cv-bridge
 sudo apt-get install ros-noetic-web-video-server
 
-####################
-# Try and fix issues
-
-#sudo pip install --no-input bagpy
-#sudo pip install --no-input pycryptodome-test-vectors
-
-# Fix some issues
-#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
-# Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
-#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
-# Line 69 Add "if _raw_cpuid_lib is not None:" befor try:
-
-
-#cd ${FOLDER}
-
-
 # Mavros requires some additional setup for geographiclib
 sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
-
-
-# Maybe?
-# Change the default .ros folder permissions for some reason
-#sudo mkdir /home/ros
-#sudo chown -R nepi:nepi /home/ros
-
-# Setup rosdep
-#sudo rm -r /etc/ros/rosdep/sources.list.d/20-default.list
-#sudo rosdep init
-#rosdep update
 
 source /opt/ros/noetic/setup.bash
 
@@ -292,75 +324,12 @@ source /opt/ros/noetic/setup.bash
 
 
 
+#########################################
+# Setup RUI Required Software
+#########################################
 
-############################################
-# Maybe not
-# upgrade python hdf5
-# sudo pip install --no-input --upgrade h5py
-sudo pip install --no-input open3d --ignore-installed
-sudo pip install --upgrade tornado
-_________________________
-
-# Install additional python requirements
-# Copy the requirements files from nepi_engine/nepi_env/setup to /mnt/nepi_storage/tmp
-NEPI_REQ_SOURCE=$(dirname "$(pwd)")/resources/requirements
-sudo cp ${NEPI_REQ_SOURCE}/requirements.txt ./
-cat requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo python3.10 -m pip install
-
-
-
-
-
-
-
-# Revert numpy
-sudo pip uninstall numpy
-sudo pip3 install numpy=='1.24.4'
-
-sudo pip install --no-input supervisor 
-## Maybe not needed with requirements
-        # NEPI runtime python3 dependencies. Must install these in system folders such that they are on root user's python path
-        sudo -H pip install --no-input pyserial 
-        sudo -H pip install --no-input websockets 
-        sudo -H pip install --no-input geographiclib 
-        sudo -H pip install --no-input PyGeodesy 
-        sudo -H pip install --no-input harvesters 
-        sudo -H pip install --no-input WSDiscovery 
-        sudo -H pip install --no-input python-gnupg 
-        sudo -H pip install --no-input onvif_zeep
-        sudo -H pip install --no-input onvif 
-        sudo -H pip install --no-input rospy_message_converter
-        sudo -H pip install --no-input PyUSB
-        sudo -H pip install --no-input jetson-stats
-
-
-        sudo -H pip install --no-input --user labelImg # For onboard training
-        sudo -H pip install --no-input --user licenseheaders # For updating license files and source code comments
-
-
-
-
-        sudo pip install --no-input yap
-        sudo pip install --no-input yapf
-
-
-
-sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
-
-
-#########
-# Work-around opencv path installation issue on Jetson (after jetpack installation)
-sudo ln -s /usr/include/opencv4/opencv2/ /usr/include/opencv
-sudo ln -s /usr/lib/aarch64-linux-gnu/cmake/opencv4 /usr/share/OpenCV
-
-
-
-#pip install --no-input --user -U pip
-#pip install --no-input --user virtualenv
-
-
-# NEPI runtime python3 dependencies. Must install these in system folders such that they are on root user's python path
-sudo -H pip install python-gnupg websockets onvif_zeep geographiclib PyGeodesy onvif harvesters WSDiscovery pyserial
+pip install --no-input --user -U pip
+pip install --no-input --user virtualenv
 
 
 # Install Base Node.js Tools and Packages (Required for RUI, etc.)
@@ -371,21 +340,7 @@ export NVM_DIR="${NEPI_HOME}/.nvm"
 nvm install 8.11.1 # RUI-required Node version as of this script creation
 
 
-#################################
-# Install Required Software
-#################################
-
-
-# Install and setup supervisor\\
-#https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
-#https://test-dockerrr.readthedocs.io/en/latest/admin/using_supervisord/
 
 
 
-
-
-
-#### Make System Changes
-# Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
-sudo systemctl disable NetworkManager
 

@@ -11,7 +11,7 @@ sudo ls -l /dev/disk/by-label/
 # Mount the drive
 
 sudo su
-DRIVE=sda2 #sba2
+DRIVE=sda2
 MOUNT=usbd
 cd /mnt
 mkdir $MOUNT
@@ -38,5 +38,5 @@ sudo chown nepi:nepi ./*.raw
 
 MOUNT=usbd
 cd /mnt
-sudo umount $MOUNTc
+sudo umount $MOUNT
  

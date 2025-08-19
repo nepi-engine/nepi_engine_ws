@@ -14,16 +14,18 @@
 # NEPI Hardware Host Options: GENERIC,JETSON,RPI
 NEPI_HW=JETSON
 
-# NEPI HOST SETUP
-NEPI_CONTAINER=0
+# NEPI HOST SETTINGS
+NEPI_IN_CONTAINER=0
+NEPI_HAS_CUDA=1
+NEPI_HAS_XPU=0
 
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
 # Note, if enabled for a docker deployment, these system functions will be
 # disabled in the host OS environment
-NEPI_MANAGE_SYSTEM_SSH=1
-NEPI_MANAGE_SYSTEM_SHARE=1
-NEPI_MANAGE_SYSTEM_TIME=1
-NEPI_MAGAGE_SUSTEM_NETWORK=1
+NEPI_MANAGES_SSH=1
+NEPI_MANAGES_SHARE=1
+NEPI_MANAGES_TIME=1
+NEPI_MAGAGES_NETWORK=1
 
 
 ###################################

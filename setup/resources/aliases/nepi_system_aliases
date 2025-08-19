@@ -214,15 +214,12 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# CUDA Config
-export CUDA_HOME=/usr/local/cuda-11
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64
-export PATH=$PATH:$CUDA_HOME/bin
 
 # Python Config
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:/opt/nepi/nepi_engine/lib/nepi_drivers/:$PYTHONPATH
 export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
+
 
 # System Config
 export CMAKE_POLICY_VERSION_MINIMUM=3.5

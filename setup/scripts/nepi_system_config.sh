@@ -11,9 +11,7 @@
 
 
 # This file configigues an installed NEPI File System
-
-
-source ./nepi_variales_setup.sh
+source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 

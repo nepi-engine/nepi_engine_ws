@@ -12,7 +12,7 @@
 
 # This file installs the NEPI Engine File System installation
 
-source ./nepi_variales_setup.sh
+source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 
@@ -81,12 +81,14 @@ else
     echo "##### NEPI Env Variables #####" | sudo tee -a $NEPI_ALIASES_DEST
     echo "NEPI_HW=${NEPI_HW}" | sudo tee -a $NEPI_ALIASES_DEST
 
-echo "NEPI_CONTAINER=${NEPI_CONTAINER}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_IN_CONTAINER=${NEPI_IN_CONTAINER}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_HAS_CUDA=${NEPI_HAS_CUDA}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_HAS_XPU=${NEPI_HAS_XPU}" | sudo tee -a $NEPI_ALIASES_DEST
 
-echo "NEPI_MANAGE_SYSTEM_SSH=${NEPI_MANAGE_SYSTEM_SSH}" | sudo tee -a $NEPI_ALIASES_DEST
-echo "NEPI_MANAGE_SYSTEM_SHARE=${NEPI_MANAGE_SYSTEM_SHARE}" | sudo tee -a $NEPI_ALIASES_DEST
-echo "NEPI_MANAGE_SYSTEM_TIM=${NEPI_MANAGE_SYSTEM_TIM}" | sudo tee -a $NEPI_ALIASES_DEST
-echo "NEPI_MAGAGE_SUSTEM_NETWORK=${NEPI_MAGAGE_SUSTEM_NETWORK}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_MANAGES_SSH=${NEPI_MANAGES_SSH}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_MANAGES_SHARE=${NEPI_MANAGES_SHARE}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_MANAGES_TIME=${NEPI_MANAGES_TIME}" | sudo tee -a $NEPI_ALIASES_DEST
+    echo "NEPI_MANAGES_NETWORK=${NEPI_MANAGES_NETWORK}" | sudo tee -a $NEPI_ALIASES_DEST
 
     echo "NEPI_IP=${NEPI_IP}" | sudo tee -a $NEPI_ALIASES_DEST
     echo "NEPI_USER=${NEPI_USER}" | sudo tee -a $NEPI_ALIASES_DEST
@@ -103,10 +105,6 @@ echo "NEPI_MAGAGE_SUSTEM_NETWORK=${NEPI_MAGAGE_SUSTEM_NETWORK}" | sudo tee -a $N
     echo "NEPI_SCRIPTS=${NEPI_SCRIPTS}" | sudo tee -a $NEPI_ALIASES_DEST
 
     echo "SYSTEMD_SERVICE_PATH=${SYSTEMD_SERVICE_PATH}" | sudo tee -a $NEPI_ALIASES_DEST
-
-
-    echo "declare -A STORAGE" | sudo tee -a $NEPI_ALIASES_DEST
-    echo "STORAGE=${STORAGE}" | sudo tee -a $NEPI_ALIASES_DEST
 
     echo "Done"
 fi
@@ -376,6 +374,15 @@ echo "NEPI Script Setup Complete"
 #to
 #/opt/nepi/databases/geoids
 #:'
+
+
+###########################################
+# Fix some NEPI package issues
+###########################################
+sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
+sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
+## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
 
 
 # Source nepi aliases before exit

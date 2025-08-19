@@ -12,7 +12,7 @@
 
 # This file installs the NEPI RUI File System installation
 
-source ./nepi_variales_setup.sh
+source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 
@@ -58,8 +58,7 @@ source ./devenv.sh
 cd src/rui_webserver/rui-app
 npm run build
 
-# MAYBE
-# npm install --save react-zoom-pan-pinch
+npm install --save react-zoom-pan-pinch
 deactivate
 
 #########################################
@@ -72,10 +71,21 @@ sudo chmod +x ${NEPI_ETC}/services/*
 sudo cp ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
 sudo systemctl enable nepi_rui
 
-echo "NEPI RUI Service Setup Complete"
+###########################################
+# Fix some RUI package issues
+###########################################
+sudo vi /opt/nepi/nepi_rui/venv/lib/python3.10/site-packages/flask_cors/core.py
+##REPLACE
+# import collections
+##WITH
+# import collections
+# collections.Iterable = collections.abc.Iterable
+
+##############################
+echo "NEPI RUI Setup Complete"
+##############################
+
 
 # Run RUI
 #sudo /opt/nepi/nepi_rui/etc/start_rui.sh
-
 #rosrun nepi_rui run_webserver.py
-
