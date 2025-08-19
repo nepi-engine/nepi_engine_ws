@@ -375,14 +375,29 @@ echo "NEPI Script Setup Complete"
 #/opt/nepi/databases/geoids
 #:'
 
+#######################
+# Install some premade python packages
+#######################
+USER_SITE_PACKAGES_PATH=$(python -m site --user-site)
+NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
+# Install MSCL lib
+#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.0.1/MSCL_arm64_Python3.10_v67.0.1.deb
+#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.1.0/MSCL_arm64_Python3.10_v67.1.0.deb
+#sudo dpkg -i MSCL*
+
+sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
+
+
+
 
 ###########################################
 # Fix some NEPI package issues
 ###########################################
-sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
 ## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
-sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
+#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 ## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
+
 
 
 # Source nepi aliases before exit

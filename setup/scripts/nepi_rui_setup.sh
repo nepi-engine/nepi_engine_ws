@@ -26,8 +26,8 @@ echo "Setting up NEPI RUI"
 ##############################
 
 
-pip install --user -U pip
-pip install --user virtualenv
+python${PYTHON_VERSION} -m pip install --user -U pip
+python${PYTHON_VERSION} -m pip install --user virtualenv
 mkdir $HOME/.nvm
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
@@ -47,7 +47,7 @@ echo 14.1.0 >> /opt/nepi/nepi_rui/.nvmrc
 cd /opt/nepi/nepi_rui
 python -m virtualenv venv
 source ./devenv.sh
-pip install -r requirements.txt
+python${PYTHON_VERSION} -m pip install -r requirements.txt
 npm install
 deactivate
 

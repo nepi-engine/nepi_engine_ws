@@ -118,12 +118,6 @@ sudo apt-get install net-tools -y
     
 #sudo apt --fix-broken install
 
-# Install MSCL lib
-#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.0.1/MSCL_arm64_Python3.10_v67.0.1.deb
-sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.1.0/MSCL_arm64_Python3.10_v67.1.0.deb
-sudo dpkg -i MSCL*
-
-
 # Set Container Install Conditional Configs
 if [ $NEPI_IN_CONTAINER == 0 ]; then
     sudo apt install usbmount -y
@@ -157,26 +151,28 @@ fi
 #######################
 # Install Python 
 #######################
+
 sudo apt-get update 
 
 sudo apt-get install --reinstall ca-certificates
 sudo apt-get install software-properties-common
 sudo add-apt-repository ppa:deadsnakes/ppa -y 
 sudo apt-get update
-sudo apt-get install python3.10 -f -y 
+sudo apt-get install python${PYTHON_VERSION} -f -y 
 
 # Install pip
-curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.10
+curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python${PYTHON_VERSION}
 
-#sudo apt-get install python3.10-distutils -y
-sudo apt-get install python3.10-venv -y
-sudo apt-get install python3.10-dev -y 
+sudo apt-get install python${PYTHON_VERSION}-distutils -y
+sudo apt-get install python${PYTHON_VERSION}-venv -y
+sudo apt-get install python${PYTHON_VERSION}-dev -y 
 
 
 # Update python symlinks
-sudo ln -sfn /usr/bin/python3.10 /usr/bin/python3
+sudo ln -sfn /usr/bin/python${PYTHON_VERSION} /usr/bin/python3
 sudo ln -sfn /usr/bin/python3 /usr/bin/python
-sudo python3.10 -m pip --version
+sudo python${PYTHON_VERSION} -m pip --version
+
 
 
 # Edit bashrc file
@@ -184,65 +180,65 @@ sudo python3.10 -m pip --version
 # Add to end of bashrc
 #    export SETUPTOOLS_USE_DISTUTILS=stdlib
 #    export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-#    export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
+#    export PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages/:$PYTHONPATH
 
 #############
 #Manual installs some additinal packages in sudo one at a time
 
-sudo -H  pip install --upgrade setuptools
+sudo -H python${PYTHON_VERSION} -m pip install --upgrade setuptools
 
-sudo -H  pip uninstall --no-input wheel
-sudo -H  pip install --no-input wheel
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input wheel
+sudo -H python${PYTHON_VERSION} -m pip install --no-input wheel
 
-sudo -H  pip install --no-input cffi
-sudo -H  pip uninstall --no-input netifaces
-sudo -H  pip install --no-input netifaces
+sudo -H python${PYTHON_VERSION} -m pip install --no-input cffi
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input netifaces
+sudo -H python${PYTHON_VERSION} -m pip install --no-input netifaces
 
-sudo -H pip install --no-input pyserial 
-sudo -H pip install --no-input websockets 
-sudo -H pip install --no-input geographiclib 
-sudo -H pip install --no-input PyGeodesy 
-sudo -H pip install --no-input harvesters 
-sudo -H pip install --no-input WSDiscovery 
-sudo -H pip install --no-input python-gnupg 
-sudo -H pip install --no-input onvif_zeep
-sudo -H pip install --no-input onvif 
-sudo -H pip install --no-input rospy_message_converter
-sudo -H pip install --no-input PyUSB
-sudo -H pip install --no-input jetson-stats
+sudo -H python${PYTHON_VERSION} -m pip install --no-input pyserial 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input websockets 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input geographiclib 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input PyGeodesy 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input harvesters 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input WSDiscovery 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input python-gnupg 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input onvif_zeep
+sudo -H python${PYTHON_VERSION} -m pip install --no-input onvif 
+sudo -H python${PYTHON_VERSION} -m pip install --no-input rospy_message_converter
+sudo -H python${PYTHON_VERSION} -m pip install --no-input PyUSB
+sudo -H python${PYTHON_VERSION} -m pip install --no-input jetson-stats
 
-sudo -H pip install --no-input --user labelImg # For onboard training
-sudo -H pip install --no-input --user licenseheaders # For updating license files and source code comments
+sudo -H python${PYTHON_VERSION} -m pip install --no-input --user labelImg # For onboard training
+sudo -H python${PYTHON_VERSION} -m pip install --no-input --user licenseheaders # For updating license files and source code comments
 
-sudo -H  pip install --no-input yap
-sudo -H  pip install --no-input yapf
+sudo -H python${PYTHON_VERSION} -m pip install --no-input yap
+sudo -H python${PYTHON_VERSION} -m pip install --no-input yapf
 
-sudo -H pip install --no-input python-gnupg
+sudo -H python${PYTHON_VERSION} -m pip install --no-input python-gnupg
 
-sudo -H pip install --upgrade --no-input tornado
-sudo -H pip install --no-input Flask
-sudo -H pip install --no-input supervisor 
+sudo -H python${PYTHON_VERSION} -m pip install --upgrade --no-input tornado
+sudo -H python${PYTHON_VERSION} -m pip install --no-input Flask
+sudo -H python${PYTHON_VERSION} -m pip install --no-input supervisor 
 
-sudo -H pip install --upgrade --no-input scipy
+sudo -H python${PYTHON_VERSION} -m pip install --upgrade --no-input scipy
 
 # upgrade python hdf5
-# sudo pip install --no-input --upgrade h5py
+# sudo python${PYTHON_VERSION} -m pip install --no-input --upgrade h5py
 
-sudo pip install cupy-cuda11x
+sudo python${PYTHON_VERSION} -m pip install cupy-cuda11x
 #sudo python -c "import cupy; print(cupy)"
 
 #############
 # Other general python utilities
-pip install --no-input --user labelImg # For onboard training
-pip install --no-input --user licenseheaders # For updating license files and source code comments
+python${PYTHON_VERSION} -m pip install --no-input --user labelImg # For onboard training
+python${PYTHON_VERSION} -m pip install --no-input --user licenseheaders # For updating license files and source code comments
 
 #############
 # Cuda Dependant Install Options
 if [ $NEPI_HAS_CUDA == 0 ]; then
-    sudo pip install --no-input opencv-python
-    sudo pip install --no-input torch
-    sudo pip install --no-input torchvision
-    sudo pip install --no-input open3d --ignore-installed
+    sudo python${PYTHON_VERSION} -m pip install --no-input opencv-python
+    sudo python${PYTHON_VERSION} -m pip install --no-input torch
+    sudo python${PYTHON_VERSION} -m pip install --no-input torchvision
+    sudo python${PYTHON_VERSION} -m pip install --no-input open3d --ignore-installed
 else
     sudo ./nepi_cuda_setup.sh
 fi
@@ -250,15 +246,15 @@ fi
 ################
 # Maybe
 # Revert numpy
-#sudo pip uninstall numpy
-#sudo pip3 install numpy=='1.24.4'
+#sudo python${PYTHON_VERSION} -m pip uninstall numpy
+#sudo python${PYTHON_VERSION} -m pip3 install numpy=='1.24.4'
 
 #############
 # Install additional python requirements
 # Copy the requirements files from nepi_engine/nepi_env/setup to /mnt/nepi_storage/tmp
 NEPI_REQ_SOURCE=$(dirname "$(pwd)")/resources/requirements
 sudo cp ${NEPI_REQ_SOURCE}/nepi_requirements.txt ./
-cat nepi_requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo python3.10 -m pip install
+cat nepi_requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo python${PYTHON_VERSION} -m pip install
 
 
 
@@ -289,7 +285,7 @@ rosdep update
 
 # Then
 #sudo apt-get install ros-noetic-catkin python-catkin-tools
-#sudo pip3 install --user git+https://github.com/catkin/catkin_tools.git
+#sudo python${PYTHON_VERSION} -m pip3 install --user git+https://github.com/catkin/catkin_tools.git
 
 ROS_VERSION=noetic
 
@@ -328,8 +324,8 @@ source /opt/ros/noetic/setup.bash
 # Setup RUI Required Software
 #########################################
 
-pip install --no-input --user -U pip
-pip install --no-input --user virtualenv
+python${PYTHON_VERSION} -m pip install --no-input --user -U pip
+python${PYTHON_VERSION} -m pip install --no-input --user virtualenv
 
 
 # Install Base Node.js Tools and Packages (Required for RUI, etc.)
