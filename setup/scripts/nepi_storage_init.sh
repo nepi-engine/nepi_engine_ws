@@ -20,6 +20,9 @@ TMP=${STORAGE["tmp"]}
 mkdir $TMP
 cd $TMP
 
+
+
+########## Copy Init Files
 wget # Add zip download
 unzip # Unzip
 sudo rm # Zipped file
