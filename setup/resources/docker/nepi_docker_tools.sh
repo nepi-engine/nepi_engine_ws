@@ -19,32 +19,33 @@ NEPI_DOCKER_CONFIG=${PWD}/nepi_docker_config_config.yaml
 ########################
 # Variable Setup
 #########################
-
+NEPI_HW=JETSON
 ### NEED TO: Read these from nepi_config.yaml file
-ACTIVE_CONT=nepi_fs_b
+ACTIVE_CONT=nepi_fs_a
 ACTIVE_VERSION=3p2p0
-ACTIVE_TAG=${ACTIVE_VERSION}
-ACTIVE_ID=12626ab028c1
+ACTIVE_TAG=${NEPI_HW}-${ACTIVE_VERSION}
 
-INACTIVE_CONT=nepi_fs_a
+
+INACTIVE_CONT=nepi_fs_b
 INACTIVE_VERSION=uknown
-INACTIVE_TAG=${INACTIVE_VERSION}
-INACTIVE_ID=0
+INACTIVE_TAG=${NEPI_HW}-${INACTIVE_VERSION}
+
 
 STAGING_CONT=nepi_staging
 
 IMPORT_PATH=/media/nepidev/NServer_Backup
 EXPORT_PATH=/mnt/nepi_storage/nepi_full_img_archive
 
-######  NEED TO: Update from IMPORT_PATH tar file
-IMAGE_FILE=nepi3p2p0-RC2A.tar
-IMAGE_VERSION=3p2p0
-
 ######  NEED TO: Update from current docker status
 RUNNING_CONT=None
 RUNNING_VERSION=uknown
 RUNNING_TAG=uknown
 RUNNING_ID=0
+
+
+# UPDATED VARS
+ACTIVE_ID=$(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
+INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
 
 #############################
 # TOOL SELECTION
@@ -84,9 +85,15 @@ done
 # IMPORT_NEPI
 ######################
 if [ "$IMPORT_NEPI" -eq 1 ]; then
-
+    IMPORT_PATH=/media/nepidev/NServer_Backup
+    ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
+    IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
+    ######  NEED TO: Update from IMPORT_PATH tar file
+    IMAGE_VERSION=3p2p0
+    
+    ######
+    IMAGE_TAG=${NEPI_HW}-${IMAGE_VERSION}
     INSTALL_IMAGE=${IMPORT_PATH}/${IMAGE_FILE}
-
     #1) Stop any processes for INACTIVE_CONT
     #2) Import INSTALL_IMAGE to STAGING_CONT
     #3) Remove INACTIVE_CONT
@@ -94,10 +101,10 @@ if [ "$IMPORT_NEPI" -eq 1 ]; then
 
     #7) Reboot
 
-    sudo cat $INSTALL_IMAGE | sudo docker import - ${INACTIVE_CONT}:${IMAGE_VERSION}
-    NACTIVE_TAG=$IMAGE_VERSION
+    sudo docker import $INSTALL_IMAGE
     INACTIVE_VERSION=$IMAGE_VERSION
-    INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${IMAGE_VERSION})
+    INACTIVE_TAG=$IMAGE_TAG
+    INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
     echo $INACTIVE_ID
 
     #6) Update inactive version,tags,ids in nepi_docker_config.yaml
@@ -149,8 +156,14 @@ fi
 ######################
 f [ "$RUN_DEV" -eq 1 ]; then
 
-#Run NEPI in Dev Mode
-sudo docker run --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage --mount type=bind,source=/dev,target=/dev -it --net=host --runtime nvidia -v /tmp/.X11-unix/:/tmp/.X11-unix ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash
+    ACTIVE_ID=$(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
+    #Run NEPI in Dev Mode
+    sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
+    --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/dev,target=/dev -it --net=host --runtime nvidia \
+    -v /tmp/.X11-unix/:/tmp/.X11-unix \
+    ${ACTIVE_CONT}:${ACTIVE_TAG} \
+    /bin/bash
 
 
 
@@ -161,7 +174,7 @@ fi
 # STOP_DEV
 ######################
 f [ "$STOP_DEV" -eq 1 ]; then
-
+    yq e '.NEPI_HW' nepi_docker_config.yaml
 
 fi
 
@@ -189,9 +202,38 @@ f [ "$EXPORT_DEV" -eq 1 ]; then
 
 fi
 
+######################
+# READ_DOCKER_CONFIG
+######################
+function ffile(){
+    yq e -i '.' nepi_docker_config.yaml 
+}
+
+######################
+# WRITE_DOCKER_CONFIG
+######################
+function write_to_yaml(){
+    ELEMENT1=$1
+    #echo $ELEMENT1
+    export ELEMENT2=$2
+    #echo $ELEMENT2
+
+    yq e -i '.'"$ELEMENT1"' = env(ELEMENT2)' nepi_docker_config.yaml
+}
+
 
 
 '
+# Remove Image
+sudo docker rmi <image_id>
+or
+sudo docker rmi <image_name>:<image_id>
+
+NAME=nepi_fs_a
+TAG=JETSON_3p2p0
+sudo docker rmi ${NAME}:${TAG}
+
+
 # Run Nepi RUI
 sudo docker run --rm -it --net=host -v /tmp/.X11-unix/:/tmp/.X11-unix ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash -c "/nepi_rui_start.sh"
 
@@ -228,6 +270,13 @@ sudo docker commit <ID> nepi1
 # Clean out <none> Images
 sudo docker rmi $(sudo docker images -f “dangling=true” -q)
 
-# Export/Import Flat Image as tar
-sudo docker export a1e4e38c2162 > /mnt/nepi_storage/tmp/nepi3p0p4p1_jp5p0p2.tar
-'
+# export Flat Image as tar
+
+
+# Change image name and tag
+IMAGE_NAME=nepi_fs_b
+IMAGE_TAG=3p2p0
+NEW_NAME=nepi_fs_a
+NEW_TAG=JETSON-3p2p0
+sudo docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${NEW_NAME}:${NEW_TAG}
+sudo docker rmi ${IMAGE_NAME}:${IMAGE_TAG}

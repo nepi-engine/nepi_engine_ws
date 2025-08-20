@@ -28,6 +28,7 @@ cd $TMP
 #################################
 # Install docker if not present
 #???https://www.forecr.io/blogs/installation/how-to-install-and-run-docker-on-jetson-nano
+# https://docs.docker.com/engine/install/ubuntu/
 echo ""
 echo ""
 echo "Installing Docker & Docker Compose"
@@ -75,6 +76,13 @@ sudo docker info
 #Test Docker install
 sudo docker pull hello-world
 sudo docker container run hello-world
+
+##########
+#Install yq
+#https://mikefarah.gitbook.io/yq/v3.x
+sudo add-apt-repository ppa:rmescandon/yq
+sudo apt update
+sudo apt install yq -y
 
 
 #Some Debug Commands
@@ -151,6 +159,24 @@ sudo docker info
 # Setup Docker Compose
 
 
+
+
+# Disable Host Services if Required
+if [ $NEPI_MANAGES_SSH == 1 ]; then
+    sudo systemctl enable --now sshd.service
+fi
+
+if [ $NEPI_MANAGES_TIME == 1 ]; then
+    sudo systemctl enable --now chrony.service
+fi
+
+if [ $NEPI_MANAGES_SHARE == 1 ]; then
+    sudo systemctl enable --now samba.service
+fi
+
+if [ $NEPI_MANAGES_NETWORK == 1 ]; then
+    sudo systemctl disable NetworkManager
+fi
 
 ##################################
 echo 'Setup Complete'
