@@ -92,26 +92,31 @@ if [ "$IMPORT_NEPI" -eq 1 ]; then
     IMAGE_VERSION=3p2p0
     
     ######
-    IMAGE_TAG=${NEPI_HW}-${IMAGE_VERSION}
     INSTALL_IMAGE=${IMPORT_PATH}/${IMAGE_FILE}
     #1) Stop any processes for INACTIVE_CONT
     #2) Import INSTALL_IMAGE to STAGING_CONT
     #3) Remove INACTIVE_CONT
     #4) Rename STAGING_CONT to INACTIVE_CONT
 
-    #7) Reboot
 
-    sudo docker import $INSTALL_IMAGE
-    INACTIVE_VERSION=$IMAGE_VERSION
-    INACTIVE_TAG=$IMAGE_TAG
+
+    res=$(sudo docker import $INSTALL_IMAGE)
+    hash=${res##*sha256:}
+    ID=${hash:0:12}
+    NAME=$(sudo docker name $ID)
+    TAG=$(sudo docker tag $ID)
+    NEW_NAME=$INACTIVE_CONT
+    NEW_TAG=$TAG
+    sudo docker tag ${NAME}:${TAG} ${NEW_NAME}:${NEW_TAG}
+    sudo docker rmi ${NAME}:${TAG}
+    
+    INACTIVE_TAG=$NEW_TAG
     INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
-    echo $INACTIVE_ID
 
     #6) Update inactive version,tags,ids in nepi_docker_config.yaml
 
 
     echo "  ADD SOME PRINT OUTS  "
-
 
 fi
 

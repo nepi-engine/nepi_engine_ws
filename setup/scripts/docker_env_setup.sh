@@ -25,6 +25,23 @@ mkdir $TMP
 cd $TMP
 
 
+
+#################################
+# Install Software Requirments
+
+#Install yq
+#https://mikefarah.gitbook.io/yq/v3.x
+sudo add-apt-repository ppa:rmescandon/yq
+sudo apt update
+sudo apt install yq -y
+
+sudo apt install git -y
+sudo apt install gitk -y
+
+# Visual Code?
+
+
+
 #################################
 # Install docker if not present
 #???https://www.forecr.io/blogs/installation/how-to-install-and-run-docker-on-jetson-nano
@@ -76,14 +93,6 @@ sudo docker info
 #Test Docker install
 sudo docker pull hello-world
 sudo docker container run hello-world
-
-##########
-#Install yq
-#https://mikefarah.gitbook.io/yq/v3.x
-sudo add-apt-repository ppa:rmescandon/yq
-sudo apt update
-sudo apt install yq -y
-
 
 #Some Debug Commands
 '
