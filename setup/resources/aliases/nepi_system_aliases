@@ -43,7 +43,7 @@ rostopic list
 }
 
 # Function to listen to topic
-function ctopic(){
+function etopic(){
 if [ $NEEDS_ROS == 1 ]; then
   sleep 1 & sros
   wait
@@ -190,7 +190,7 @@ function nepi(){
     # sros = source ros bash setup
     # ltopics = List all active topics
     # ftopic = Find topics containing provided string
-    # ctopic = Listen to provided topic
+    # etopic = Echo to provided topic
     # lservices = List all active services
     # fservice = Find services containing provided string
     # cservice = Call service
