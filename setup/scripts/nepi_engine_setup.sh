@@ -61,6 +61,16 @@ echo "User Account Setup Complete"
 
 
 #####################################
+# Copy nepi config settings to nepi home
+
+NEPI_CONFIG_SOURCE=./_nepi_config.sh
+NEPI_CONFIG_DEST=${NEPI_HOME}/.nepi_config
+echo "Installing NEPI config file to ${NEPI_CONFIG_DEST} "
+sudo cp $NEPI_CONFIG_SOURCE ${NEPI_CONFIG_DEST}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
+
+
+#####################################
 # Add nepi aliases to bashrc
 
 BASHRC=~/.bashrc
@@ -73,6 +83,9 @@ echo "Installing NEPI aliases file to ${NEPI_ALIASES_DEST} "
 sudo cp $NEPI_ALIASES_SOURCE ${NEPI_ALIASES_DEST}
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
 
+
+
+'''
 echo "Updating nepi aliases file"
 if grep -qnw $NEPI_ALIASES_DEST -e "##### NEPI Env Variables #####" ; then
     echo "Done"
@@ -133,6 +146,7 @@ else
 
     echo "Done"
 fi
+'''
 
 
 echo "Updating bashrc file"
@@ -437,9 +451,9 @@ sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 ###########################################
 # Fix some NEPI package issues
 ###########################################
-#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
 ## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
-#sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
+sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 ## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
 
 
