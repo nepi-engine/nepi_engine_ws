@@ -141,11 +141,25 @@ if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
 else
     echo " " | sudo tee -a $BASHRC
     echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-    echo "if [ -f ~/${NEPI_ALIASES_DEST} ]; then" | sudo tee -a $BASHRC
-    echo "    . ~/${NEPI_ALIASES_DEST}" | sudo tee -a $BASHRC
+    echo "if [ -f ${NEPI_ALIASES_DEST} ]; then" | sudo tee -a $BASHRC
+    echo "    . ${NEPI_ALIASES_DEST}" | sudo tee -a $BASHRC
     echo "fi" | sudo tee -a $BASHRC
     echo "Done"
 fi
+
+sudo su
+ROOTRC=/root/.bashrc
+if grep -qnw ROOTRC -e "##### Source NEPI Aliases #####" ; then
+    echo "Done"
+else
+    echo " " | sudo tee -a ROOTRC
+    echo "##### Source NEPI Aliases #####" | sudo tee -a ROOTRC
+    echo "if [ -f ${NEPI_ALIASES_DEST} ]; then" | sudo tee -a ROOTRC
+    echo "    . ${NEPI_ALIASES_DEST}" | sudo tee -a ROOTRC
+    echo "fi" | sudo tee -a $BASHRC
+    echo "Done"
+fi
+exit
 
 echo " "
 echo "NEPI Bash Aliases Setup Complete"
