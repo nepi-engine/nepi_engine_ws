@@ -27,8 +27,8 @@ NEPI_HAS_XPU=0
 # disabled in the host OS environment
 NEPI_MANAGES_SSH=1
 NEPI_MANAGES_SHARE=1
-NEPI_MANAGES_TIME=1
-NEPI_MAGAGES_NETWORK=1
+NEPI_MANAGES_TIME=0
+NEPI_MAGAGES_NETWORK=0
 
 
 ###################################
