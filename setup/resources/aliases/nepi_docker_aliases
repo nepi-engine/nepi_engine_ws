@@ -4,14 +4,8 @@
 # Env Variables
 
 CURRENT_DIR=$(pwd)
-
-export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
-
 export NEPI_REMOTE_SETUP=0
-#export NEPI_TARGET_IP=192.168.179.104
-export NEPI_TARGET_USERNAME=nepi
-export NEPI_SSH_KEY=/mnt/nepi_config/docker_config/nepi_engine_default_private_ssh_key
-export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
+
 
 
 ########################################
@@ -31,38 +25,6 @@ export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if u
 ###################################
 # Start SSH Agent
 #----------------------------
-'
-SSH_ENV="$HOME/.ssh/environment"
-
-function run_ssh_env {
-  . "${SSH_ENV}" > /dev/null
-}
-
-function start_ssh_agent {
-  echo "Initializing new SSH agent..."
-  ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
-  echo "succeeded"
-  chmod 600 "${SSH_ENV}"
-
-  run_ssh_env;
-
-  ssh-add ~/.ssh/id_rsa;
-}
-
-if [ -f "${SSH_ENV}" ]; then
-  run_ssh_env;
-  ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
-    start_ssh_agent;
-  }
-else
-  start_ssh_agent;
-fi
-
-
-alias gitroot="cd $(git rev-parse --show-toplevel)"
-'
-
-
 ###################################
 #NEPI Git Utility Functions
 
@@ -284,8 +246,8 @@ function nepi(){
     engine = /opt/nepi/nepi_engine
     nfi = /mnt/nepi_storage/nepi_full_img
     nfia = /mnt/nepi_storage/nepi_full_img_archive
-    rui = /opt/nepi/rui/src/rui_webserver/rui-app/src
-    rui_env = /opt/nepi/rui
+    rui = /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
+    rui_env = /opt/nepi/nepi_rui
     sdk = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk
     share = /opt/nepi/nepi_engine/share
     src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
@@ -298,60 +260,3 @@ function nepi(){
 
 
 
-########################
-# DOCKER SHORTCUTS
-#########################
-NEPI_CONT=nepi_fs_a
-CONT_TAG=nepi_fs_a
-CONT_ID=132e8b54023f
-
-#Run NEPI Complete
-sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage -it --net=host --runtime nvidia -e -v /tmp/.x11-unix/:/tmp/.x11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash -c "/nepi_start_all.sh"
-sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash -c "/nepi_engine_start.sh"
-
-
-#Run NEPI in Dev Mode
-sudo docker run --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage --mount type=bind,source=/dev,target=/dev -it --net=host --runtime nvidia -v /tmp/.X11-unix/:/tmp/.X11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash
-
-
-# Run Nepi RUI
-sudo docker run --rm -it --net=host -v /tmp/.X11-unix/:/tmp/.X11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash -c "/nepi_rui_start.sh"
-
-# Start a Singular Contanier with Docker Compose
-sudo docker compose up ID...
-
-# Remove Singular Contanier with Docker Compose
-sudo docker rm ${CONT_ID}
-
-# Remove Singular Network with Docker Compose
-sudo docker network rm ${CONT_ID}
-
-# How to See Running Docker Compose Containers
-sudo docker compose ps -a
-
-# How to See Running Docker Networks
-sudo     docker network ls
-
-
-//sudo docker images -a
-//sudo docker ps -a
-
-sudo docker start ${CONT_ID}  # restart it in the background
-//sudo docker attach nepi_test  # reattach the terminal & stdin
-
-# Connect to a Running Container
-sudo docker exec -it ${CONT_ID} /bin/bash
-
-
-Clone container
-sudo docker ps -a
-Get <ID>
-sudo docker commit <ID> nepi1
-
-# Clean out <none> Images
-sudo docker rmi $(sudo docker images -f “dangling=true” -q)
-
-# Export/Import Flat Image as tar
-sudo docker export a1e4e38c2162 > /mnt/nepi_storage/tmp/nepi3p0p4p1_jp5p0p2.tar
-sudo docker import /mnt/nepi_storage/tmp/nepi3p0p4p1_jp5p0p2.tar 
-docker tag <IMAGE_ID> nepi_ft1

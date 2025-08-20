@@ -20,77 +20,116 @@ echo ""
 echo "Docker Enviorment Setup"
 
 # Change to tmp install folder
-#TMP=${STORAGE["tmp"]}
-#mkdir $TMP
-#cd $TMP
+TMP=${STORAGE["tmp"]}
+mkdir $TMP
+cd $TMP
 
-cd /mnt
-# Create nepi_config folder
-sudo mkdir nepi_config
-# Create nepi_docker folder
-sudo mkdir nepi_docker
-# Create nepi_full_img folder
-sudo mkdir nepi_full_img
-# Create nepi_storage folder
-sudo mkdir nepi_storage
 
-# Partition Data for nepi_docker # NOTE: Do we need nepi_full_img
-
+#################################
 # Install docker if not present
-# Install Docker & Docker Compose
+#???https://www.forecr.io/blogs/installation/how-to-install-and-run-docker-on-jetson-nano
 echo ""
 echo ""
 echo "Installing Docker & Docker Compose"
 # Update Package Lists and Install Prerequisites.
 sudo apt update
 sudo apt install apt-transport-https ca-certificates curl software-properties-common
-# Add Docker's Official GPG Key
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-# Add the Docker Repository to APT Sources
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-# Update the Package Database with the Docker Packages
+sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/ubuntu focal stable"
 sudo apt update
-# Install Docker Engine
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-# Enable Docker to Start on Launch
-sudo systemctl enable docker
-# Verify the Installation.
-#https://www.forecr.io/blogs/installation/how-to-install-and-run-docker-on-jetson-nano
-# Check if Docker & Docker Compose are Installed
-docker --version
-docker compose version
 
-echo ""
-echo ""
-echo "Select the NEPI Hardware Host Options"
-select yn in 'JETSON' 'GENERIC' 'RPI'; do
-    case $yn in
-        GENERIC ) break;;
-        JETSON ) break;;
-        RPI ) break;;
-    esac
-    NEPI_HW=${yn}
-done
+# Setup Docker service
+sudo docker info
+docker compose version
+sudo systemctl enable docker
+sudo systemctl status docker
+
+
+###########
+# Set docker service root location
+#https://stackoverflow.com/questions/44010124/where-does-docker-store-its-temp-files-during-extraction
+# https://forums.docker.com/t/how-do-i-change-the-docker-image-installation-directory/1169
+
+sudo systemctl stop docker
+sudo systemctl stop docker.socket
+
+
+sudo vi /etc/default/docker
+# Edit this line and uncomment
+DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4  -g $NEPI_DOCKER"
+
+
+sudo vi /usr/lib/systemd/system/docker.service
+#Comment out ExecStart line and add below
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root=${NEPI_DOCKER}
+
+#Then reload and restart docker
+sudo systemctl daemon-reload
+sudo systemctl start docker.socket
+sudo systemctl start docker
+sudo systemctl status docker
+sudo docker info
+
+##########
+#Test Docker install
+sudo docker pull hello-world
+sudo docker container run hello-world
+
+
+#Some Debug Commands
+'
+sudo dockerd --debug
+
+sudo vi /etc/docker/daemon.json
+
+sudo systemctl stop docker
+sudo systemctl stop docker.socket
+sudo systemctl daemon-reload
+sudo systemctl start docker.socket
+sudo systemctl start docker
+sudo systemctl status docker
+'
+
+
+#######
+# Edit Docker Config
+
+#Stop docker
+sudo systemctl stop docker
+sudo systemctl stop docker.socket
 
 if [[ "$NEPI_HW" == "JETSON" ]]; then
+
+    
     # Install nvidia toolkit
     #https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
-    sudo apt-get install -y nvidia-container-toolkit
-    sudo apt-get install nvidia-container-run
-    #runtime configure --runtime=docker --config=$HOME/.config/docker/daemon.json
+    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+    && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+        sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+        sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
-    sudo vim /etc/docker/daemon.json
-    # Edit the file to:
-    {
-        "runtimes": {
-            "nvidia": {
-                "path": "nvidia-container-runtime",
-                "runtimeArgs": []
-            }
-        },
-        "data-root": "/mnt/${NEPI_DOCKER}" 
-    }
-    # Then save and quit
+    sudo apt-get update
+
+    export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.17.8-1
+    sudo apt-get install --fix-broken -y \
+        nvidia-container-toolkit=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+        nvidia-container-toolkit-base=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+        libnvidia-container-tools=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+        libnvidia-container1=${NVIDIA_CONTAINER_TOOLKIT_VERSION}
+
+    
+    #runtime configure --runtime=docker --config=$HOME/.config/docker/daemon.json
+    sudo mv /etc/docker/daemon.json /etc/docker/daemon.json.bak
+    sudo nvidia-ctk runtime configure --runtime=docker
+
+    #Then reload and restart docker
+    sudo systemctl daemon-reload
+    sudo systemctl start docker.socket
+    sudo systemctl start docker
+    sudo systemctl status docker
+    #sudo docker info
+
 fi
 
 if [[ "$NEPI_HW" == "GENERIC" ]]; then
@@ -101,23 +140,58 @@ if [[ "$NEPI_HW" == "RPI" ]]; then
     ### BLANK
 fi
 
-sudo vi /etc/default/docker
-# Edit this line and uncomment
-DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"  -g /mnt/${NEPI_DOCKER}/
-
-# Set docker service root location
-#https://stackoverflow.com/questions/44010124/where-does-docker-store-its-temp-files-during-extraction
-sudo vi /usr/lib/systemd/system/docker.service
-#Comment out ExecStart line and add below
-ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root=/mnt/${NEPI_DOCKER}/
-#Then reload
+#Then reload and restart docker
 sudo systemctl daemon-reload
-
-#start docker
 sudo systemctl start docker.socket
 sudo systemctl start docker
+sudo systemctl status docker
 sudo docker info
+
+##############
+# Setup Docker Compose
+
+
 
 ##################################
 echo 'Setup Complete'
 ##################################
+
+
+#############################################################################
+
+
+##################################
+# Import Image Container
+##################################
+
+
+##################################
+# Switch Active Container
+##################################
+
+
+##################################
+# Build new Jetson Container
+##################################
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
+
+sudo docker run -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix nvcr.io/nvidia/l4t-jetpack:r35.1.0
+
+### Within container do this:
+# Set root password
+passwd
+nepi
+nepi
+
+
+## Add nepi user
+# https://stackoverflow.com/questions/27701930/how-to-add-users-to-docker-container
+addgroup nepi
+adduser --ingroup nepi nepi
+visudo /etc/sudoers
+nepi    ALL=(ALL:ALL) ALL
+
+su nepi
+passwd
+nepi
+nepi

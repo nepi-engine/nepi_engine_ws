@@ -56,22 +56,23 @@ sudo chown -R ${USER}:${USER} $NEPI_SSH_DIR
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
-NEPI_ALIASES=~/.nepi_pc_aliases
-BASHRC=~/.bashrc
-echo "Installing NEPI aliases file ${NEPI_ALIASES} "
-cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES
-sudo chown -R ${USER}:${USER} $NEPI_ALIASES
+NEPI_ALIASES_SOURCE=${PWD}/resources/aliases/nepi_pc_aliases
+NEPI_ALIASES_DEST=${HOME}/.nepi_pc_aliases
+BASHRC=${HOME}/.bashrc
+echo "Installing NEPI aliases file ${NEPI_ALIASES_DEST} "
+sudo cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES_DEST
+sudo chown -R ${USER}:${USER} $NEPI_ALIASES_DEST
 
 echo "Updating bashrc file"
 if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
-    echo "Done"
+    echo "Already Done"
 else
     echo " " | sudo tee -a $BASHRC
     echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-    echo "if [ -f ~/.nepi_pc_aliases ]; then" | sudo tee -a $BASHRC
-    echo "    . ~/.nepi_aliases" | sudo tee -a $BASHRC
+    echo "if [ -f ${NEPI_ALIASES_DEST} ]; then" | sudo tee -a $BASHRC
+    echo "    . ${NEPI_ALIASES_DEST}" | sudo tee -a $BASHRC
     echo "fi" | sudo tee -a $BASHRC
-    echo "Done"
+    echo "Update Done"
 fi
 sleep 1 & source $BASHRC
 . ${NEPI_ALIASES} && nepi
