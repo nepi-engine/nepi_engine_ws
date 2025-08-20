@@ -1,0 +1,357 @@
+#!/bin/bash
+
+###################################
+# Env Variables
+
+CURRENT_DIR=$(pwd)
+
+export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
+
+export NEPI_REMOTE_SETUP=0
+#export NEPI_TARGET_IP=192.168.179.104
+export NEPI_TARGET_USERNAME=nepi
+export NEPI_SSH_KEY=/mnt/nepi_config/docker_config/nepi_engine_default_private_ssh_key
+export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
+
+
+########################################
+# Setup Connection Shortcuts
+#alias sshn="ssh -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+#alias scpn="scp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+#alias sftpn="sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+
+########################################
+# Setup REMOTE ROS CONNECTION
+#source /opt/ros/noetic/setup.bashvi
+#source ~/nepi_catkin_ws/devel/setup.bash
+#export ROS_MASTER_URI=http://192.168.179.103:11311
+#export ROS_IP=192.168.179.5
+
+
+###################################
+# Start SSH Agent
+#----------------------------
+'
+SSH_ENV="$HOME/.ssh/environment"
+
+function run_ssh_env {
+  . "${SSH_ENV}" > /dev/null
+}
+
+function start_ssh_agent {
+  echo "Initializing new SSH agent..."
+  ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+  echo "succeeded"
+  chmod 600 "${SSH_ENV}"
+
+  run_ssh_env;
+
+  ssh-add ~/.ssh/id_rsa;
+}
+
+if [ -f "${SSH_ENV}" ]; then
+  run_ssh_env;
+  ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+    start_ssh_agent;
+  }
+else
+  start_ssh_agent;
+fi
+
+
+alias gitroot="cd $(git rev-parse --show-toplevel)"
+'
+
+
+###################################
+#NEPI Git Utility Functions
+
+# Function to check if a folder is in a Git repository
+is_git_repo() {
+  local folder_path="$1"
+  if [ -d "$folder_path/.git" ]; then
+    # If .git directory exists directly, it's a repository root
+    return 0
+  fi
+
+  # Change to the folder and check if it's inside a work tree
+  (cd "$folder_path" 2>/dev/null && git rev-parse --is-inside-work-tree >/dev/null 2>&1)
+  return $? # Return the exit status of the git command
+}
+
+
+
+######################
+# Git branch info
+echo "Checking folder for git repo"
+
+if is_git_repo $CURRENT_DIR; then
+  export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+
+  #GIT Command Line Branch Display
+  parse_git_branch() {
+      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+  }
+else
+  echo "The folder is NOT part of a Git repository."
+fi
+
+
+
+
+###################################
+#Dev Shortcuts
+
+alias pingn="ping ${NEPI_TARGET_IP}"
+
+# Function to search for text
+function ftext(){
+grep -r "$@" ./*
+}
+
+# Function to search for text
+function ffile(){
+find ./* -iname  "*$@*" 
+}
+
+
+function pushn(){
+git add --all
+git commit -m "*$@*" 
+git push
+}
+
+function pushnh(){
+head=git rev-parse HEAD
+pushn
+git checkout ros1_main
+git merge $head
+git push
+}
+
+
+###################################
+###################################
+#NEPI folder shortcuts
+export AI="/mnt/nepi_storage/ai_models"
+export AIF="/opt/nepi/nepi_engine/share/nepi_ai_ifs"
+export API="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api"
+export APPS="/opt/nepi/nepi_engine/share/nepi_apps"
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export CFG="/mnt/nepi_storage/user_cfg"
+export DATA="/mnt/nepi_storage/data"
+export DIST="/opt/nepi/nepi_engine/lib/python3/dist-packages"
+export DRIVERS="/opt/nepi/nepi_engine/lib/nepi_drivers"
+export ETC="/opt/nepi/nepi_engine/etc"
+export INSTALL="/mnt/nepi_storage/intstall"
+export LAUNCH="/opt/nepi/nepi_engine/share/nepi_env/launch"
+export LIB="/opt/nepi/nepi_engine/lib"
+export LIBSDK="/opt/nepi/nepi_engine/lib/nepi_sdk"
+export MANAGERS="/opt/nepi/nepi_engine/lib/nepi_managers"
+export NFI="/mnt/nepi_storage/nepi_full_img"
+export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
+export ROS="/opt/nepi/nepi_engine"
+export RUI="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
+export RUI_ENV="/opt/nepi/nepi_rui"
+export SDK="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk"
+export SHARE="/opt/nepi/nepi_engine/share"
+export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
+export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src"
+export TMP="/mnt/nepi_storage/tmp"
+export DRIVE="/mnt/nepi_storage"
+
+
+#NEPI sftp folder shortcuts
+# Function to open sftp to location on nepi device
+# Example call: sftpnl '/mnt/nepi_storage'
+function sftpnl(){
+sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi:../.."$@"
+}
+function ai(){
+	sftpnl $AI
+}	
+function aifs(){
+	sftpnl $AIFS
+}	
+function api(){
+	sftpnl $API
+}	
+function apps(){
+	sftpnl $APPS
+}
+function auto(){
+	sftpnl $AUTO
+}
+function cfg(){
+	sftpnl $CFG
+}	
+function data(){
+	sftpnl $DATA
+}	
+function dist(){
+	sftpnl $DIST
+}	
+function drivers(){
+	sftpnl $DRIVERS
+}	
+function etc(){
+	sftpnl $ETC
+}	
+function intstall(){
+	sftpnl $INSTALL
+}	
+function lib(){
+	sftpnl $LIB
+}	
+function libsdk(){
+	sftpnl $LIBSDK
+}	
+function managers(){
+	sftpnl $MANAGERS
+}	
+function nfi(){
+	sftpnl $NFI
+}	
+function nfia(){
+	sftpnl $NFIA
+}	
+function engine(){
+	sftpnl $ROS
+}	
+function rui(){
+	sftpnl $RUI
+}
+function rui_env(){
+	sftpnl $RUI_ENV
+}	
+function sdk(){
+	sftpnl $SDK
+}	
+function share(){
+	sftpnl $SHARE
+}	
+function src(){
+	sftpnl $SRC
+}	
+function srcrui(){
+	sftpnl $SRCRUI
+}
+function tmp(){
+	sftpnl $TMP
+}	
+function drive(){
+	sftpnl $DRIVE
+}
+
+# Print out the nepi shortcuts
+function nepi(){
+    text="
+    #############################
+    ## NEPI file shortcuts ##
+    #############################
+    # ftext = Find text in files recursively
+    # ffile = Find filenames with text match recursively
+    #
+    #############################
+    ## NEPI connect shortcuts ##
+    #############################
+    # pingn = pings nepi device ip address
+    # sshn = ssh into nepi system
+    # sftpn = sftp into nepi system
+    #
+    #############################
+    ## NEPI dev shortcuts ##
+    #############################
+    # pushn = add/commit/push current git repo with comment
+    #
+    ################################
+    ## NEPI sftp folder shortcuts ##
+    ################################
+    ai = /mnt/nepi_storage/ai_models
+    aifs = /opt/nepi/nepi_engine/share/nepi_aifs
+    api = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
+    apps = /opt/nepi/nepi_engine/share/nepi_apps
+    auto = /mnt/nepi_storage/automation_scripts
+    cfg = /mnt/nepi_storage/user_cfg
+    data = /mnt/nepi_storage/data
+    dist = /opt/nepi/nepi_engine/lib/python3/dist-packages/
+    drivers = /opt/nepi/nepi_engine/lib/nepi_drivers
+    etc = /opt/nepi/nepi_engine/etc
+    intstall = /mnt/nepi_storage/intstall
+    lib = /opt/nepi/nepi_engine/lib
+    libsdk = /opt/nepi/nepi_engine/lib/sdk
+    managers = /opt/nepi/nepi_engine/lib/nepi_managers
+    engine = /opt/nepi/nepi_engine
+    nfi = /mnt/nepi_storage/nepi_full_img
+    nfia = /mnt/nepi_storage/nepi_full_img_archive
+    rui = /opt/nepi/rui/src/rui_webserver/rui-app/src
+    rui_env = /opt/nepi/rui
+    sdk = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk
+    share = /opt/nepi/nepi_engine/share
+    src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
+    srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src
+    tmp = /mnt/nepi_storage/tmp
+    drive = /mnt/nepi_storage
+    "
+    echo "$text"
+}
+
+
+
+########################
+# DOCKER SHORTCUTS
+#########################
+NEPI_CONT=nepi_fs_a
+CONT_TAG=nepi_fs_a
+CONT_ID=132e8b54023f
+
+#Run NEPI Complete
+sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage -it --net=host --runtime nvidia -e -v /tmp/.x11-unix/:/tmp/.x11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash -c "/nepi_start_all.sh"
+sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash -c "/nepi_engine_start.sh"
+
+
+#Run NEPI in Dev Mode
+sudo docker run --privileged -e UDEV=1 --user nepi --gpus all --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage --mount type=bind,source=/dev,target=/dev -it --net=host --runtime nvidia -v /tmp/.X11-unix/:/tmp/.X11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash
+
+
+# Run Nepi RUI
+sudo docker run --rm -it --net=host -v /tmp/.X11-unix/:/tmp/.X11-unix ${NEPI_CONT}:${CONT_TAG} /bin/bash -c "/nepi_rui_start.sh"
+
+# Start a Singular Contanier with Docker Compose
+sudo docker compose up ID...
+
+# Remove Singular Contanier with Docker Compose
+sudo docker rm ${CONT_ID}
+
+# Remove Singular Network with Docker Compose
+sudo docker network rm ${CONT_ID}
+
+# How to See Running Docker Compose Containers
+sudo docker compose ps -a
+
+# How to See Running Docker Networks
+sudo     docker network ls
+
+
+//sudo docker images -a
+//sudo docker ps -a
+
+sudo docker start ${CONT_ID}  # restart it in the background
+//sudo docker attach nepi_test  # reattach the terminal & stdin
+
+# Connect to a Running Container
+sudo docker exec -it ${CONT_ID} /bin/bash
+
+
+Clone container
+sudo docker ps -a
+Get <ID>
+sudo docker commit <ID> nepi1
+
+# Clean out <none> Images
+sudo docker rmi $(sudo docker images -f “dangling=true” -q)
+
+# Export/Import Flat Image as tar
+sudo docker export a1e4e38c2162 > /mnt/nepi_storage/tmp/nepi3p0p4p1_jp5p0p2.tar
+sudo docker import /mnt/nepi_storage/tmp/nepi3p0p4p1_jp5p0p2.tar 
+docker tag <IMAGE_ID> nepi_ft1
