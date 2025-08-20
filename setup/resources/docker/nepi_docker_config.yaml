@@ -1,3 +1,4 @@
 active: nepi_fs_a
+inactive: nepi_fs_b
 count: 0
 supports_a_b: false

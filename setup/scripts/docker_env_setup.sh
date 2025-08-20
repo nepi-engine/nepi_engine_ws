@@ -24,6 +24,18 @@ echo "Docker Enviorment Setup"
 #mkdir $TMP
 #cd $TMP
 
+cd /mnt
+# Create nepi_config folder
+sudo mkdir nepi_config
+# Create nepi_docker folder
+sudo mkdir nepi_docker
+# Create nepi_full_img folder
+sudo mkdir nepi_full_img
+# Create nepi_storage folder
+sudo mkdir nepi_storage
+
+# Partition Data for nepi_docker # NOTE: Do we need nepi_full_img
+
 # Install docker if not present
 # Install Docker & Docker Compose
 echo ""
