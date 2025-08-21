@@ -52,11 +52,13 @@ export NEPI_DOCKER_COMPOSE_FILE=${NEPI_DOCKER_CONFIG_FOLDER}/nepi_docker_compose
 ## NEED TO: Read these from nepi_config.yaml file
 export ACTIVE_CONT=nepi_fs_a
 export ACTIVE_VERSION=3p2p0-RC2
+export ACTIVE_UPLOAD_DATE=0
 export ACTIVE_TAG=jetson-3p2p0-rc2
 export ACTIVE_ID=0
 
 export INACTIVE_CONT=nepi_fs_b
 export INACTIVE_VERSION=uknown
+export INACTIVE_UPLOAD_DATE=0
 export INACTIVE_TAG=jetson-uknown
 export INACTIVE_ID=0
 
@@ -110,12 +112,19 @@ function refresh_variables(){
   read_yaml_value "NEPI_HW" "NEPI_HW" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $NEPI_HW
 
+  #export NEPI_ARCH=$arch_hw
+  read_yaml_value "NEPI_ARCH" "NEPI_ARCH" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $NEPI_ARCH
+
   #export ACTIVE_CONT=nepi_fs_a
   read_yaml_value "ACTIVE_CONT" "ACTIVE_CONT" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $ACTIVE_CONT
   #export ACTIVE_VERSION=3p2p0-RC2
   read_yaml_value "ACTIVE_VERSION" "ACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $ACTIVE_VERSION
+  #export ACTIVE_UPLOAD_DATE=0
+  read_yaml_value "ACTIVE_UPLOAD_DATE" "ACTIVE_UPLOAD_DATE" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $ACTIVE_UPLOAD_DATE
   #export ACTIVE_TAG=jetson-3p2p0-rc2
   read_yaml_value "ACTIVE_TAG" "ACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $ACTIVE_TAG
@@ -129,6 +138,9 @@ function refresh_variables(){
   #export INACTIVE_VERSION=uknown
   read_yaml_value "INACTIVE_VERSION" "INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $INACTIVE_VERSION
+  #export INACTIVE_UPLOAD_DATE=0
+  read_yaml_value "INACTIVE_UPLOAD_DATE" "INACTIVE_UPLOAD_DATE" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $INACTIVE_UPLOAD_DATE
   #export INACTIVE_TAG=jetson-uknown
   read_yaml_value "INACTIVE_TAG" "INACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $INACTIVE_TAG
@@ -213,13 +225,27 @@ export -f import_nepi
 # SWITCH_NEPI
 ######################
 function switch_nepi(){
-
+  
+  refresh_variables
+  
   #5) Switch active/inactive containers in nepi_docker_config.yaml 
   #6) Update active/inactive version,tags,ids in nepi_docker_config.yaml
   #7) Update Docker Compose
-
   
+  ### SET INACTIVE DATA AS ACTIVE DATA
+  upate_yaml_value ACTIVE_CONT "$INACTIVE_CONT" $NEPI_DOCKER_CONFIG_FILE
+  upate_yaml_value "ACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "ACTIVE_UPLOAD_DATE" "$INACTIVE_UPLOAD_DATE" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "ACTIVE_TAG" "$INACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "ACTIVE_ID" "$INACTIVE_ID" "$NEPI_DOCKER_CONFIG_FILE"
 
+  ### SET ACTIVE DATA AS INACTIVE DATA
+  upate_yaml_value "INACTIVE_CONT" "$ACTIVE_CONT" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "INACTIVE_VERSION" "$ACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "INACTIVE_UPLOAD_DATE" "$ACTIVE_UPLOAD_DATE" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "INACTIVE_TAG" "$ACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
+  upate_yaml_value "INACTIVE_ID" "$ACTIVE_ID" "$NEPI_DOCKER_CONFIG_FILE"
+  
 }
 export -f switch_nepi
 

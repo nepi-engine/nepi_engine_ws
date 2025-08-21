@@ -129,10 +129,11 @@ fi
 ######################
 function upate_yaml_value(){
     KEY=$1
-    #echo $ELEMENT1
-    VAL=$2
-    #echo $ELEMENT2
+    echo $KEY
+    export VAL=$2
+    echo $VAL
     FILE=$3
+    echo $FILE
     yq e -i '.'"$KEY"' = env(VAL)' $FILE
 }
 export -f upate_yaml_value
@@ -141,7 +142,7 @@ function read_yaml_value(){
     VARIABLE=$1
     #echo=$VARIABLE
     KEY=$2
-    #echo=$KEY
+    #echo $KEY
     FILE=$3
     #echo=$FILE
     export $VARIABLE=$(yq e '.'"$KEY"'' $FILE)
