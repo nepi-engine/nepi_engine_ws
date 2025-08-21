@@ -32,11 +32,13 @@ function pingi(){
         return 1
     fi
 }
+export -f pingi
 
 # source bashrc
 function sbrc(){
     source ${HOME}/.bashrc
 }
+export -f sbrc
 
 
 UTILSN="${UTILSN}
@@ -56,12 +58,14 @@ sbrc = Source the current users bashrc file"
 function ftext(){
 grep -r "$@" ./*
 }
+export -f ftext
 
 # Function to search for text
 # Example call: find 'nepi_sdk.parse_header_msg'
 function ffile(){
 find ./* -iname  "*$@*" 
 }
+export -f ffile
 
 UTILSN="${UTILSN}
 
@@ -120,9 +124,38 @@ pushn = Add,commit,push repo changes with provided comment"
 
 fi
 
+######################
+# FILE Functions
+######################
+function upate_yaml_value(){
+    KEY=$1
+    #echo $ELEMENT1
+    VAL=$2
+    #echo $ELEMENT2
+    FILE=$3
+    yq e -i '.'"$KEY"' = env(VAL)' $FILE
+}
+export -f upate_yaml_value
 
+function read_yaml_value(){
+    VARIABLE=$1
+    #echo=$VARIABLE
+    KEY=$2
+    #echo=$KEY
+    FILE=$3
+    #echo=$FILE
+    export $VARIABLE=$(yq e '.'"$KEY"'' $FILE)
+    #yq e '.NEPI_HW' nepi_docker_config.yaml
+    #echo $VARIABLE
+}
+export -f read_yaml_value
 
+#### Update Help Test
+UTILSN="${UTILSN}
 
+### NEPI FILE UTIL FUNCTIONS
+
+write_to_yaml - Udates yaml key value given KEY VAL FILE"
 
 ###################################
 # ROS Util Functions
@@ -265,5 +298,6 @@ fi
 function utilsn(){
     echo "$UTILSN"
 }
+export -f utilsn
 
 

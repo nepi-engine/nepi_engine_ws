@@ -1,4 +1,4 @@
-NEPI_HW: gotit
+NEPI_HW: aaa
 ### NEED TO: Read these from nepi_config.yaml file
 ACTIVE_CONT: nepi_fs_a
 ACTIVE_VERSION: 3p2p0

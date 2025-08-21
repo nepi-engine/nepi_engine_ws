@@ -9,6 +9,12 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 
+### SOURCE NEPI UTIL FUNCTIONS
+NUSH=${HOME}/.nepi_bash_utils
+#echo "Sourcing ${NUSH}"
+sleep 1 & source $NUSH
+wait
+
 
 # This file contains nepi docker host system aliases and sources nepi bash utils
 HELPN="
@@ -98,9 +104,209 @@ RUNNING_TAG=${RUNNING_TAG}
 RUNNING_ID=${RUNNING_ID}"
 
 
-###################################
+# Function to update aliases from config file call same function when changes are made to the onfig file
+function refresh_variables(){
+  #export NEPI_HW=JETSON
+  read_yaml_value "NEPI_HW" "NEPI_HW" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $NEPI_HW
+
+  #export ACTIVE_CONT=nepi_fs_a
+  read_yaml_value "ACTIVE_CONT" "ACTIVE_CONT" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $ACTIVE_CONT
+  #export ACTIVE_VERSION=3p2p0-RC2
+  read_yaml_value "ACTIVE_VERSION" "ACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $ACTIVE_VERSION
+  #export ACTIVE_TAG=jetson-3p2p0-rc2
+  read_yaml_value "ACTIVE_TAG" "ACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $ACTIVE_TAG
+  #export ACTIVE_ID=0
+  read_yaml_value "ACTIVE_ID" "ACTIVE_ID" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $ACTIVE_ID
+
+  #export INACTIVE_CONT=nepi_fs_b
+  read_yaml_value "INACTIVE_CONT" "INACTIVE_CONT" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $INACTIVE_CONT
+  #export INACTIVE_VERSION=uknown
+  read_yaml_value "INACTIVE_VERSION" "INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $INACTIVE_VERSION
+  #export INACTIVE_TAG=jetson-uknown
+  read_yaml_value "INACTIVE_TAG" "INACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $INACTIVE_TAG
+  #export INACTIVE_ID=0
+  read_yaml_value "INACTIVE_ID" "INACTIVE_ID" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $INACTIVE_ID
+  #export STAGING_CONT=nepi_staging
+  read_yaml_value "STAGING_CONT" "STAGING_CONT" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $STAGING_CONT
+
+  ######  NEED TO: Update from current docker status
+  #export RUNNING_CONT=None
+  read_yaml_value "RUNNING_CONT" "RUNNING_CONT" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $RUNNING_CONT
+  #export RUNNING_VERSION=uknown
+  read_yaml_value "RUNNING_VERSION" "RUNNING_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $RUNNING_VERSION
+  #export RUNNING_TAG=uknown
+  read_yaml_value "RUNNING_TAG" "RUNNING_TAG" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $RUNNING_TAG
+  #export RUNNING_ID=0
+  read_yaml_value "RUNNING_ID" "RUNNING_ID" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $RUNNING_ID
+
+  #export NEPI_REMOTE_SETUP=1
+  read_yaml_value "NEPI_REMOTE_SETUP" "NEPI_REMOTE_SETUP" "$NEPI_DOCKER_CONFIG_FILE"
+  #echo $NEPI_REMOTE_SETUP
+}
+
+#############################
+# NEPI DOCKER FUNCTIONS
+#############################
+
+######################
+# IMPORT_NEPI
+######################
+
+function create_tag(){
+    HW_NAME=$1
+    SW_VERSION=$2
+    tag=${HW_NAME}-${SW_VERSION}
+    ltag=sed -e 's/\(.*\)/\L\1/' <<< "$tag"
+    echo "$ltag"
+}
+export -f create_tag
+
+function import_nepi(){
+    IMPORT_PATH=/media/nepidev/NServer_Backup
+    ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
+    IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
+    ######  NEED TO: Update from IMPORT_PATH tar file
+    IMAGE_VERSION=3p2p0
+    
+    ######
+    INSTALL_IMAGE=${IMPORT_PATH}/${IMAGE_FILE}
+    #1) Stop any processes for INACTIVE_CONT
+    #2) Import INSTALL_IMAGE to STAGING_CONT
+    #3) Remove INACTIVE_CONT
+    #4) Rename STAGING_CONT to INACTIVE_CONT
+
+    res=$(sudo docker import $INSTALL_IMAGE)
+    hash=${res##*sha256:}
+    ID=${hash:0:12}
+    NAME=$(sudo docker name $ID)
+    TAG=$(sudo docker tag $ID)
+    NEW_NAME=$INACTIVE_CONT
+    NEW_TAG=$TAG
+    sudo docker tag ${NAME}:${TAG} ${NEW_NAME}:${NEW_TAG}
+    sudo docker rmi ${NAME}:${TAG}
+    
+    INACTIVE_TAG=$NEW_TAG
+    INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
+
+    #6) Update inactive version,tags,ids in nepi_docker_config.yaml
+
+    echo "  ADD SOME PRINT OUTS  "
+}
+export -f import_nepi
+
+
+######################
+# SWITCH_NEPI
+######################
+function switch_nepi(){
+
+  #5) Switch active/inactive containers in nepi_docker_config.yaml 
+  #6) Update active/inactive version,tags,ids in nepi_docker_config.yaml
+  #7) Update Docker Compose
+
+  
+
+}
+export -f switch_nepi
+
+######################
+# RUN_NEPI
+######################
+function run_nepi(){
+    #Run NEPI Complete
+    sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all \
+    --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/dev,target=/dev \
+    -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix/:/tmp/.X11-unix \
+    ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash \
+    -c "/nepi_engine_start.sh"
+}
+export -f run_nepi
+
+######################
+# LOGIN_NEPI
+######################
+function login_nepi(){
+    # Connect to a Running Container
+    sudo docker exec -it ${ACTIVE_ID} /bin/bash
+}
+export -f login_nepi
+
+
+
+######################
+# RUN_DEV
+######################
+function run_dev(){
+    #Run NEPI in Dev Mode
+    sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
+    --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/dev,target=/dev \
+    -it --net=host --runtime nvidia \
+    -v /tmp/.X11-unix/:/tmp/.X11-unix \
+    ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash
+}
+export -f run_dev
+
+
+######################
+# STOP_DEV
+######################
+function stop_dev(){
+    yq e '.NEPI_HW' nepi_docker_config.yaml
+}
+export -f stop_dev
+
+######################
+# START_DEV
+######################
+function start_dev(){
+
+}
+export -f start_dev
+
+######################
+# RESTART_DEV
+######################
+function restart_dev(){
+
+}
+export -f restart_dev
+
+######################
+# EXPORT_DEV
+######################
+function export_dev(){
+
+}
+export -f export_dev
+
+######################
+# READ_DOCKER_CONFIG
+######################
+function ffile(){
+    yq e -i '.' nepi_docker_config.yaml 
+}
+export -f ffile
+
 ###################################
 #NEPI folder shortcuts
+###################################
 export DRIVE="/mnt/nepi_storage"
 
 export AI="/mnt/nepi_storage/ai_models"
@@ -137,11 +343,7 @@ alias fcfg="cd $FCFG"
 alias scfg="cd $SCFG"
 alias ucfg="cd $UCFG"
 
-### SOURCE NEPI UTIL FUNCTIONS
-NUSH=${HOME}/.nepi_bash_utils
-#echo "Sourcing ${NUSH}"
-sleep 1 & source $NUSH
-wait
+
 # Print out nepi aliases
 UINFO="$(. ${NUSH} && utilsn)"
 #echo "${UINFO}"

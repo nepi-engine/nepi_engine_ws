@@ -102,10 +102,10 @@ DOCKER_MIN_GB=100
 STORAGE_MIN_GB=150
 CONFIG_MIN_GB=1
 
-if [ "$PARTS_REQ" -eq 1 ]; then
+if [ $PARTS_REQ -eq 1 ]; then
     echo "Checking for rerquired NEPI SSD Folders"
     check=0
-    while [$check -eq 0]
+    while [ $check -eq 0 ]
     do
         check = 0
         if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER -eq 1]; then

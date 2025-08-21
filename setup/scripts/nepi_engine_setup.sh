@@ -78,7 +78,7 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
 echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
 
-NEPI_UTILS_SOURCE=${PWD}/resources/bash/nepi_bash_utils
+NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
 sudo rm $NEPI_UTILS_DEST

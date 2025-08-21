@@ -12,92 +12,12 @@
 
 # This file contains tools for working with nepi docker system
 
-### ADD TO nepi_docker_aliases #################################################################
-HELPN="
-#############################
-## NEPI Help Info ##
-#############################"
+### ADD TO nepi_bash_utils #################################################################
 
-########################
-# Variable Initailization
-#########################
-
-# HW OPTIONS [JETSON,ARM,AMD,RPI]
-export NEPI_HW=JETSON
-
-arch_hw=arm64
-if [ $NEPI_HW -eq JETSON ]; then
-  arch_hw=arm64
-fi
-if [ $NEPI_HW -eq ARM ]; then
-  arch_hw=arm64
-fi
-if [ $NEPI_HW -eq AMD ]; then
-  arch_hw=amd64
-fi
-if [ $NEPI_HW -eq RPI ]; then
-  arch_hw=rpi
-fi
-export NEPI_ARCH=$arch_hw
-
-# NEED TO: Set to $NEPI_DOCKER_CONFIG from ???
-export NEPI_DOCKER_CONFIG=${PWD}/nepi_docker_config.yaml
-
-## NEED TO: Read these from nepi_config.yaml file
-export ACTIVE_CONT=nepi_fs_a
-export ACTIVE_VERSION=3p2p0-RC2
-#ACTIVE_TAG=$(create_tag $NEPI_HW $ACTIVE_VERSION)
-export ACTIVE_TAG=jetson-3p2p0-rc2
-export ACTIVE_ID=$(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
-
-export INACTIVE_CONT=nepi_fs_b
-export INACTIVE_VERSION=uknown
-export INACTIVE_TAG=$(create_tag $NEPI_HW $INACTIVE_VERSION)
-export INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
-
-export STAGING_CONT=nepi_staging
-
-export IMPORT_PATH=/media/nepidev/NServer_Backup
-export EXPORT_PATH=/mnt/nepi_storage/nepi_full_img_archive
-
-######  NEED TO: Update from current docker status
-export RUNNING_CONT=None
-export RUNNING_VERSION=uknown
-export RUNNING_TAG=uknown
-export RUNNING_ID=0
-
-
-#### Update Help Test
-HELPN="${HELPN}
-
-### NEPI DOCKER CONFIG
-
-NEPI_HW=${NEPI_HW}
-NEPI_ARCH=${NEPI_ARCH}
-NEPI_DOCKER_CONFIG=${NEPI_DOCKER_CONFIG}
-
-ACTIVE_CONT=${ACTIVE_CONT}
-ACTIVE_VERSION-eq${ACTIVE_VERSION}
-ACTIVE_TAG=${ACTIVE_TAG}
-ACTIVE_ID=${ACTIVE_ID}
-
-INACTIVE_CONT=${INACTIVE_CONT}
-INACTIVE_VERSION=${INACTIVE_VERSION}
-INACTIVE_TAG=${INACTIVE_TAG}
-INACTIVE_ID=${INACTIVE_ID}
-
-STAGING_CONT=${STAGING_CONT}
-IMPORT_PATH=${IMPORT_PATH}
-EXPORT_PATH=${EXPORT_PATH}
-
-RUNNING_CONT=${RUNNING_CONT}
-RUNNING_VERSION=${RUNNING_VERSION}
-RUNNING_TAG=${RUNNING_TAG}
-RUNNING_ID=${RUNNING_ID}"
 
 
 ######################
-# Utility Functions
+# FILE Functions
 ######################
 function upate_yaml_value(){
     KEY=$1
@@ -105,28 +25,34 @@ function upate_yaml_value(){
     VAL=$2
     #echo $ELEMENT2
     FILE=$3
-    
     yq e -i '.'"$KEY"' = env(VAL)' $FILE
 }
+export -f upate_yaml_value
 
-function create_tag(){
-    HW_NAME=$1
-    SW_VERSION=$2
-    tag=${HW_NAME}-${SW_VERSION}
-    ltag=sed -e 's/\(.*\)/\L\1/' <<< "$tag"
-    echo "$ltag"
-}   
+function read_yaml_value(){
+    VARIABLE=$1
+    #echo=$VARIABLE
+    KEY=$2
+    #echo=$KEY
+    FILE=$3
+    #echo=$FILE
+    export $VARIABLE=$(yq e '.'"$KEY"'' $FILE)
+    yq e '.NEPI_HW' nepi_docker_config.yaml
+    #echo $VARIABLE
+}
+export -f read_yaml_value
+
+
 
 #### Update Help Test
-HELPN="${HELPN}
+UTILSN="${UTILSN}
 
 ### NEPI FILE UTIL FUNCTIONS
 
-write_to_yaml - Udates yaml key value given KEY VAL FILE
-create_tag - Creates a nepi standardized tag given HW_NAME SW_VERSION"
+write_to_yaml - Udates yaml key value given KEY VAL FILE"
 
 
-
+### ADD TO nepi_docker_aliases #################################################################
 #############################
 # NEPI DOCKER FUNCTIONS
 #############################
@@ -134,7 +60,17 @@ create_tag - Creates a nepi standardized tag given HW_NAME SW_VERSION"
 ######################
 # IMPORT_NEPI
 ######################
-if [ "$IMPORT_NEPI" -eq 1 ]; then
+
+function create_tag(){
+    HW_NAME=$1
+    SW_VERSION=$2
+    tag=${HW_NAME}-${SW_VERSION}
+    ltag=sed -e 's/\(.*\)/\L\1/' <<< "$tag"
+    echo "$ltag"
+}
+export -f create_tag
+
+function import_nepi(){
     IMPORT_PATH=/media/nepidev/NServer_Backup
     ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
     IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
@@ -147,8 +83,6 @@ if [ "$IMPORT_NEPI" -eq 1 ]; then
     #2) Import INSTALL_IMAGE to STAGING_CONT
     #3) Remove INACTIVE_CONT
     #4) Rename STAGING_CONT to INACTIVE_CONT
-
-
 
     res=$(sudo docker import $INSTALL_IMAGE)
     hash=${res##*sha256:}
@@ -165,27 +99,27 @@ if [ "$IMPORT_NEPI" -eq 1 ]; then
 
     #6) Update inactive version,tags,ids in nepi_docker_config.yaml
 
-
     echo "  ADD SOME PRINT OUTS  "
-
-fi
+}
+export -f import_nepi
 
 
 ######################
 # SWITCH_NEPI
 ######################
-if [ "$SWITCH_NEPI" -eq 1 ]; then
+function switch_nepi(){
 
     #5) Switch active/inactive containers in nepi_docker_config.yaml 
     #6) Update active/inactive version,tags,ids in nepi_docker_config.yaml
     #7) Update Docker Compose
 
-fi
+}
+export -f switch_nepi
 
 ######################
 # RUN_NEPI
 ######################
-if [ "$RUN_NEPI" -eq 1 ]; then
+function run_nepi(){
     #Run NEPI Complete
     sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
@@ -194,25 +128,24 @@ if [ "$RUN_NEPI" -eq 1 ]; then
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
     ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash \
     -c "/nepi_engine_start.sh"
-fi
+}
+export -f run_nepi
 
 ######################
 # LOGIN_NEPI
 ######################
-f [ "$LOGIN_NEPI" -eq 1 ]; then
+function login_nepi(){
     # Connect to a Running Container
     sudo docker exec -it ${ACTIVE_ID} /bin/bash
-
-fi
+}
+export -f login_nepi
 
 
 
 ######################
 # RUN_DEV
 ######################
-f [ $RUN_DEV -eq 1 ]; then
-
-    
+function run_dev(){
     #Run NEPI in Dev Mode
     sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
@@ -220,41 +153,41 @@ f [ $RUN_DEV -eq 1 ]; then
     -it --net=host --runtime nvidia \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
     ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash
-
-fi
+}
+export -f run_dev
 
 
 ######################
 # STOP_DEV
 ######################
-f [ "$STOP_DEV" -eq 1 ]; then
+function stop_dev(){
     yq e '.NEPI_HW' nepi_docker_config.yaml
-
-fi
+}
+export -f stop_dev
 
 ######################
 # START_DEV
 ######################
-f [ "$START_DEV" -eq 1 ]; then
+function start_dev(){
 
-
-fi
+}
+export -f start_dev
 
 ######################
 # RESTART_DEV
 ######################
-f [ "$RESTART_DEV" -eq 1 ]; then
+function restart_dev(){
 
-
-fi
+}
+export -f restart_dev
 
 ######################
 # EXPORT_DEV
 ######################
-f [ "$EXPORT_DEV" -eq 1 ]; then
+function export_dev(){
 
-
-fi
+}
+export -f export_dev
 
 ######################
 # READ_DOCKER_CONFIG
@@ -262,12 +195,14 @@ fi
 function ffile(){
     yq e -i '.' nepi_docker_config.yaml 
 }
+export -f ffile
 
 
 #### Update Help Test
 HELPN="${HELPN}
 
-### NEPI FILE UTIL FUNCTIONS
+### NEPI FILE DOCKER UTIL FUNCTIONS
+
 
 "
 
