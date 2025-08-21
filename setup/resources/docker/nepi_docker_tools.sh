@@ -12,41 +12,40 @@
 
 # This file contains tools for working with nepi docker system
 
-# This file configigues an installed NEPI File System
-
-NEPI_DOCKER_CONFIG=${PWD}/nepi_docker_config_config.yaml
 
 ########################
-# Variable Setup
+# Variable Initailization
 #########################
-NEPI_HW=JETSON
-### NEED TO: Read these from nepi_config.yaml file
-ACTIVE_CONT=nepi_fs_a
-ACTIVE_VERSION=3p2p0-RC2
+export NEPI_HW=JETSON
+
+# NEED TO: Set to $NEPI_DOCKER_CONFIG from ???
+export NEPI_DOCKER_CONFIG=${PWD}/nepi_docker_config.yaml
+
+## NEED TO: Read these from nepi_config.yaml file
+export ACTIVE_CONT=nepi_fs_a
+export ACTIVE_VERSION=3p2p0-RC2
 #ACTIVE_TAG=$(create_tag $NEPI_HW $ACTIVE_VERSION)
-ACTIVE_TAG=jetson-3p2p0-rc2
+export ACTIVE_TAG=jetson-3p2p0-rc2
+export ACTIVE_ID=$(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
 
+export INACTIVE_CONT=nepi_fs_b
+export INACTIVE_VERSION=uknown
+export INACTIVE_TAG=$(create_tag $NEPI_HW $INACTIVE_VERSION)
+export INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
 
-INACTIVE_CONT=nepi_fs_b
-INACTIVE_VERSION=uknown
-INACTIVE_TAG=$(create_tag $NEPI_HW $INACTIVE_VERSION)
+export STAGING_CONT=nepi_staging
 
-
-STAGING_CONT=nepi_staging
-
-IMPORT_PATH=/media/nepidev/NServer_Backup
-EXPORT_PATH=/mnt/nepi_storage/nepi_full_img_archive
+export IMPORT_PATH=/media/nepidev/NServer_Backup
+export EXPORT_PATH=/mnt/nepi_storage/nepi_full_img_archive
 
 ######  NEED TO: Update from current docker status
-RUNNING_CONT=None
-RUNNING_VERSION=uknown
-RUNNING_TAG=uknown
-RUNNING_ID=0
+export RUNNING_CONT=None
+export RUNNING_VERSION=uknown
+export RUNNING_TAG=uknown
+export RUNNING_ID=0
 
 
-# UPDATED VARS
-ACTIVE_ID=$(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
-INACTIVE_ID=$(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
+
 
 #############################
 # TOOL SELECTION

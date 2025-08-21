@@ -12,6 +12,25 @@
 
 # This file contains nepi docker host system aliases and sources nepi bash utils
 
+# HW OPTIONS [JETSON,ARM,AMD,RPI]
+export NEPI_HW=JETSON
+
+arch_hw=arm64
+if [ $NEPI_HW == JETSON ]; then
+  arch_hw=arm64
+fi
+if [ $NEPI_HW == ARM ]; then
+  arch_hw=arm64
+fi
+if [ $NEPI_HW == AMD ]; then
+  arch_hw=amd64
+fi
+if [ $NEPI_HW == RPI ]; then
+  arch_hw=rpi
+fi
+export NEPI_ARCH=$arch_hw
+
+
 export NEPI_REMOTE_SETUP=1
 
 ###################################

@@ -74,7 +74,6 @@ ffile = Find filenames with text match recursively"
 # Git Util Functions
 ###################################
 
-
 ######################
 # Git branch info
 # Function to check if a folder is in a Git repository

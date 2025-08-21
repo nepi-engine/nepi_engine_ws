@@ -17,7 +17,7 @@ source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 echo ""
-echo "Docker Enviorment Setup"
+echo "NEPI Docker Enviorment Setup"
 
 # Change to tmp install folder
 TMP=${STORAGE["tmp"]}
@@ -28,7 +28,8 @@ cd $TMP
 
 #################################
 # Install Software Requirments
-
+echo ""
+echo "Installing NEPI Docker Required Software Packages"
 #Install yq
 #https://mikefarah.gitbook.io/yq/v3.x
 sudo add-apt-repository ppa:rmescandon/yq
@@ -44,81 +45,65 @@ sudo apt install gitk -y
 
 #################################
 # Install docker if not present
-#???https://www.forecr.io/blogs/installation/how-to-install-and-run-docker-on-jetson-nano
-# https://docs.docker.com/engine/install/ubuntu/
-echo ""
-echo ""
-echo "Installing Docker & Docker Compose"
-# Update Package Lists and Install Prerequisites.
-sudo apt update
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/ubuntu focal stable"
-sudo apt update
-sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+if [ $NEPI_ARCH == arm64 -o $NEPI_ARCH == amd ]; then
+    # https://docs.docker.com/engine/install/ubuntu/
+    echo ""
+    echo ""
+    echo "Installing Docker & Docker Compose"
+    # Update Package Lists and Install Prerequisites.
+    sudo apt update
+    sudo apt install apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=${NEPI_ARCH}] https://download.docker.com/linux/ubuntu focal stable"
+    sudo apt update
+    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo docker info
+    docker compose version
+elif [ $NEPI_ARCH == rpi ]; then
+    echo "RPI not supported yet"
+    exit 1
+fi
 
-# Setup Docker service
-sudo docker info
-docker compose version
-sudo systemctl enable docker
-sudo systemctl status docker
 
+    # Setup Docker Services
+    echo "Enabling Docker Service"
+    sudo systemctl enable docker
+    sudo systemctl status docker
+
+
+    echo "Stopping Docker Service"
+    sudo systemctl stop docker
+    sudo systemctl stop docker.socket
 
 ###########
 # Set docker service root location
 #https://stackoverflow.com/questions/44010124/where-does-docker-store-its-temp-files-during-extraction
 # https://forums.docker.com/t/how-do-i-change-the-docker-image-installation-directory/1169
+echo ""
+echo "Setting Docker File Path to ${NEPI_DOCKER}"
 
-sudo systemctl stop docker
-sudo systemctl stop docker.socket
+## Update docker file
+echo "Updating docker file /etc/default/docker"
+FILE=/etc/default/docker
+KEY=DOCKER_OPTS
+UPDATE=DOCKER_OPTS="'""--dns 8.8.8.8 --dns 8.8.4.4  -g ${NEPI_DOCKER}""'"
+sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 
 
-sudo vi /etc/default/docker
-# Edit this line and uncomment
-DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4  -g $NEPI_DOCKER"
-
-
-sudo vi /usr/lib/systemd/system/docker.service
-#Comment out ExecStart line and add below
-ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root=${NEPI_DOCKER}
-
-#Then reload and restart docker
-sudo systemctl daemon-reload
-sudo systemctl start docker.socket
-sudo systemctl start docker
-sudo systemctl status docker
-sudo docker info
-
-##########
-#Test Docker install
-sudo docker pull hello-world
-sudo docker container run hello-world
-
-#Some Debug Commands
-'
-sudo dockerd --debug
-
-sudo vi /etc/docker/daemon.json
-
-sudo systemctl stop docker
-sudo systemctl stop docker.socket
-sudo systemctl daemon-reload
-sudo systemctl start docker.socket
-sudo systemctl start docker
-sudo systemctl status docker
-'
+## Update docker service file
+echo "Updating docker file /usr/lib/systemd/system/docker.service"
+FILE=/etc/default/docker
+KEY=ExecStart
+UPDATE="ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root=${NEPI_DOCKER}"
+sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 
 
 #######
 # Edit Docker Config
 
-#Stop docker
-sudo systemctl stop docker
-sudo systemctl stop docker.socket
 
 if [[ "$NEPI_HW" == "JETSON" ]]; then
-
-    
+    echo "Configuring Docker for NVIDIA Jetson 
     # Install nvidia toolkit
     #https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
     curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -140,12 +125,6 @@ if [[ "$NEPI_HW" == "JETSON" ]]; then
     sudo mv /etc/docker/daemon.json /etc/docker/daemon.json.bak
     sudo nvidia-ctk runtime configure --runtime=docker
 
-    #Then reload and restart docker
-    sudo systemctl daemon-reload
-    sudo systemctl start docker.socket
-    sudo systemctl start docker
-    sudo systemctl status docker
-    #sudo docker info
 
 fi
 
@@ -158,37 +137,61 @@ if [[ "$NEPI_HW" == "RPI" ]]; then
 fi
 
 #Then reload and restart docker
+echo "Restarting Docker Service"
+sudo systemctl daemon-reload
+sudo systemctl start docker.socket
+sudo systemctl start docker
+sudo systemctl status docker
+
+'
+#Test Docker install
+sudo docker pull hello-world
+sudo docker container run hello-world
+
+#Some Debug Commands
+sudo dockerd --debug
+
+sudo vi /etc/docker/daemon.json
+
+sudo systemctl stop docker
+sudo systemctl stop docker.socket
 sudo systemctl daemon-reload
 sudo systemctl start docker.socket
 sudo systemctl start docker
 sudo systemctl status docker
 sudo docker info
+'
 
-##############
-# Setup Docker Compose
-
-
+echo ""
+echo "Docker Setup Complete"
+echo ""
 
 
 # Disable Host Services if Required
+echo "Disabling Host Services that are managed by NEPI"
 if [ $NEPI_MANAGES_SSH == 1 ]; then
+    echo "Disabling Host SSD Service"
     sudo systemctl enable --now sshd.service
 fi
 
 if [ $NEPI_MANAGES_TIME == 1 ]; then
+    echo "Disabling Host Auto Time Data Service"
     sudo systemctl enable --now chrony.service
 fi
 
 if [ $NEPI_MANAGES_SHARE == 1 ]; then
+    echo "Disabling Host Samba Drive Share Service"
     sudo systemctl enable --now samba.service
 fi
 
 if [ $NEPI_MANAGES_NETWORK == 1 ]; then
+    echo "Disabling Host Network Management Service"
     sudo systemctl disable NetworkManager
 fi
 
 ##################################
-echo 'Setup Complete'
+echo ""
+echo 'NEPI Docker Setup Complete'
 ##################################
 
 

@@ -81,7 +81,8 @@ BASHRC=~/.bashrc
 NEPI_UTILS_SOURCE=${PWD}/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
-sudo cp $NEPI_UTILS_SOURCE ${NEPI_UTILS_DEST}
+sudo rm $NEPI_UTILS_DEST
+sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_UTILS_DEST
 
 NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_system_aliases
@@ -90,7 +91,8 @@ echo ""
 echo "Populating System Folders from ${NEPI_ALIASES_SOURCE}"
 echo ""
 echo "Installing NEPI aliases file to ${NEPI_ALIASES_DEST} "
-sudo cp $NEPI_ALIASES_SOURCE ${NEPI_ALIASES_DEST}
+sudo rm $NEPI_ALIASES_DEST
+sudo cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
 
 
