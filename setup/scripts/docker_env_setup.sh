@@ -45,7 +45,7 @@ sudo apt install gitk -y
 
 #################################
 # Install docker if not present
-if [ $NEPI_ARCH == arm64 -o $NEPI_ARCH == amd ]; then
+if [ $NEPI_ARCH -eq arm64 -o $NEPI_ARCH -eq amd ]; then
     # https://docs.docker.com/engine/install/ubuntu/
     echo ""
     echo ""
@@ -59,7 +59,7 @@ if [ $NEPI_ARCH == arm64 -o $NEPI_ARCH == amd ]; then
     sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo docker info
     docker compose version
-elif [ $NEPI_ARCH == rpi ]; then
+elif [ $NEPI_ARCH -eq rpi ]; then
     echo "RPI not supported yet"
     exit 1
 fi
@@ -102,7 +102,7 @@ sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 # Edit Docker Config
 
 
-if [[ "$NEPI_HW" == "JETSON" ]]; then
+if [[ "$NEPI_HW" -eq "JETSON" ]]; then
     echo "Configuring Docker for NVIDIA Jetson 
     # Install nvidia toolkit
     #https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
@@ -128,11 +128,11 @@ if [[ "$NEPI_HW" == "JETSON" ]]; then
 
 fi
 
-if [[ "$NEPI_HW" == "GENERIC" ]]; then
+if [[ "$NEPI_HW" -eq "GENERIC" ]]; then
     ### BLANK
 fi
 
-if [[ "$NEPI_HW" == "RPI" ]]; then
+if [[ "$NEPI_HW" -eq "RPI" ]]; then
     ### BLANK
 fi
 
@@ -169,22 +169,22 @@ echo ""
 
 # Disable Host Services if Required
 echo "Disabling Host Services that are managed by NEPI"
-if [ $NEPI_MANAGES_SSH == 1 ]; then
+if [ $NEPI_MANAGES_SSH -eq 1 ]; then
     echo "Disabling Host SSD Service"
     sudo systemctl enable --now sshd.service
 fi
 
-if [ $NEPI_MANAGES_TIME == 1 ]; then
+if [ $NEPI_MANAGES_TIME -eq 1 ]; then
     echo "Disabling Host Auto Time Data Service"
     sudo systemctl enable --now chrony.service
 fi
 
-if [ $NEPI_MANAGES_SHARE == 1 ]; then
+if [ $NEPI_MANAGES_SHARE -eq 1 ]; then
     echo "Disabling Host Samba Drive Share Service"
     sudo systemctl enable --now samba.service
 fi
 
-if [ $NEPI_MANAGES_NETWORK == 1 ]; then
+if [ $NEPI_MANAGES_NETWORK -eq 1 ]; then
     echo "Disabling Host Network Management Service"
     sudo systemctl disable NetworkManager
 fi

@@ -12,11 +12,33 @@
 
 # This file contains tools for working with nepi docker system
 
+### ADD TO nepi_docker_aliases #################################################################
+HELPN="
+#############################
+## NEPI Help Info ##
+#############################"
 
 ########################
 # Variable Initailization
 #########################
+
+# HW OPTIONS [JETSON,ARM,AMD,RPI]
 export NEPI_HW=JETSON
+
+arch_hw=arm64
+if [ $NEPI_HW -eq JETSON ]; then
+  arch_hw=arm64
+fi
+if [ $NEPI_HW -eq ARM ]; then
+  arch_hw=arm64
+fi
+if [ $NEPI_HW -eq AMD ]; then
+  arch_hw=amd64
+fi
+if [ $NEPI_HW -eq RPI ]; then
+  arch_hw=rpi
+fi
+export NEPI_ARCH=$arch_hw
 
 # NEED TO: Set to $NEPI_DOCKER_CONFIG from ???
 export NEPI_DOCKER_CONFIG=${PWD}/nepi_docker_config.yaml
@@ -45,41 +67,69 @@ export RUNNING_TAG=uknown
 export RUNNING_ID=0
 
 
+#### Update Help Test
+HELPN="${HELPN}
+
+### NEPI DOCKER CONFIG
+
+NEPI_HW=${NEPI_HW}
+NEPI_ARCH=${NEPI_ARCH}
+NEPI_DOCKER_CONFIG=${NEPI_DOCKER_CONFIG}
+
+ACTIVE_CONT=${ACTIVE_CONT}
+ACTIVE_VERSION-eq${ACTIVE_VERSION}
+ACTIVE_TAG=${ACTIVE_TAG}
+ACTIVE_ID=${ACTIVE_ID}
+
+INACTIVE_CONT=${INACTIVE_CONT}
+INACTIVE_VERSION=${INACTIVE_VERSION}
+INACTIVE_TAG=${INACTIVE_TAG}
+INACTIVE_ID=${INACTIVE_ID}
+
+STAGING_CONT=${STAGING_CONT}
+IMPORT_PATH=${IMPORT_PATH}
+EXPORT_PATH=${EXPORT_PATH}
+
+RUNNING_CONT=${RUNNING_CONT}
+RUNNING_VERSION=${RUNNING_VERSION}
+RUNNING_TAG=${RUNNING_TAG}
+RUNNING_ID=${RUNNING_ID}"
+
+
+######################
+# Utility Functions
+######################
+function upate_yaml_value(){
+    KEY=$1
+    #echo $ELEMENT1
+    VAL=$2
+    #echo $ELEMENT2
+    FILE=$3
+    
+    yq e -i '.'"$KEY"' = env(VAL)' $FILE
+}
+
+function create_tag(){
+    HW_NAME=$1
+    SW_VERSION=$2
+    tag=${HW_NAME}-${SW_VERSION}
+    ltag=sed -e 's/\(.*\)/\L\1/' <<< "$tag"
+    echo "$ltag"
+}   
+
+#### Update Help Test
+HELPN="${HELPN}
+
+### NEPI FILE UTIL FUNCTIONS
+
+write_to_yaml - Udates yaml key value given KEY VAL FILE
+create_tag - Creates a nepi standardized tag given HW_NAME SW_VERSION"
+
 
 
 #############################
-# TOOL SELECTION
+# NEPI DOCKER FUNCTIONS
 #############################
-
-IMPORT_NEPI=0
-SWITCH_NEPI=0
-
-RUN_NEPI=0
-LOGIN_NEPI=0
-
-
-RUN_DEV=0
-LOGIN_DEV=0
-STOP_DEV=0
-START_DEV=0
-RESTART_DEV=0
-EXPORT_DEV=0
-
-##### NEED TO: Check if arg is passed or use default
-TOOL_SELECTION=$RUN_NEPI
-
-echo ""
-echo ""
-echo "Select NEPI Docker Tools option:"
-select yn in 'NEPI Drive Tools' 'NEPI Docker Tools' 'NEPI Software Tools' 'NEPI Config Tools'; do
-    case $yn in
-        NEPI Drive Tools )  NEPI_STORAGE_TOOLS=1;;
-        NEPI Docker Tools ) INTERNET_REQ=1; PARTS_REQ=1; NEPI_DOCKER_TOOLS=1;;
-        NEPI Software Tools ) INTERNET_REQ=1; PARTS_REQ=1; NEPI_SOFTWARE_TOOLS=1;;
-        NEPI Config Tools ) NEPI_CONFIG_Tools=1;;
-    esac
-    OP_SELECTION=${yn}
-done
 
 ######################
 # IMPORT_NEPI
@@ -139,6 +189,7 @@ if [ "$RUN_NEPI" -eq 1 ]; then
     #Run NEPI Complete
     sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/dev,target=/dev \
     -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
     ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash \
@@ -159,18 +210,16 @@ fi
 ######################
 # RUN_DEV
 ######################
-f [ "$RUN_DEV" -eq 1 ]; then
+f [ $RUN_DEV -eq 1 ]; then
 
     
     #Run NEPI in Dev Mode
     sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
-    --mount type=bind,source=/dev,target=/dev -it --net=host --runtime nvidia \
+    --mount type=bind,source=/dev,target=/dev \
+    -it --net=host --runtime nvidia \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
-    ${ACTIVE_CONT}:${ACTIVE_TAG} \
-    /bin/bash
-
-
+    ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash
 
 fi
 
@@ -214,26 +263,13 @@ function ffile(){
     yq e -i '.' nepi_docker_config.yaml 
 }
 
-######################
-# Utility Functions
-######################
-function write_to_yaml(){
-    ELEMENT1=$1
-    #echo $ELEMENT1
-    ELEMENT2=$2
-    #echo $ELEMENT2
 
-    yq e -i '.'"$ELEMENT1"' = env(ELEMENT2)' nepi_docker_config.yaml
-}
+#### Update Help Test
+HELPN="${HELPN}
 
-function create_tag(){
-    hw=$1
-    ver=$2
-    tag=${hw}-${ver}
-    ltag=sed -e 's/\(.*\)/\L\1/' <<< "$tag"
-    echo "$ltag"
-}   
+### NEPI FILE UTIL FUNCTIONS
 
+"
 
 
 '

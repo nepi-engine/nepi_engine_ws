@@ -69,7 +69,7 @@ done
 if [ "$INTERNET_REQ" -eq 1 ]; then
     echo "Checking for rerquired internet connection"
     check=0
-    while [$check == 0]
+    while [$check -eq 0]
     do
         if ! ping -c 2 google.com; then
             echo "No Internet Connection"
@@ -105,10 +105,10 @@ CONFIG_MIN_GB=1
 if [ "$PARTS_REQ" -eq 1 ]; then
     echo "Checking for rerquired NEPI SSD Folders"
     check=0
-    while [$check == 0]
+    while [$check -eq 0]
     do
         check = 0
-        if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER == 1]; then
+        if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER -eq 1]; then
             check = 
             echo "Missing required folder: ${NEPI_DOCKER} with min size ${DOCKER_MIN_GB} GB"
             check=0

@@ -140,7 +140,7 @@ if [[ -z "$HAS_ROS" ]]; then
 
     # Function to search for topic containing string
     function ftopic(){
-    if [ $NEEDS_ROS == 1 ]; then
+    if [ $NEEDS_ROS -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -150,7 +150,7 @@ if [[ -z "$HAS_ROS" ]]; then
 
     # Function to print all topics out
     function ltopics(){
-    if [ $NEEDS_ROS == 1 ]; then
+    if [ $NEEDS_ROS -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -160,7 +160,7 @@ if [[ -z "$HAS_ROS" ]]; then
 
     # Function to listen to topic
     function etopic(){
-    if [ $NEEDS_ROS == 1 ]; then
+    if [ $NEEDS_ROS -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -170,7 +170,7 @@ if [[ -z "$HAS_ROS" ]]; then
 
     # Function to search for service containing string
     function fservice(){
-    if [ $NEEDS_ROS == 1 ]; then
+    if [ $NEEDS_ROS -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -180,7 +180,7 @@ if [[ -z "$HAS_ROS" ]]; then
 
     # Function to print all services out
     function lservices(){
-    if [ $NEEDS_ROS == 1 ]; then
+    if [ $NEEDS_ROS -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -190,7 +190,7 @@ if [[ -z "$HAS_ROS" ]]; then
 
     # to call service
     function cservice(){
-    if [ $NEEDS_ROS == 1 ]; then
+    if [ $NEEDS_ROS -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
