@@ -1,0 +1,270 @@
+#!/bin/bash
+
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
+
+# This file contains nepi bash utility functions
+
+INFO="
+#############################
+## NEPI Util Functions ##
+#############################"
+
+
+###################################
+# System Util Functions
+###################################
+
+# to ping internet
+function pingi(){
+    if ! ping -c 2 google.com; then
+        echo "No Internet Connection"
+        return 0
+    else
+        echo "Internet Connected"
+        return 1
+    fi
+}
+
+# source bashrc
+function sbrc(){
+    source ${HOME}/.bashrc
+}
+
+
+UTILSN="${UTILSN}
+
+### SYSTEM UTIL FUNCTIONS
+
+pingi = Check for internet
+sbrc = Source the current users bashrc file"
+
+
+###################################
+# File Util Functions
+###################################
+
+# Function to search for text
+# Example call: find 'nepi_sdk.parse_header_msg'
+function ftext(){
+grep -r "$@" ./*
+}
+
+# Function to search for text
+# Example call: find 'nepi_sdk.parse_header_msg'
+function ffile(){
+find ./* -iname  "*$@*" 
+}
+
+UTILSN="${UTILSN}
+
+### FILE UTIL FUNCTIONS
+
+ftext = Find text in files recursively
+ffile = Find filenames with text match recursively"
+
+###################################
+# Git Util Functions
+###################################
+
+
+######################
+# Git branch info
+# Function to check if a folder is in a Git repository
+is_git_repo() {
+  local folder_path="$1"
+  if [ -d "$folder_path/.git" ]; then
+    # If .git directory exists directly, it's a repository root
+    return 0
+  fi
+
+  # Change to the folder and check if it's inside a work tree
+  (cd "$folder_path" 2>/dev/null && git rev-parse --is-inside-work-tree >/dev/null 2>&1)
+  return $? # Return the exit status of the git command
+}
+
+
+if is_git_repo $CURRENT_DIR; then
+  export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+
+  #GIT Command Line Branch Display
+  parse_git_branch() {
+      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+  }
+
+  function pushn(){
+  git add --all
+  git commit -m "*$@*" 
+  git push
+  }
+
+  function pushnh(){
+  head=git rev-parse HEAD
+  pushn
+  git checkout ros1_main
+  git merge $head
+  git push
+  }
+
+UTILSN="${UTILSN}
+
+### Git UTIL FUNCTIONS
+
+pushn = Add,commit,push repo changes with provided comment"
+
+fi
+
+
+
+
+
+###################################
+# ROS Util Functions
+###################################
+
+HAS_ROS=$(dpkg -l | grep ros-)
+if [[ -z "$HAS_ROS" ]]; then
+    NEEDS_ROS=1
+    # Function to search for topic containing string
+    function sros(){
+    # Source ROS Env
+    source /opt/nepi/nepi_engine/setup.bash
+    NEEDS_ROS=0
+    }
+
+    # Function to search for topic containing string
+    function ftopic(){
+    if [ $NEEDS_ROS == 1 ]; then
+      sleep 1 & sros
+      wait
+      NEEDS_ROS=0
+    fi
+    rostopic list | grep "$@" 
+    }
+
+    # Function to print all topics out
+    function ltopics(){
+    if [ $NEEDS_ROS == 1 ]; then
+      sleep 1 & sros
+      wait
+      NEEDS_ROS=0
+    fi
+    rostopic list
+    }
+
+    # Function to listen to topic
+    function etopic(){
+    if [ $NEEDS_ROS == 1 ]; then
+      sleep 1 & sros
+      wait
+      NEEDS_ROS=0
+    fi
+    rostopic echo "$@" 
+    }
+
+    # Function to search for service containing string
+    function fservice(){
+    if [ $NEEDS_ROS == 1 ]; then
+      sleep 1 & sros
+      wait
+      NEEDS_ROS=0
+    fi
+    rosservice list | grep "$@" 
+    }
+
+    # Function to print all services out
+    function lservices(){
+    if [ $NEEDS_ROS == 1 ]; then
+      sleep 1 & sros
+      wait
+      NEEDS_ROS=0
+    fi
+    rosservice list
+    }
+
+    # to call service
+    function cservice(){
+    if [ $NEEDS_ROS == 1 ]; then
+      sleep 1 & sros
+      wait
+      NEEDS_ROS=0
+    fi
+    rosservice call "$@"
+    }
+
+UTILSN="${UTILSN}
+
+### ROS UTIL FUNCTIONS
+
+sros = source ros bash setup
+ltopics = List all active topics
+ftopic = Find topics containing provided string
+etopic = Echo to provided topic
+lservices = List all active services
+fservice = Find services containing provided string
+cservice = Call service"
+
+fi
+
+
+###################################
+# NEPI Util Functions
+###################################
+
+if pip show "nepi_sdk" > /dev/null 2>&1; then
+  # NEPI stop and start shortcuts
+  alias nepistop="sudo systemctl stop nepi_engine"
+  alias nepistart="sudo /opt/nepi/nepi_engine/etc/nepi_env/nepi_launch.sh"
+
+  # copy arvhived images to install folder
+  function mimg(){
+      nimg="/mnt/nepi_storage/nepi_full_img"
+      narch="/mnt/nepi_storage/nepi_full_img_archive"
+      mv ${narch}/* $nimg/
+  }
+
+  ## NEPI build shortcuts
+  alias nepibld="
+  cd $BUILD
+  ./build_nepi_complete.sh"
+
+  # NEPI build shortcuts
+  alias codebld="
+  cd $BUILD
+  ./build_nepi_code.sh"
+
+  # NEPI build shortcuts
+  alias ruibld="
+  cd $BUILD
+  ./build_nepi_rui.sh"
+
+UTILSN="${UTILSN}
+
+### NEPI UTIL FUNCTIONS
+
+nepistart = start the nepi processes
+nepistop = stop the nepi processe
+
+mimg = Move archived nepi images to nepi image install folder
+
+nepibld = build/deploy all nepi repos and RUI
+codebld = build/deploy all nepi repos
+ruibld = build/deploy rui system"
+fi
+
+##############################
+# Print out the nepi shortcuts
+##############################
+
+function utilsn(){
+    echo "$UTILSN"
+}
+
+

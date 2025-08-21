@@ -72,9 +72,16 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
 
 #####################################
 # Add nepi aliases to bashrc
-
+echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
-NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/aliases/nepi_system_aliases
+
+NEPI_UTILS_SOURCE=${PWD}/resources/bash/nepi_bash_utils
+NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
+echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
+sudo cp $NEPI_UTILS_SOURCE ${NEPI_UTILS_DEST}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_UTILS_DEST
+
+NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_system_aliases
 NEPI_ALIASES_DEST=${NEPI_HOME}/${NEPI_ALIASES_FILE}
 echo ""
 echo "Populating System Folders from ${NEPI_ALIASES_SOURCE}"
@@ -173,7 +180,6 @@ else
     echo "fi" | sudo tee -a $BASHRC
     echo "Done"
 fi
-exit
 
 echo " "
 echo "NEPI Bash Aliases Setup Complete"
@@ -460,8 +466,8 @@ sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 
 # Source nepi aliases before exit
 echo " "
-echo "Sourcing bashrc with new NEPI_ALIASES_DEST"
+echo "Sourcing bashrc with nepi aliases"
 sleep 1 & source $BASHRC
 wait
 # Print out nepi aliases
-. ${NEPI_ALIASES_DEST} && nepi
+. ${NEPI_ALIASES_DEST} && helpn

@@ -22,13 +22,14 @@ NEPI_DOCKER_CONFIG=${PWD}/nepi_docker_config_config.yaml
 NEPI_HW=JETSON
 ### NEED TO: Read these from nepi_config.yaml file
 ACTIVE_CONT=nepi_fs_a
-ACTIVE_VERSION=3p2p0
-ACTIVE_TAG=${NEPI_HW}-${ACTIVE_VERSION}
+ACTIVE_VERSION=3p2p0-RC2
+#ACTIVE_TAG=$(create_tag $NEPI_HW $ACTIVE_VERSION)
+ACTIVE_TAG=jetson-3p2p0-rc2
 
 
 INACTIVE_CONT=nepi_fs_b
 INACTIVE_VERSION=uknown
-INACTIVE_TAG=${NEPI_HW}-${INACTIVE_VERSION}
+INACTIVE_TAG=$(create_tag $NEPI_HW $INACTIVE_VERSION)
 
 
 STAGING_CONT=nepi_staging
@@ -161,7 +162,7 @@ fi
 ######################
 f [ "$RUN_DEV" -eq 1 ]; then
 
-    ACTIVE_ID=$(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
+    
     #Run NEPI in Dev Mode
     sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
@@ -215,16 +216,24 @@ function ffile(){
 }
 
 ######################
-# WRITE_DOCKER_CONFIG
+# Utility Functions
 ######################
 function write_to_yaml(){
     ELEMENT1=$1
     #echo $ELEMENT1
-    export ELEMENT2=$2
+    ELEMENT2=$2
     #echo $ELEMENT2
 
     yq e -i '.'"$ELEMENT1"' = env(ELEMENT2)' nepi_docker_config.yaml
 }
+
+function create_tag(){
+    hw=$1
+    ver=$2
+    tag=${hw}-${ver}
+    ltag=sed -e 's/\(.*\)/\L\1/' <<< "$tag"
+    echo "$ltag"
+}   
 
 
 

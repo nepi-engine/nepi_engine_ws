@@ -1,0 +1,91 @@
+#!/bin/bash
+
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
+
+# This file contains nepi docker host system aliases and sources nepi bash utils
+
+export NEPI_REMOTE_SETUP=1
+
+###################################
+###################################
+#NEPI folder shortcuts
+export DRIVE="/mnt/nepi_storage"
+
+export AI="/mnt/nepi_storage/ai_models"
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export DATA="/mnt/nepi_storage/data"
+export INSTALL="/mnt/nepi_storage/intstall"
+export NFI="/mnt/nepi_storage/nepi_full_img"
+export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
+export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
+export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src"
+export TMP="/mnt/nepi_storage/tmp"
+
+export FCFG="/mnt/nepi_config/factory_cfg"
+export SCFG="/mnt/nepi_config/system_cfg"
+export UCFG="/mnt/nepi_storage/user_cfg"
+
+# NEPI navigation shortcuts
+alias drive="cd $DRIVE"
+
+alias ai="cd $AI"
+alias aif="cd $AIF"
+alias auto="cd $AUTO"
+alias data="cd $DATA"
+alias intstall="cd $INSTALL"
+alias nfi="cd $NFI"
+alias nfia="cd $NFIA"
+alias src="cd $SRC"
+alias srcrui="cd $SRCRUI"
+alias tmp="cd $TMP"
+alias train="cd $TRAIN"
+
+
+alias fcfg="cd $FCFG"
+alias scfg="cd $SCFG"
+alias ucfg="cd $UCFG"
+
+### SOURCE NEPI UTIL FUNCTIONS
+NUSH=${HOME}/.nepi_bash_utils
+#echo "Sourcing ${NUSH}"
+sleep 1 & source $NUSH
+wait
+# Print out nepi aliases
+UINFO="$(. ${NUSH} && utilsn)"
+#echo "${UINFO}"
+# Print out the nepi shortcuts
+function helpn(){
+    HELPN="${UINFO}
+
+################################
+## NEPI folder shortcuts ##
+################################
+drive = /mnt/nepi_storage
+
+ai = /mnt/nepi_storage/ai_models
+auto = /mnt/nepi_storage/automation_scripts
+data = /mnt/nepi_storage/data
+intstall = /mnt/nepi_storage/intstall
+nfi = /mnt/nepi_storage/nepi_full_img
+nfia = /mnt/nepi_storage/nepi_full_img_archive
+src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
+srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src
+tmp = /mnt/nepi_storage/tmp
+
+fcfg = /mnt/nepi_config/factory_cfg
+scfg = /mnt/nepi_config/system_cfg
+ucfg = /mnt/nepi_storage/user_cfg
+"
+    echo "$HELPN"
+}
+
+
+
