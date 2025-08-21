@@ -9,88 +9,60 @@
 
 
 # This file sets up the setup variables for a NEPI file system
-
-
-# NEPI Hardware Host Options: GENERIC,JETSON,RPI
-NEPI_HW=JETSON
-
-# PYTHON VERSION
+CURRENT_FOLDER=$PWD
+SYSTEMD_SERVICE_PATH=/etc/systemd/system
 PYTHON_VERSION=3.10
 
+# NEPI Hardware Host Options: GENERIC,JETSON,RPI
+export NEPI_HW=JETSON
+
+# PYTHON VERSION
+export NEPI_PYTHON=$PYTHON_VERSION
+
 # NEPI HOST SETTINGS
-NEPI_IN_CONTAINER=0
-NEPI_HAS_CUDA=1
-NEPI_HAS_XPU=0
+export NEPI_IN_CONTAINER=0
+export NEPI_HAS_CUDA=1
+export NEPI_HAS_XPU=0
 
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
 # Note, if enabled for a docker deployment, these system functions will be
 # disabled in the host OS environment
-NEPI_MANAGES_SSH=1
-NEPI_MANAGES_SHARE=1
-NEPI_MANAGES_TIME=0
-NEPI_MAGAGES_NETWORK=0
+export NEPI_MANAGES_SSH=1
+export NEPI_MANAGES_SHARE=1
+export NEPI_MANAGES_TIME=0
+export NEPI_MAGAGES_NETWORK=0
 
-
-###################################
 # System Setup Variables
-##################################
-NEPI_IP=192.168.179.103
-NEPI_USER=nepi
+export NEPI_IP=192.168.179.103
+export NEPI_USER=nepi
 
 # NEPI PARTITIONS
-NEPI_DOCKER=/mnt/nepi_docker
-NEPI_STORAGE=/mnt/nepi_storage
-NEPI_CONFIG=/mnt/nepi_config
+export NEPI_DOCKER=/mnt/nepi_docker
+export NEPI_STORAGE=/mnt/nepi_storage
+export NEPI_CONFIG=/mnt/nepi_config
 
 DOCKER_MIN_GB=50
 STORAGE_MIN_GB=150
 CONFIG_MIN_GB=1
 
-##########################
-# Process Folders
-CURRENT_FOLDER=$PWD
-
-##########################
 # NEPI File System 
-NEPI_HOME=/home/${NEPI_USER}
-NEPI_BASE=/opt/nepi
-NEPI_RUI=${NEPI_BASE}/nepi_rui
-NEPI_ENGINE=${NEPI_BASE}/nepi_engine
-NEPI_ETC=${NEPI_BASE}/etc
-NEPI_SCRIPTS=${NEPI_BASE}/scripts
+export NEPI_HOME=/home/${NEPI_USER}
+export NEPI_BASE=/opt/nepi
+export NEPI_RUI=${NEPI_BASE}/nepi_rui
+export NEPI_ENGINE=${NEPI_BASE}/nepi_engine
+export NEPI_ETC=${NEPI_BASE}/etc
+export NEPI_SCRIPTS=${NEPI_BASE}/scripts
 
-NEPI_USR_CONFIG=${NEPI_STORAGE}/user_cfg
-NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_config
-NEPI_FACTORY_CONFIG=${NEPI_CONFIG}/factory_cfg
-NEPI_SYSTEM_CONFIG=${NEPI_CONFIG}/system_cfg
+export NEPI_USR_CONFIG=${NEPI_STORAGE}/user_cfg
+export NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_config
+export NEPI_FACTORY_CONFIG=${NEPI_CONFIG}/factory_cfg
+export NEPI_SYSTEM_CONFIG=${NEPI_CONFIG}/system_cfg
 
-NEPI_CODE=${NEPI_STORAGE}/code
+export NEPI_CODE=${NEPI_STORAGE}/code
+export NEPI_ALIASES_FILE=.nepi_system_aliases
 
-SYSTEMD_SERVICE_PATH=/etc/systemd/system
-
-NEPI_ALIASES_FILE=.nepi_system_aliases
-
-#################
-# NEPI Storage Folders
-
-declare -A STORAGE
-
-STORAGE['data']=${NEPI_STORAGE}/data
-STORAGE['ai_models']=${NEPI_STORAGE}/ai_models
-STORAGE['ai_training']=${NEPI_STORAGE}/ai_training
-STORAGE['automation_scripts']=${NEPI_STORAGE}/automation_scripts
-STORAGE['databases']=${NEPI_STORAGE}/databases
-STORAGE['install']=${NEPI_STORAGE}/install
-STORAGE['license']=${NEPI_STORAGE}/license
-STORAGE['nepi_src']=${NEPI_STORAGE}/nepi_src
-STORAGE['nepi_full_img']=${NEPI_STORAGE}/nepi_full_img
-STORAGE['nepi_full_img_archive']=${NEPI_STORAGE}/nepi_full_img_archive
-STORAGE['sample_data']=${NEPI_STORAGE}/sample_data
-STORAGE['code']=${NEPI_STORAGE}/code
-STORAGE['tmp']=${NEPI_STORAGE}/tmp
-STORAGE['user_cfg']=${NEPI_STORAGE}/user_cfg
+export NEPI_AB_FS=1
 
 
-SETUP_SCRIPTS_PATH=./
-sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
+
 

@@ -11,6 +11,8 @@
 
 # This file sets up a pc side nepi develoment environment
 
+SETUP_SCRIPTS_PATH=${PWD}/scripts
+sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
 
 #############
 # Add nepi aliases to bashrc

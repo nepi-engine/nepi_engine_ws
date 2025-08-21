@@ -11,6 +11,9 @@
 
 # This file sets up a pc side nepi develoment environment
 
+SETUP_SCRIPTS_PATH=${PWD}/scripts
+sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
+
 ###################################
 # Variables
 NEPI_IP=192.168.179.103
