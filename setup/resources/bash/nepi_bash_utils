@@ -94,13 +94,15 @@ is_git_repo() {
 }
 
 
-if is_git_repo $CURRENT_DIR; then
+if [ 1 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
   export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 
   #GIT Command Line Branch Display
   parse_git_branch() {
       git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
   }
+
+  #alias gitroot="cd $(git rev-parse --show-toplevel)"
 
   function pushn(){
   git add --all
