@@ -46,6 +46,7 @@ else
     passwd
     nepi
     nepi
+    exit
 fi
 
 # Add nepi user to dialout group to allow non-sudo serial connections
@@ -121,6 +122,7 @@ else
     echo "fi" | sudo tee -a $BASHRC
     echo "Done"
 fi
+exit
 
 echo " "
 echo "NEPI Bash Aliases Setup Complete"
