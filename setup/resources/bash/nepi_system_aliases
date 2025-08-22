@@ -100,7 +100,7 @@ alias ucfg="cd $UCFG"
 #echo "Setting up NEPI Python"
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:/opt/nepi/nepi_engine/lib/nepi_drivers/:$PYTHONPATH
-export PYTHONPATH=/usr/local/lib/python3.10/site-packages/:$PYTHONPATH
+export PYTHONPATH=/usr/.local/lib/python3.10/site-packages/:$PYTHONPATH
 
 
 # System Config

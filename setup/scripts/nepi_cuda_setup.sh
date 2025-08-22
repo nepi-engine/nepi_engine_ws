@@ -12,6 +12,7 @@
 
 # This file configigues an installed NEPI File System
 
+export NEPI_CUDA_VERSION=11.8
 
 source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
@@ -19,24 +20,68 @@ echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 echo ""
 echo "Installing CUDA Software Support"
 
-# Change to tmp install folder
-TMP=${STORAGE["tmp"]}
+# Create and change to tmp install folder
+sudo chown -R nepi:nepi ${STORAGE}
+TMP=${STORAGE}\tmp
 mkdir $TMP
 cd $TMP
 
+############################################
+### TO DO: DOWNLOAD and UNZIP NEPI PREMADE CUDA PACKAGE
+# Auto Download based on set NEPI_HW and MODEL HW and MODEL then download
+############################################
+
+
+
+####################################
+# Install Required Libriaries
+####################################
+sudo apt update
+sudo apt install -y build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python3-dev python3-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
+sudo apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt-get install -y python3.10-dev python-dev python-numpy python3-numpy
+sudo apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
+sudo apt-get install -y libv4l-dev v4l-utils qv4l2 v4l2ucp    
+sudo apt-get install -y libopenblas-base libopenmpi-dev libomp-dev 
+sudo apt-get -y install libopenblas-dev
+
+
+####################################
+# Unistall existing packages
+####################################
+echo "Will uninstall existing packages if exist"
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input opencv-python
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input open3d
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input tourch
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input tourchvision
+
+#sudo -H python${PYTHON_VERSION} -m pip install -upgrade cython
+sudo -H python${PYTHON_VERSION} -m pip install cupy-cuda11x
+
+
+
 
 
 ############################################
-Install cuda 11.8
+#Install cuda 11.8
 ############################################
-echo 'Installing Cuda 11.8'
+echo "Installing Cuda ${NEPI_CUDA_VERSION}"
 
 
-Check version
-nvcc --version
+#Check version
+string=$(nvcc --version)
+key=release
+value=$(echo "$string" | grep "${key}" | awk '{print $NF}' | cut -d'.' -f1-2)
+### TO DO: Check if Cuda 11.8 installed
+
 
 # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=aarch64-jetson&Compilation=Native&Distribution=Ubuntu&target_version=20.04&target_type=deb_local
+
+####### TO DO: Get From NEPI Cuda Package Download
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/arm64/cuda-ubuntu2004.pin
+####### 
+
+
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
 wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-tegra-repo-ubuntu2004-11-8-local_11.8.0-1_arm64.deb
 sudo dpkg -i cuda-tegra-repo-ubuntu2004-11-8-local_11.8.0-1_arm64.deb
@@ -46,6 +91,13 @@ sudo apt-get -y install cuda
 
 
 echo "Updating bashrc file with CUDA SETUP"
+'
+##### CUDA SETUP #####
+export CUDA_PATH=/usr/local/cuda-11
+export CUPY_NVCC_GENERATE_CODE=current
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64
+export PATH=$PATH:$CUDA_HOME/bin
+'
 if grep -qnw $BASHRC -e "##### CUDA SETUP #####" ; then
     echo "Done"
 else
@@ -68,60 +120,112 @@ wait
 ############################################
 # Install cv2 with cuda support
 ############################################
+
 echo 'Installing CV2 with Cuda support'
+#############
+### TO DO: DOWNLOAD and INSTALL From NEPI PREMADE BUILD PACKAGE
+git clone https://github.com/opencv/opencv.git
+git clone https://github.com/opencv/opencv_contrib.git
 
-a. Connect nepi device to internet
+cd opencv
+git checkout 4.x
+cd ../opencv_contrib
+git checkout 4.x
 
-b. copy "install_opencv4.10.0_Jetson.sh" scrip from resources folder in repo nepi_rootfs_tools/nepi_main_rootfs/resources to nepi_storage/tmp folder
+cd ../opencv
+mkdir build
+cd build
 
-c. *** Check installed print(cv2.__version__) and change version as needed in script ***
-python
-import cv2
-print(cv2.getBuildInformation())
+#***************************************
+# Run CMake with CUDA flags and other desired options. Adjust CUDA_ARCH_BIN to match your gpu architecture 
+# (e.g., 8.7 for Orin):
+# TO DO: Add USER INPUT with defualt 8.7
+CUDA_ARCH=8.7
+#***************************************
+
+cmake -D CMAKE_BUILD_TYPE=Release \
+    -D ENABLE_CXX11=ON \
+    -D FFMPEG=ON \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D WITH_TBB=ON \
+    -D BUILD_NEW_PYTHON_SUPPORT=ON \
+    -D WITH_V4L=ON \
+    -D WITH_QT=ON \
+    -D WITH_OPENGL=ON \
+    -D WITH_GTK=ON \
+    -D WITH_GTK_2_X=ON \
+    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+    -D WITH_CUDA=ON \
+    -D WITH_CUDNN=ON \
+    -D OPENCV_DNN_CUDA=ON \
+    -D CUDA_ARCH_BIN="${CUDA_ARCH}" \
+    -D CUDA_ARCH_PTX="" \
+    -D OPENCV_GENERATE_PKGCONFIG=ON \
+    -D WITH_GSTREAMER=ON \
+    -D WITH_LIBV4L=ON \
+    -D BUILD_opencv_python3=ON \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_EXAMPLES=OFF \./..
+
+make -j$(nproc)
+cd ./../..
+###################
+
+# Install CV2 Build
+cd /opencv/build
+sudo make install
+sudo ldconfig
+cd ./../..
+
+echo "Updating bashrc file with CV2 SETUP"
+'
+##### CV2 SETUP #####
+
+'
+if grep -qnw $BASHRC -e "##### CV2 SETUP #####" ; then
+    echo "Done"
+else
+    echo " " | sudo tee -a $BASHRC
+    echo "##### CV2 SETUP #####" | sudo tee -a $BASHRC
+
+    echo "Done"
+fi
 
 
-d. ssh in and 
-rosstop
-cd /mnt/nepi_storage/tmp
-sudo chmod +x install_opencv4.10.0_Jetson.sh
-//sudo ./install_opencv4.10.0_Jetson.sh
-** Yes to all questions
-./install_opencv4.10.0_Jetson.sh
-** Yes to all questions
+## Fix no python cv2 issue
+# https://github.com/opencv/opencv/issues/21359#issuecomment-1003005474
+# https://github.com/dusty-nv/jetson-containers/issues/237
 
 
-e.  Make sure python is using 3.8.10
-https://unix.stackexchange.com/questions/410579/change-the-python3-default-version-in-ubuntu
-cd /usr/bin
-sudo ln -sfn python3 python
-
-python -V
+# Check if cuda support
+python -c "import cv2; print(cv2.__version__); print(cv2.cuda.getCudaEnabledDeviceCount());print(cv2.getBuildInformation())"
 
 
 
+######## 
+# Commit Container and reload
+######## 
+'
+nepi_fs_a:jetson-3p2p0-rc2
 
-f. remove and install cv_bridge
-sudo apt remove ros-noetic-cv-bridge
-sudo apt install ros-noetic-cv-bridge
+ID=742c5cec3beb
+NAME=nepi_jetson
+TAG=3p2p3-CUDA_CV2B
 
-g. fix web_video_server not launch error
-sudo apt remove ros-noetic-web-video-server
-sudo apt install ros-noetic-web-video-server
-
-h. reboot
-
-i. Check if cuda support
-python
-import cv2
-print(cv2.cuda.getCudaEnabledDeviceCount())
+sudo docker commit $ID ${NAME}:${TAG}
 
 
+NAME=nepi_jetson
+TAG=3p2p3-CUDA_CV2B
 
-############################################
-# Install cupy
-############################################
-echo 'Installing Cupy with Cuda support'
-# Ref https://forums.developer.nvidia.com/t/cupy-install-for-jetson-xavier-nx/210913
+sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
+    --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/dev,target=/dev \
+    -it --net=host --runtime nvidia \
+    -v /tmp/.X11-unix/:/tmp/.X11-unix \
+    ${NAME}:${TAG} /bin/bash
+'
 
 
 ############################################
