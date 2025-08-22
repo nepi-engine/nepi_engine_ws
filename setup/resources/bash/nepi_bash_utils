@@ -127,16 +127,16 @@ fi
 ######################
 # FILE Functions
 ######################
-function upate_yaml_value(){
+function update_yaml_value(){
     KEY=$1
-    echo $KEY
+    #echo $KEY
     export VAL=$2
-    echo $VAL
+    #echo $VAL
     FILE=$3
-    echo $FILE
+    #echo $FILE
     yq e -i '.'"$KEY"' = env(VAL)' $FILE
 }
-export -f upate_yaml_value
+export -f update_yaml_value
 
 function read_yaml_value(){
     VARIABLE=$1

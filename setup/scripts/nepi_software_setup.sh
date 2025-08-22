@@ -24,8 +24,9 @@ echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 echo ""
 echo "Installing Software Requirements"
 
-# Change to tmp install folder
-TMP=${STORAGE["tmp"]}
+# Create and change to tmp install folder
+sudo chown -R nepi:nepi ${STORAGE}
+TMP=${STORAGE}\tmp
 mkdir $TMP
 cd $TMP
 
@@ -37,6 +38,7 @@ cd $TMP
 sudo apt-get update
 
 #### Install Software
+sudo apt-get install cmake -y
 sudo apt-get install lsb-release -y
 sudo apt-get install nano -y
 sudo apt-get install git -y
@@ -107,14 +109,22 @@ if [ $NEPI_MANAGES_NETWORK == 1 ]; then
     sudo systemctl disable NetworkManager
 fi
 
-sudo apt-get -y install python3-pip libopenblas-dev
+
 
 ### Install static IP tools
 echo "Installing static IP dependencies"
 sudo apt-get install ifupdown -y 
 sudo apt-get install net-tools -y 
     
-
+# Install some additional libraries
+sudo apt update
+sudo apt install -y build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python3-dev python3-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
+sudo apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt-get install -y python3.8-dev python-dev python-numpy python3-numpy
+sudo apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
+sudo apt-get install -y libv4l-dev v4l-utils qv4l2 v4l2ucp    
+sudo apt-get install -y libopenblas-base libopenmpi-dev libomp-dev 
+sudo apt-get -y install libopenblas-dev
     
 #sudo apt --fix-broken install
 
@@ -160,6 +170,9 @@ sudo add-apt-repository ppa:deadsnakes/ppa -y
 sudo apt-get update
 sudo apt-get install python${PYTHON_VERSION} -f -y 
 
+# Make sure there is user local package
+mkdir -p $(python -m site --user-site)
+
 # Install pip
 curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python${PYTHON_VERSION}
 
@@ -173,14 +186,41 @@ sudo ln -sfn /usr/bin/python${PYTHON_VERSION} /usr/bin/python3
 sudo ln -sfn /usr/bin/python3 /usr/bin/python
 sudo python${PYTHON_VERSION} -m pip --version
 
-
-
-# Edit bashrc file
+# ** This is just for notes, 
+# these commmands are part of nepi_system_aliases 
+# installed during nepi setup process
+# Edit bashrc file  
 # nano ~/.nepi_aliases
 # Add to end of bashrc
 #    export SETUPTOOLS_USE_DISTUTILS=stdlib
 #    export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-#    export PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages/:$PYTHONPATH
+#    export PYTHONPATH=/usr/.local/lib/python${PYTHON_VERSION}/site-packages/:$PYTHONPATH
+
+sudo -H python${PYTHON_VERSION} -m pip install cmake
+
+
+
+sudo -H python${PYTHON_VERSION} -m pip install numpy
+# Maybe
+# Revert numpy
+#sudo python${PYTHON_VERSION} -m pip uninstall numpy
+#sudo python${PYTHON_VERSION} -m pip3 install numpy=='1.24.4'
+
+#############
+# Cuda Dependant Install Options
+if [ $NEPI_HAS_CUDA -eq 0 ]; then
+    sudo python${PYTHON_VERSION} -m pip install --no-input opencv-python
+    sudo python${PYTHON_VERSION} -m pip install --no-input torch
+    sudo python${PYTHON_VERSION} -m pip install --no-input torchvision
+    sudo python${PYTHON_VERSION} -m pip install --no-input open3d --ignore-installed
+else
+    sudo ./nepi_cuda_setup.sh
+fi
+
+sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input ultralytics
+sudo -H python${PYTHON_VERSION} -m pip install --no-input ultralytics
+
+
 
 #############
 #Manual installs some additinal packages in sudo one at a time
@@ -224,30 +264,17 @@ sudo -H python${PYTHON_VERSION} -m pip install --upgrade --no-input scipy
 # upgrade python hdf5
 # sudo python${PYTHON_VERSION} -m pip install --no-input --upgrade h5py
 
-sudo python${PYTHON_VERSION} -m pip install cupy-cuda11x
-#sudo python -c "import cupy; print(cupy)"
+
+
 
 #############
 # Other general python utilities
 python${PYTHON_VERSION} -m pip install --no-input --user labelImg # For onboard training
 python${PYTHON_VERSION} -m pip install --no-input --user licenseheaders # For updating license files and source code comments
 
-#############
-# Cuda Dependant Install Options
-if [ $NEPI_HAS_CUDA == 0 ]; then
-    sudo python${PYTHON_VERSION} -m pip install --no-input opencv-python
-    sudo python${PYTHON_VERSION} -m pip install --no-input torch
-    sudo python${PYTHON_VERSION} -m pip install --no-input torchvision
-    sudo python${PYTHON_VERSION} -m pip install --no-input open3d --ignore-installed
-else
-    sudo ./nepi_cuda_setup.sh
-fi
 
-################
-# Maybe
-# Revert numpy
-#sudo python${PYTHON_VERSION} -m pip uninstall numpy
-#sudo python${PYTHON_VERSION} -m pip3 install numpy=='1.24.4'
+
+
 
 #############
 # Install additional python requirements
@@ -286,6 +313,11 @@ rosdep update
 # Then
 #sudo apt-get install ros-noetic-catkin python-catkin-tools
 #sudo python${PYTHON_VERSION} -m pip3 install --user git+https://github.com/catkin/catkin_tools.git
+
+#remove old packages if installed
+sudo apt remove ros-noetic-cv-bridge -y
+sudo apt remove ros-noetic-web-video-server -y
+
 
 ROS_VERSION=noetic
 
