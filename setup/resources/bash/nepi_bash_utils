@@ -166,12 +166,14 @@ write_to_yaml - Udates yaml key value given KEY VAL FILE"
 
 HAS_ROS=$(dpkg -l | grep ros-)
 if [[ -z "$HAS_ROS" ]]; then
+
     NEEDS_ROS=1
+
     # Function to search for topic containing string
     function sros(){
       # Source ROS Env
       source /opt/nepi/nepi_engine/setup.bash
-    NEEDS_ROS=0
+      NEEDS_ROS=0
     }
 
     # Function to search for topic containing string
