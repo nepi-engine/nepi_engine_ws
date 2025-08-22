@@ -8,7 +8,10 @@
 ##
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
-
+### SOURCE NEPI UTIL FUNCTIONS
+NUSH=${HOME}/.nepi_bash_utils
+source $NUSH
+UINFO="$(. ${NUSH} && utilsn)"
 
 # This file contains nepi system aliases and sources nepi bash utils
 
@@ -112,12 +115,7 @@ export PATH="/opt/nepi/nepi_engine/etc/":$PATH
 # Inform if this is the target hardware
 export NEPI_REMOTE_SETUP=0
 
-### SOURCE NEPI UTIL FUNCTIONS
-NUSH=${HOME}/.nepi_bash_utils
-sleep 1 & source $NUSH
-wait
-# Print out nepi aliases
-UINFO="$(. ${NUSH} && utilsn)"
+
 
 # Print out the nepi shortcuts
 function helpn(){

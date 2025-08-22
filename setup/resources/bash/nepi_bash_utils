@@ -255,7 +255,7 @@ fi
 # NEPI Util Functions
 ###################################
 
-if pip show "nepi_sdk" > /dev/null 2>&1; then
+if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
   # NEPI stop and start shortcuts
   alias nepistop="sudo systemctl stop nepi_engine"
   alias nepistart="sudo /opt/nepi/nepi_engine/etc/nepi_env/nepi_launch.sh"
