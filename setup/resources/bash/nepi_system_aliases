@@ -96,22 +96,6 @@ alias ucfg="cd $UCFG"
 #[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 
-# Python Config
-#echo "Setting up NEPI Python"
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-export PYTHONPATH=$PYTHONPATH:/opt/nepi/nepi_engine/lib/nepi_drivers/:$PYTHONPATH
-export PYTHONPATH=/usr/.local/lib/python3.10/site-packages/:$PYTHONPATH
-
-
-# System Config
-#echo "Setting up NEPI Systtem"
-export CMAKE_POLICY_VERSION_MINIMUM=3.5
-export SETUPTOOLS_USE_DISTUTILS=stdlib
-export LD_PRELOAD=/usr/local/lib/libOpen3D.so
-export PATH="/opt/nepi/nepi_engine/etc/":$PATH
-# Inform if this is the target hardware
-export NEPI_REMOTE_SETUP=0
-
 ### SOURCE NEPI UTIL FUNCTIONS
 NUSH=${HOME}/.nepi_bash_utils
 sleep 1 & source $NUSH
@@ -159,3 +143,5 @@ ucfg = /mnt/nepi_storage/user_cfg
 "
     echo "$HELPN"
 }
+
+export NEPI_REMOTE_SETUP=0

@@ -12,7 +12,6 @@
 
 # This file configigues an installed NEPI File System
 
-export NEPI_CUDA_VERSION=11.8
 
 source ./_nepi_config.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
@@ -98,6 +97,7 @@ export CUPY_NVCC_GENERATE_CODE=current
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64
 export PATH=$PATH:$CUDA_HOME/bin
 '
+BASHRC=${HOME}\
 if grep -qnw $BASHRC -e "##### CUDA SETUP #####" ; then
     echo "Done"
 else

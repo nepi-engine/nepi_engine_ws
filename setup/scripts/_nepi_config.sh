@@ -23,6 +23,7 @@ export NEPI_PYTHON=$PYTHON_VERSION
 # NEPI HOST SETTINGS
 export NEPI_IN_CONTAINER=0
 export NEPI_HAS_CUDA=1
+export NEPI_CUDA_VERSION=11.8
 export NEPI_HAS_XPU=0
 
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
