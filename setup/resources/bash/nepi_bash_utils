@@ -166,12 +166,14 @@ write_to_yaml - Udates yaml key value given KEY VAL FILE"
 
 HAS_ROS=$(dpkg -l | grep ros-)
 if [[ -z "$HAS_ROS" ]]; then
+
     NEEDS_ROS=1
+
     # Function to search for topic containing string
     function sros(){
-    # Source ROS Env
-    source /opt/nepi/nepi_engine/setup.bash
-    NEEDS_ROS=0
+      # Source ROS Env
+      source /opt/nepi/nepi_engine/setup.bash
+      NEEDS_ROS=0
     }
 
     # Function to search for topic containing string
@@ -253,7 +255,7 @@ fi
 # NEPI Util Functions
 ###################################
 
-if pip show "nepi_sdk" > /dev/null 2>&1; then
+if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
   # NEPI stop and start shortcuts
   alias nepistop="sudo systemctl stop nepi_engine"
   alias nepistart="sudo /opt/nepi/nepi_engine/etc/nepi_env/nepi_launch.sh"

@@ -22,6 +22,14 @@
 #export ROS_IP=192.168.179.5
 
 
+### SOURCE NEPI UTIL FUNCTIONS
+NUSH=${HOME}/.nepi_bash_utils
+source $NUSH
+UINFO="$(. ${NUSH} && utilsn)"
+
+
+
+
 ###################################
 # NEPI SSH Agent Config
 ###################################
@@ -202,12 +210,7 @@ function ucfg(){
 	sftpnl $UCFG
 }	
 
-### SOURCE NEPI UTIL FUNCTIONS
-NUSH=${HOME}/.nepi_bash_utils
-sleep 1 & source $NUSH
-wait
-# Print out nepi aliases
-UINFO="$(. ${NUSH} && utilsn)"
+
 
 # Print out the nepi shortcuts
 function helpn(){

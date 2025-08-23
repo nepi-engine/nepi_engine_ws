@@ -1,4 +1,0 @@
- 
-##### Source NEPI Aliases #####
-if [ -f /home/nepi/.nepi_system_aliases ]; then
-    . /home/nepi/.nepi_system_aliases

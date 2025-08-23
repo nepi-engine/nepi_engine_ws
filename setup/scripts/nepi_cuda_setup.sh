@@ -13,7 +13,7 @@
 # This file configigues an installed NEPI File System
 
 
-source ./_nepi_config.sh
+source ./NEPI_CONFIG.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 echo ""
@@ -88,27 +88,6 @@ sudo cp /var/cuda-tegra-repo-ubuntu2004-11-8-local/cuda-*-keyring.gpg /usr/share
 sudo apt-get update
 sudo apt-get -y install cuda
 
-
-echo "Updating bashrc file with CUDA SETUP"
-'
-##### CUDA SETUP #####
-export CUDA_PATH=/usr/local/cuda-11
-export CUPY_NVCC_GENERATE_CODE=current
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64
-export PATH=$PATH:$CUDA_HOME/bin
-'
-BASHRC=${HOME}\
-if grep -qnw $BASHRC -e "##### CUDA SETUP #####" ; then
-    echo "Done"
-else
-    echo " " | sudo tee -a $BASHRC
-    echo "##### CUDA SETUP #####" | sudo tee -a $BASHRC
-    echo "export CUDA_PATH=/usr/local/cuda-11" | sudo tee -a $BASHRC
-    echo "export CUPY_NVCC_GENERATE_CODE=current" | sudo tee -a $BASHRC
-    echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64" | sudo tee -a $BASHRC
-    echo "export PATH=$PATH:$CUDA_HOME/bin" | sudo tee -a $BASHRC
-    echo "Done"
-fi
 
 # Source nepi aliases before exit
 echo " "

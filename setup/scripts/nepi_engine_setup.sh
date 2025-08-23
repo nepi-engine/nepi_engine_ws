@@ -15,7 +15,7 @@
 SETUP_SCRIPTS_PATH=${PWD}/scripts
 sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
 
-source ${PWD}/_nepi_config.sh
+source ${PWD}/NEPI_CONFIG.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 
 
@@ -23,115 +23,52 @@ echo ""
 echo "Setting up NEPI Engine"
 
 
-###################################
-echo ""
-echo "Setting up nepi user account"
-group="nepi"
-user="nepi"
-if grep -q $group /etc/group;  then
-        echo "group exists"
-else
-        echo "group $group does not exist, creating"
-        addgroup nepi
-fi
-
-if id -u "$user" >/dev/null 2>&1; then
-    echo "User $user exists."
-else
-    echo "User $user does not exist, creating"
-    adduser --ingroup nepi nepi
-    echo "nepi ALL=(ALL:ALL) ALL" >> /etc/sudoers
-
-    su nepi
-    passwd
-    nepi
-    nepi
-    exit
-fi
-
-# Add nepi user to dialout group to allow non-sudo serial connections
-sudo adduser nepi dialout
-
-#or //https://arduino.stackexchange.com/questions/74714/arduino-dev-ttyusb0-permission-denied-even-when-user-added-to-group-dialout-o
-#Add your standard user to the group "dialout'
-sudo usermod -a -G dialout nepi
-#Add your standard user to the group "tty"
-sudo usermod -a -G tty nepi
-
-# Clear the Desktop
-sudo rm ${NEPI_HOME}/Desktop/*
-
-echo "User Account Setup Complete"
-
-
-#####################################
-# Copy nepi config settings to nepi home
-
-NEPI_CONFIG_SOURCE=${PWD}/_nepi_config.sh
-NEPI_CONFIG_DEST=${NEPI_HOME}/.nepi_config
-echo "Installing NEPI config file to ${NEPI_CONFIG_DEST} "
-sudo cp $NEPI_CONFIG_SOURCE ${NEPI_CONFIG_DEST}
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
-
-
 #####################################
 # Add nepi aliases to bashrc
-echo "Updating NEPI aliases file"
-BASHRC=~/.bashrc
+source nepi_bash_setup.sh
 
-NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
-NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
-echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
-sudo rm $NEPI_UTILS_DEST
-sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_UTILS_DEST
 
-NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_system_aliases
-NEPI_ALIASES_DEST=${NEPI_HOME}/${NEPI_ALIASES_FILE}
+
+
+###################################
+# Mod some system settings
 echo ""
-echo "Populating System Folders from ${NEPI_ALIASES_SOURCE}"
+echo "Modifyging some system settings"
+
+# Fix gpu accessability
+#https://forums.developer.nvidia.com/t/nvrmmeminitnvmap-failed-with-permission-denied/270716/10
+sudo usermod -aG sudo,video,i2c nepi
+
+# Fix USB Vidoe Rate Issue
+sudo rmmod uvcvideo
+sudo sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
+
+
+# Create System Folders
 echo ""
-echo "Installing NEPI aliases file to ${NEPI_ALIASES_DEST} "
-sudo rm $NEPI_ALIASES_DEST
-sudo cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES_DEST
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
+echo "Creating system folders"
+sudo mkdir -p ${NEPI_BASE}
+sudo mkdir -p ${NEPI_RUI}
+sudo mkdir -p ${NEPI_ENGINE}
+sudo mkdir -p ${NEPI_ETC}
+sudo mkdir -p ${NEPI_SCRITPS}
+
+sudo mkdir -p ${NEPI_USR_CONFIG}
+sudo mkdir -p ${NEPI_FACTORY_CONFIG}
+sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
 
 
-#############
-echo "Updating bashrc file"
-if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
-    echo "Done"
-else
-    echo " " | sudo tee -a $BASHRC
-    echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-    echo "if [ -f ${NEPI_ALIASES_DEST} ]; then" | sudo tee -a $BASHRC
-    echo "    . ${NEPI_ALIASES_DEST}" | sudo tee -a $BASHRC
-    echo "fi" | sudo tee -a $BASHRC
-    echo "Done"
-fi
-
-sudo su
-ROOTRC=/root/.bashrc
-if grep -qnw ROOTRC -e "##### Source NEPI Aliases #####" ; then
-    echo "Done"
-else
-    echo " " | sudo tee -a ROOTRC
-    echo "##### Source NEPI Aliases #####" | sudo tee -a ROOTRC
-    echo "if [ -f ${NEPI_ALIASES_DEST} ]; then" | sudo tee -a ROOTRC
-    echo "    . ${NEPI_ALIASES_DEST}" | sudo tee -a ROOTRC
-    echo "fi" | sudo tee -a $BASHRC
-    echo "Done"
-fi
-exit
-
-echo " "
-echo "NEPI Bash Aliases Setup Complete"
-echo " "
-
+###################
+# Copy Config Files
+NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
+echo ""
+echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
+sudo cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 
 ###############
 echo "Updating nepi config file etc/nepi_config.yaml"
-NEPI_ETC_CONFIG=$(dirname "$(pwd)")/resources/etc/nepi_config.yaml
+NEPI_ETC_CONFIG=${NEPI_ETC}/nepi_config.yaml
 cat /dev/null > $NEPI_ETC_CONFIG
 echo "NEPI_HW: ${NEPI_HW}" >> $NEPI_ETC_CONFIG
 
@@ -177,43 +114,6 @@ echo "NEPI_CODE: ${NEPI_CODE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_ALIASES_FILE: ${NEPI_ALIASES_FILE}" >> $NEPI_ETC_CONFIG
 
 echo "NEPI_AB_FS: ${NEPI_AB_FS}" >> $NEPI_ETC_CONFIG
-
-
-###################################
-# Mod some system settings
-echo ""
-echo "Modifyging some system settings"
-
-# Fix gpu accessability
-#https://forums.developer.nvidia.com/t/nvrmmeminitnvmap-failed-with-permission-denied/270716/10
-sudo usermod -aG sudo,video,i2c nepi
-
-# Fix USB Vidoe Rate Issue
-sudo rmmod uvcvideo
-sudo sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
-
-
-# Create System Folders
-echo ""
-echo "Creating system folders"
-sudo mkdir -p ${NEPI_BASE}
-sudo mkdir -p ${NEPI_RUI}
-sudo mkdir -p ${NEPI_ENGINE}
-sudo mkdir -p ${NEPI_ETC}
-sudo mkdir -p ${NEPI_SCRITPS}
-
-sudo mkdir -p ${NEPI_USR_CONFIG}
-sudo mkdir -p ${NEPI_FACTORY_CONFIG}
-sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
-
-
-###################
-# Copy Config Files
-NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
-echo ""
-echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
-sudo cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 
 
 

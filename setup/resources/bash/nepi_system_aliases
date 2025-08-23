@@ -8,7 +8,13 @@
 ##
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
-
+### SOURCE NEPI UTIL FUNCTIONS
+NUSH=${HOME}/.nepi_bash_utils
+source $NUSH
+UINFO="$(. ${NUSH} && utilsn)"
+### SOURCE NEPI CONFIG
+NCFG=${HOME}/.nepi_config
+source $NCFG
 
 # This file contains nepi system aliases and sources nepi bash utils
 
@@ -85,23 +91,6 @@ alias fcfg="cd $FCFG"
 alias scfg="cd $SCFG"
 alias ucfg="cd $UCFG"
 
-###################################
-#Env Setup
-###################################
-
-# NVM Config
-#echo "Setting up NEPI NVM"
-#export NVM_DIR="$HOME/.nvm"
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-
-### SOURCE NEPI UTIL FUNCTIONS
-NUSH=${HOME}/.nepi_bash_utils
-sleep 1 & source $NUSH
-wait
-# Print out nepi aliases
-UINFO="$(. ${NUSH} && utilsn)"
 
 # Print out the nepi shortcuts
 function helpn(){
@@ -144,4 +133,5 @@ ucfg = /mnt/nepi_storage/user_cfg
     echo "$HELPN"
 }
 
+##### NEPI SETUP #####
 export NEPI_REMOTE_SETUP=0
