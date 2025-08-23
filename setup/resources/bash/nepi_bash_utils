@@ -174,12 +174,22 @@ if which docker &> /dev/null; then
     sudo docker ps -a
   }
 
+  function dstart(){
+    sudo docker start -ai $1
+  }
+
+  function dlogin(){
+    sudo docker exec -it $1 /bin/bash
+  }
+  
 UTILSN="${UTILSN}
 
 ### Docker UTIL FUNCTIONS
 
 dimg = sudo docker images
-dps = sudo docker ps -a"
+dps = sudo docker ps -a
+dstart = sudo docker start -ai <provided cont name>
+dlogin = sudo docker exec -it <provided cont name> /bin/bash"
 
 fi
 

@@ -125,7 +125,8 @@ sudo apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev li
 sudo apt-get install -y libv4l-dev v4l-utils qv4l2 v4l2ucp    
 sudo apt-get install -y libopenblas-base libopenmpi-dev libomp-dev 
 sudo apt-get -y install libopenblas-dev
-    
+
+sudo apt-get install trash-cli -y   
 #sudo apt --fix-broken install
 
 # Set Container Install Conditional Configs
@@ -200,10 +201,9 @@ sudo python${PYTHON_VERSION} -m pip --version
 #    export PYTHONPATH=/usr/.local/lib/python${PYTHON_VERSION}/site-packages/:$PYTHONPATH
 
 sudo -H python${PYTHON_VERSION} -m pip install cmake
-
-
-
 sudo -H python${PYTHON_VERSION} -m pip install numpy
+sudo -H python${PYTHON_VERSION} -m pip install scikit-build ninja 
+#sudo -H python${PYTHON_VERSION} -m pip install mkl-static mkl-include
 # Maybe
 # Revert numpy
 #sudo python${PYTHON_VERSION} -m pip uninstall numpy

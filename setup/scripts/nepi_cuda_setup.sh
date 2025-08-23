@@ -43,7 +43,7 @@ sudo apt-get install -y python3.10-dev python-dev python-numpy python3-numpy
 sudo apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
 sudo apt-get install -y libv4l-dev v4l-utils qv4l2 v4l2ucp    
 sudo apt-get install -y libopenblas-base libopenmpi-dev libomp-dev 
-sudo apt-get -y install libopenblas-dev
+
 
 
 ####################################
@@ -56,7 +56,7 @@ sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input tourch
 sudo -H python${PYTHON_VERSION} -m pip uninstall --no-input tourchvision
 
 #sudo -H python${PYTHON_VERSION} -m pip install -upgrade cython
-sudo -H python${PYTHON_VERSION} -m pip install cupy-cuda11x
+sudo -H python${PYTHON_VERSION} -m pip install cupy-cuda${CUDA_ARCH}x
 
 
 
@@ -114,7 +114,6 @@ git checkout 4.x
 
 cd ../opencv
 mkdir build
-cd build
 
 #***************************************
 # Run CMake with CUDA flags and other desired options. Adjust CUDA_ARCH_BIN to match your gpu architecture 
@@ -122,6 +121,8 @@ cd build
 # TO DO: Add USER INPUT with defualt 8.7
 CUDA_ARCH=8.7
 #***************************************
+
+# https://stackoverflow.com/questions/42638342/cannot-install-opencv-3-1-0-with-python3-cmake-not-including-or-linking-python
 
 cmake -D CMAKE_BUILD_TYPE=Release \
     -D ENABLE_CXX11=ON \
@@ -144,33 +145,38 @@ cmake -D CMAKE_BUILD_TYPE=Release \
     -D WITH_GSTREAMER=ON \
     -D WITH_LIBV4L=ON \
     -D BUILD_opencv_python3=ON \
+    -D BUILD_EXAMPLES=ON \
+    -D PYTHON3_EXECUTABLE=$(which python3) \
+    -D PYTHON_INCLUDE_DIR=$(python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
+    -D PYTHON_INCLUDE_DIR2=$(python3 -c "from os.path import dirname; from distutils.sysconfig import get_config_h_filename; print(dirname(get_config_h_filename()))") \
+    -D PYTHON_LIBRARY=$(python3 -c "from distutils.sysconfig import get_config_var;from os.path import dirname,join ; print(join(dirname(get_config_var('LIBPC')),get_config_var('LDLIBRARY')))") \
+    -D PYTHON3_NUMPY_INCLUDE_DIRS=$(python3 -c "import numpy; print(numpy.get_include())") \
+    -D PYTHON3_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
     -D BUILD_TESTS=OFF \
     -D BUILD_PERF_TESTS=OFF \
-    -D BUILD_EXAMPLES=OFF \./..
+    -D BUILD_EXAMPLES=OFF \
+    ..
 
 make -j$(nproc)
 cd ./../..
 ###################
 
 # Install CV2 Build
-cd /opencv/build
+cd opencv/build
 sudo make install
 sudo ldconfig
 cd ./../..
 
 echo "Updating bashrc file with CV2 SETUP"
-'
-##### CV2 SETUP #####
-
-'
+BASHRC=${HOME}/.bashrc
 if grep -qnw $BASHRC -e "##### CV2 SETUP #####" ; then
     echo "Done"
 else
     echo " " | sudo tee -a $BASHRC
     echo "##### CV2 SETUP #####" | sudo tee -a $BASHRC
-
-    echo "Done"
+    #echo '/usr/lib/python3/dist-packages/cv2/python-3.10
 fi
+sudo cp $BASHRC /root/.bashrc
 
 
 ## Fix no python cv2 issue
@@ -183,89 +189,53 @@ python -c "import cv2; print(cv2.__version__); print(cv2.cuda.getCudaEnabledDevi
 
 
 
-######## 
-# Commit Container and reload
-######## 
-'
-nepi_fs_a:jetson-3p2p0-rc2
-
-ID=742c5cec3beb
-NAME=nepi_jetson
-TAG=3p2p3-CUDA_CV2B
-
-sudo docker commit $ID ${NAME}:${TAG}
-
-
-NAME=nepi_jetson
-TAG=3p2p3-CUDA_CV2B
-
-sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
-    --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
-    --mount type=bind,source=/dev,target=/dev \
-    -it --net=host --runtime nvidia \
-    -v /tmp/.X11-unix/:/tmp/.X11-unix \
-    ${NAME}:${TAG} /bin/bash
-'
-
-
 ############################################
 # Install pytorch for jetson
 ############################################
 echo 'Installing PyTorch with Cuda support'
 
-Follow these instructions:
-https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html
-another reference
-https://medium.com/@yixiaozengprc/set-up-pytorch-environment-on-nvidia-jetson-platform-9eda291db716
-https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/index.html
+#git clone --recursive --branch <desired_pytorch_version> https://github.com/pytorch/pytorch.git
+#cd pytorch
 
 
-a. 
-sudo apt-get -y update
-sudo apt-get -y install python3-pip libopenblas-dev
 
-b. Setup Pytorch in NEPI device
-Go or create temp folder and install:
-cd /mnt/nepi_storage/tmp
+#https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html
+#https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html#prereqs-install
 
-find cuda version
-nvcc --version
+#https://medium.com/@yixiaozengprc/set-up-pytorch-environment-on-nvidia-jetson-platform-9eda291db716
+#https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/index.html
 
-find numpy version:
-python -c "import numpy; print(numpy.__version__)"
+# Setup Pytorch in NEPI device
 
-find cuda version
+#find cuda version
+#nvcc --version
+
+#find numpy version:
+#python -c "import numpy; print(numpy.__version__)"
+
+#find cuda version
 sudo apt-cache show nvidia-jetpack
 
 
-Dowload latest version for your jetpack version from
-Find pytorch version for jetpack version
-https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048
-another resource
-https://developer.download.nvidia.com/compute/redist/jp/
-
-Copy link address and 
-
-wget <link to whl file>
-export TORCH_INSTALL=<whl location>
-
-Ex
-5.0.2
-wget https://developer.download.nvidia.com/compute/redist/jp/v502/pytorch/torch-1.13.0a0+410ce96a.nv22.12-cp38-cp38-linux_aarch64.whl
-
-export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-1.13.0a0+410ce96a.nv22.12-cp38-cp38-linux_aarch64.whl
-
-5.1.2
-wget https://developer.download.nvidia.cn/compute/redist/jp/v512/pytorch/torch-2.1.0a0+41361538.nv23.06-cp38-cp38-linux_aarch64.whl
-
-export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-2.1.0a0+41361538.nv23.06-cp38-cp38-linux_aarch64.whl
+#Dowload latest version for your jetpack version from
+#Find pytorch version for jetpack version
+#https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048
+#NOT SURE ABOUT THIS ONE: https://developer.download.nvidia.com/compute/redist/jp/
 
 
-c. Setup Pytorch in NEPI device 3
+#export TORCH_INSTALL=<path to whl file>
 
-sudo python3 -m pip install --upgrade pip
-sudo pip3 install numpy=='1.24.4'
-sudo pip3 install --no-cache $TORCH_INSTALL
+# For Jetpack 5.0.2
+export TORCH_INSTALL=$(pwd)/torch-2.2.0a0+6a974be.nv23.11-cp310-cp310-linux_aarch64.whl
+#export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-1.13.0a0+410ce96a.nv22.12-cp38-cp38-linux_aarch64.whl
+
+# For Jetpack 5.1.2
+#export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-2.1.0a0+41361538.nv23.06-cp38-cp38-linux_aarch64.whl
+
+
+# Setup Pytorch in NEPI device 3
+#sudo pip3 install numpy=='1.24.4'
+sudo python${PYTHON_VERSION} -m pip install $TORCH_INSTALL
 
 d.test install
 python 
@@ -332,11 +302,13 @@ cd vision-0.16.2
 sudo python setup.py install
 
 
-Check Installed
+#Check Installed
+python -c "import torchvision; print(torchvision.__version__)"
 
 python
 import torchvision
 print(torchvision.__version__)
+
 
 rosstop
 rosstart # Look for errors

@@ -298,38 +298,31 @@ function run_nepi_dev(){
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
     ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash
 }
-export -f run_dev
+export -f run_nepi_dev
 
 
-######################
-# STOP_DEV
-######################
-function stop_dev(){
-    yq e '.NEPI_HW' nepi_docker_config.yaml
-}
-export -f stop_dev
 
 ######################
 # START_DEV
 ######################
-function start_dev(){
-
+function start_nepi_dev(){
+   :
 }
 export -f start_dev
 
 ######################
 # RESTART_DEV
 ######################
-function restart_dev(){
-
+function restart_nepi_dev(){
+  :
 }
 export -f restart_dev
 
 ######################
 # EXPORT_DEV
 ######################
-function export_dev(){
-
+function export_nepi_dev(){
+  :
 }
 export -f export_dev
 

@@ -111,7 +111,7 @@ ROOTRC=/root/.bashrc
 sudo cp ${HOME}/.nepi_config /root/.nepi_config
 sudo cp ${HOME}/.nepi_system_aliases /root/.nepi_system_aliases
 sudo cp ${HOME}/.nepi_bash_utils /root/.nepi_bash_utils
-sudo cp ${HOME}/.bashrc /root/.bashrc
+sudo cp $BASHRC /root/.bashrc
 
 
 echo " "
