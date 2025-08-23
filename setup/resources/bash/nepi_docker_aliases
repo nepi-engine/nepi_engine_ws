@@ -49,9 +49,9 @@ export NEPI_DOCKER_COMPOSE_FILE=${NEPI_DOCKER_CONFIG_FOLDER}/nepi_docker_compose
 
 ## NEED TO: Read these from nepi_config.yaml file
 export ACTIVE_CONT=nepi_fs_a
-export ACTIVE_VERSION=3p2p0-RC2
+export ACTIVE_VERSION=uknown
 export ACTIVE_UPLOAD_DATE=0
-export ACTIVE_TAG=jetson-3p2p0-rc2
+export ACTIVE_TAG=uknown
 export ACTIVE_ID=0
 
 export INACTIVE_CONT=nepi_fs_b
@@ -60,7 +60,7 @@ export INACTIVE_UPLOAD_DATE=0
 export INACTIVE_TAG=jetson-uknown
 export INACTIVE_ID=0
 
-export STAGING_CONT=nepi_staging
+export STAGING_CONT=0
 
 export IMPORT_PATH=/media/nepidev/NServer_Backup
 export EXPORT_PATH=/mnt/nepi_storage/nepi_full_img_archive
@@ -71,41 +71,8 @@ export RUNNING_VERSION=uknown
 export RUNNING_TAG=uknown
 export RUNNING_ID=0
 
-export NEPI_REMOTE_SETUP=1
-
-#### Update Help Test
-HELPN="${HELPN}
-
-### NEPI DOCKER CONFIG
-
-NEPI_HW=${NEPI_HW}
-NEPI_ARCH=${NEPI_ARCH}
-NEPI_DOCKER_CONFIG_FOLDER=${NEPI_DOCKER_CONFIG_FOLDER}
-NEPI_DOCKER_CONFIG_FILE=${NEPI_DOCKER_CONFIG_FILE}
-NEPI_DOCKER_COMPOSE_FILE=${NEPI_DOCKER_COMPOSE_FILE}
-
-ACTIVE_CONT=${ACTIVE_CONT}
-ACTIVE_VERSION-eq${ACTIVE_VERSION}
-ACTIVE_TAG=${ACTIVE_TAG}
-ACTIVE_ID=${ACTIVE_ID}
-
-INACTIVE_CONT=${INACTIVE_CONT}
-INACTIVE_VERSION=${INACTIVE_VERSION}
-INACTIVE_TAG=${INACTIVE_TAG}
-INACTIVE_ID=${INACTIVE_ID}
-
-STAGING_CONT=${STAGING_CONT}
-IMPORT_PATH=${IMPORT_PATH}
-EXPORT_PATH=${EXPORT_PATH}
-
-RUNNING_CONT=${RUNNING_CONT}
-RUNNING_VERSION=${RUNNING_VERSION}
-RUNNING_TAG=${RUNNING_TAG}
-RUNNING_ID=${RUNNING_ID}"
-
-
 # Function to update aliases from config file call same function when changes are made to the onfig file
-function refresh_variables(){
+function ndv_refresh(){
   #export NEPI_HW=JETSON
   read_yaml_value "NEPI_HW" "NEPI_HW" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $NEPI_HW
@@ -178,8 +145,11 @@ function refresh_variables(){
   read_yaml_value "NEPI_REMOTE_SETUP" "NEPI_REMOTE_SETUP" "$NEPI_DOCKER_CONFIG_FILE"
   #echo $NEPI_REMOTE_SETUP
 
-
 }
+
+export -f ndv_refresh
+
+ndv_refresh
 
 #############################
 # NEPI DOCKER FUNCTIONS
@@ -199,7 +169,7 @@ function create_tag(){
 export -f create_tag
 
 function import_nepi(){
-  refresh_variables
+  ndv_refresh
   IMPORT_PATH=$IMPORT_PATH
   echo $IMPORT_PATH
   ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
@@ -240,7 +210,7 @@ function import_nepi(){
   update_yaml_value "INACTIVE_TAG" "$NEW_TAG" "$NEPI_DOCKER_CONFIG_FILE"
   update_yaml_value "INACTIVE_ID" "$NEW_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
   echo "  ADD SOME PRINT OUTS  "
-  refresh_variables
+  ndv_refresh
 }
 export -f import_nepi
 
@@ -249,7 +219,7 @@ export -f import_nepi
 ######################
 
 function export_nepi(){
-  refresh_variables
+  ndv_refresh
   if ["$RUNNING_CONT" != "None"]; then
     TAR_EXPORT_PATH=${EXPORT_PATH}/''${RUNNING_CONT}-backup.tar
     #echo $TAR_EXPORT_PATH
@@ -267,7 +237,7 @@ export -f export_nepi
 ######################
 function switch_nepi(){
   
-  refresh_variables
+  ndv_refresh
   
   #5) Switch active/inactive containers in nepi_docker_config.yaml 
   #6) Update active/inactive version,tags,ids in nepi_docker_config.yaml
@@ -414,6 +384,37 @@ alias ucfg="cd $UCFG"
 
 # Print out the nepi shortcuts
 function helpn(){
+
+#### Update Help Test
+DOCN="${HELPN}
+
+### NEPI DOCKER CONFIG
+
+NEPI_HW=${NEPI_HW}
+NEPI_ARCH=${NEPI_ARCH}
+NEPI_DOCKER_CONFIG_FOLDER=${NEPI_DOCKER_CONFIG_FOLDER}
+NEPI_DOCKER_CONFIG_FILE=${NEPI_DOCKER_CONFIG_FILE}
+NEPI_DOCKER_COMPOSE_FILE=${NEPI_DOCKER_COMPOSE_FILE}
+
+ACTIVE_CONT=${ACTIVE_CONT}
+ACTIVE_VERSION-eq${ACTIVE_VERSION}
+ACTIVE_TAG=${ACTIVE_TAG}
+ACTIVE_ID=${ACTIVE_ID}
+
+INACTIVE_CONT=${INACTIVE_CONT}
+INACTIVE_VERSION=${INACTIVE_VERSION}
+INACTIVE_TAG=${INACTIVE_TAG}
+INACTIVE_ID=${INACTIVE_ID}
+
+STAGING_CONT=${STAGING_CONT}
+IMPORT_PATH=${IMPORT_PATH}
+EXPORT_PATH=${EXPORT_PATH}
+
+RUNNING_CONT=${RUNNING_CONT}
+RUNNING_VERSION=${RUNNING_VERSION}
+RUNNING_TAG=${RUNNING_TAG}
+RUNNING_ID=${RUNNING_ID}"
+
     HELPN="${HELPN}
 
 ${UINFO}
@@ -440,5 +441,7 @@ ucfg = /mnt/nepi_storage/user_cfg
     echo "$HELPN"
 }
 
+
+export NEPI_REMOTE_SETUP=1
 
 

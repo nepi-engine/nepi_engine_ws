@@ -160,6 +160,31 @@ UTILSN="${UTILSN}
 
 write_to_yaml - Udates yaml key value given KEY VAL FILE"
 
+
+###################################
+# Docker Util Functions
+###################################
+
+if which docker; then #$(is_git_repo $PWD) -eq 1 ]; then
+  function dimg(){
+    sudo docker images
+  }
+
+  function dps(){
+    sudo docker ps -a
+  }
+
+UTILSN="${UTILSN}
+
+### Docker UTIL FUNCTIONS
+
+dimg = sudo docker images
+dps = sudo docker ps -a"
+
+fi
+
+
+
 ###################################
 # ROS Util Functions
 ###################################
