@@ -174,7 +174,7 @@ function import_nepi(){
   echo $IMPORT_PATH
   ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
   #IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
-  IMAGE_FILE=TEST.tar
+  IMAGE_FILE=$1
   echo $IMAGE_FILE
   ######  NEED TO: Update from IMPORT_PATH tar file
   IMAGE_VERSION=3p2p0
@@ -220,10 +220,15 @@ export -f import_nepi
 
 function export_nepi(){
   ndv_refresh
-  if ["$RUNNING_CONT" != "None"]; then
-    TAR_EXPORT_PATH=${EXPORT_PATH}/''${RUNNING_CONT}-backup.tar
+  #echo $RUNNING_CONT
+  RUN_NAME=$1
+  echo $RUN_NAME
+  RUN_ID=$2
+  echo $RUN_ID
+  if [[ "$RUN_NAME" != "None" ]]; then
+    TAR_EXPORT_PATH=${EXPORT_PATH}/''${RUN_NAME}.tar
     #echo $TAR_EXPORT_PATH
-    sudo docker export 800d94b64134 > $TAR_EXPORT_PATH
+    sudo docker export $RUN_ID > $TAR_EXPORT_PATH
   else
     echo "No Running Container"
   fi
