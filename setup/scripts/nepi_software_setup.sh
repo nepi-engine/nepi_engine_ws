@@ -162,6 +162,9 @@ fi
 # Install Python 
 #######################
 
+# Create USER python folder
+mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
+
 sudo apt-get update 
 
 sudo apt-get install --reinstall ca-certificates

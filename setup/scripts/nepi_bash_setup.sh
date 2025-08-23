@@ -12,17 +12,16 @@
 
 # This file sets up nepi bash aliases and util functions
 
-SETUP_SCRIPTS_PATH=${PWD}/scripts
-sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
-
 source ${PWD}/NEPI_CONFIG.sh
 echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+
+mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
 
 #####################################
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 
-NEPI_CFG_SOURCE=${PWD}/NEPI_CONFIG
+NEPI_CFG_SOURCE=${PWD}/NEPI_CONFIG.sh
 NEPI_CFG_DEST=${HOME}/.nepi_config
 echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
 sudo rm $NEPI_CFG_DEST
@@ -47,7 +46,6 @@ sudo rm ${NEPI_ALIASES_DEST}
 sudo cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
 
-
 #############
 BASHRC=/home/${NEPI_USER}/.bashrc
 echo "Updating bashrc file"
@@ -55,58 +53,57 @@ echo "Updating bashrc file"
 if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
     : #echo "Already Done"
 else
-    echo " " | sudo tee -a $BASHRC
-    echo "##### Source NEPI Aliases #####" | sudo tee -a $BASHRC
-    echo "if [ -f ${NEPI_ALIASES_DEST} ]; then" | sudo tee -a $BASHRC
-    echo "    . ${NEPI_ALIASES_DEST}" | sudo tee -a $BASHRC
-    echo "fi" | sudo tee -a $BASHRC
-    echo "Done"
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### Source NEPI Aliases #####' | sudo tee -a $BASHRC
+    echo 'if [ -f '${NEPI_ALIASES_DEST}' ]; then' | sudo tee -a $BASHRC
+    echo '    . '${NEPI_ALIASES_DEST} | sudo tee -a $BASHRC
+    echo 'fi' | sudo tee -a $BASHRC
 fi
 
 if grep -qnw $BASHRC -e "##### NVM Config #####" ; then
     : #echo "Already Done"
 else
-    echo " " | sudo tee -a $BASHRC
-    echo "##### NVM Config #####" | sudo tee -a $BASHRC
-    echo "export NVM_DIR=""'""${HOME}/.nvm""'" | sudo tee -a $BASHRC
-    echo "[ -s ""'""$NVM_DIR/nvm.sh""'"" ] && \. ""'""$NVM_DIR/nvm.sh""'" | sudo tee -a $BASHRC
-    echo "[ -s ""'""$NVM_DIR/bash_completion""'"" ] && \. ""'""$NVM_DIR/bash_completion""'" | sudo tee -a $BASHRC
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### NVM Config #####' | sudo tee -a $BASHRC
+    echo 'export NVM_DIR='${HOME}'/.nvm' | sudo tee -a $BASHRC
+    echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
+    echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
 fi
 
 
 if grep -qnw $BASHRC -e "##### System Config #####" ; then
     : #echo "Already Done"
 else
-    echo " " | sudo tee -a $BASHRC
-    echo "##### System Config #####" | sudo tee -a $BASHRC
-    echo "export CMAKE_POLICY_VERSION_MINIMUM=3.5" | sudo tee -a $BASHRC
-    echo "export SETUPTOOLS_USE_DISTUTILS=stdlib" | sudo tee -a $BASHRC
-    echo "export PATH=${NEPI_ENGINE}/etc/:$PATH" | sudo tee -a $BASHRC
-    echo "export LD_PRELOAD=/usr/local/lib/libOpen3D.so" | sudo tee -a $BASHRC
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### System Config #####' | sudo tee -a $BASHRC
+    echo 'export CMAKE_POLICY_VERSION_MINIMUM=3.5' | sudo tee -a $BASHRC
+    echo 'export SETUPTOOLS_USE_DISTUTILS=stdlib' | sudo tee -a $BASHRC
+    echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib' | sudo tee -a $BASHRC
+    echo 'export LD_PRELOAD=/usr/local/lib/libOpen3D.so' | sudo tee -a $BASHRC
 fi
 
-if grep -qnw $BASHRC -e "##### Python Config #####v" ; then
+if grep -qnw $BASHRC -e "##### Python Config #####" ; then
     : #echo "Already Done"
 else
-    echo " " | sudo tee -a $BASHRC
-    echo "##### Python Config #####" | sudo tee -a $BASHRC
-    echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" | sudo tee -a $BASHRC
-    echo "export PYTHONPATH=$PYTHONPATH:${NEPI_ENGINE}/lib/nepi_drivers/:$PYTHONPATH" | sudo tee -a $BASHRC
-    echo "export PYTHONPATH=/usr/local/lib/python${NEPI_PYTHON}/site-packages/:$PYTHONPATH" | sudo tee -a $BASHRC
-    echo "export PYTHONPATH=${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages/:$PYTHONPATH" | sudo tee -a $BASHRC
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### Python Config #####' | sudo tee -a $BASHRC
+    echo 'export PYTHONPATH=${PYTHONPATH}:'${NEPI_ENGINE}'/etc' | sudo tee -a $BASHRC
+    echo 'export PYTHONPATH=${PYTHONPATH}:'${NEPI_ENGINE}'/lib/nepi_drivers' | sudo tee -a $BASHRC
+    echo 'export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python'${NEPI_PYTHON}'/site-packages' | sudo tee -a $BASHRC
+    echo 'export PYTHONPATH=${PYTHONPATH}:${HOME}/.local/lib/python'${NEPI_PYTHON}'/site-packages' | sudo tee -a $BASHRC
 fi
 
 if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
     if grep -qnw $BASHRC -e "##### CUDA SETUP #####" ; then
         : #echo "Already Done"
     else
-        echo " " | sudo tee -a $BASHRC
-        echo "##### CUDA SETUP #####" | sudo tee -a $BASHRC
-        echo "export CUDA_PATH=/usr/local/cuda-${NEPI_CUDA_VERSION%.*}" | sudo tee -a $BASHRC
-        echo "export CUDA_HOME=/usr/local/cuda-${NEPI_CUDA_VERSION%.*}" | sudo tee -a $BASHRC
-        echo "export CUPY_NVCC_GENERATE_CODE=current" | sudo tee -a $BASHRC
-        echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_HOME/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64" | sudo tee -a $BASHRC
-        echo "export PATH=$PATH:$CUDA_HOME/bin" | sudo tee -a $BASHRC
+        echo ' ' | sudo tee -a $BASHRC
+        echo '##### CUDA SETUP #####' | sudo tee -a $BASHRC
+        echo 'export CUDA_PATH=/usr/local/cuda-'${NEPI_CUDA_VERSION%.*} | sudo tee -a $BASHRC
+        echo 'export CUDA_HOME=/usr/local/cuda-'${NEPI_CUDA_VERSION%.*} | sudo tee -a $BASHRC
+        echo 'export CUPY_NVCC_GENERATE_CODE=current' | sudo tee -a $BASHRC
+        echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:'${CUDA_HOME}'/bin/lib64:$CUDA_HOME/bin/extras/CUPTI/lib64' | sudo tee -a $BASHRC
+        echo 'export PATH=${PATH}:'${CUDA_HOME}'/bin' | sudo tee -a $BASHRC
     fi
 fi
 

@@ -30,7 +30,8 @@ cd $TMP
 # Auto Download based on set NEPI_HW and MODEL HW and MODEL then download
 ############################################
 
-
+# Create USER python folder
+mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
 
 ####################################
 # Install Required Libriaries

@@ -289,7 +289,7 @@ export -f login_nepi
 ######################
 # RUN_DEV
 ######################
-function run_dev(){
+function run_nepi_dev(){
     #Run NEPI in Dev Mode
     sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \

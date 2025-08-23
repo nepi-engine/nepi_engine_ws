@@ -165,7 +165,7 @@ write_to_yaml - Udates yaml key value given KEY VAL FILE"
 # Docker Util Functions
 ###################################
 
-if which docker; then #$(is_git_repo $PWD) -eq 1 ]; then
+if which docker &> /dev/null; then
   function dimg(){
     sudo docker images
   }
