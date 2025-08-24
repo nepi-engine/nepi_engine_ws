@@ -14,7 +14,7 @@
 
 
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
 
 echo ""
 echo "NEPI Docker Enviorment Setup"

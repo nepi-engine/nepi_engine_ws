@@ -13,8 +13,9 @@ CURRENT_FOLDER=$PWD
 SYSTEMD_SERVICE_PATH=/etc/systemd/system
 PYTHON_VERSION=3.10
 
-# NEPI Hardware Host Options: GENERIC,JETSON,RPI
+# NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
 export NEPI_HW=JETSON
+# NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
 export NEPI_HW_MODEL=ORIN
 
 # PYTHON VERSION
@@ -22,8 +23,10 @@ export NEPI_PYTHON=$PYTHON_VERSION
 
 # NEPI HOST SETTINGS
 export NEPI_IN_CONTAINER=0
+
 export NEPI_HAS_CUDA=1
 export NEPI_CUDA_VERSION=11.8
+
 export NEPI_HAS_XPU=0
 
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce

@@ -12,8 +12,8 @@
 
 # This file sets up nepi bash aliases and util functions
 
-source ${PWD}/NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+source ./NEPI_CONFIG.sh
+wait
 
 mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
 

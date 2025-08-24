@@ -12,7 +12,7 @@
 
 # This file configigues an installed NEPI File System
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
 
 
 

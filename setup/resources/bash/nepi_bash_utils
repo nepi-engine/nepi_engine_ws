@@ -12,7 +12,7 @@
 
 # This file contains nepi bash utility functions
 
-INFO="
+UTILSN="
 #############################
 ## NEPI Util Functions ##
 #############################"

@@ -13,7 +13,7 @@
 # This file installs the NEPI RUI File System installation
 
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
 
 
 echo ""
