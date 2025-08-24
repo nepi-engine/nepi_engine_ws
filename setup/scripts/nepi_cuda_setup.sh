@@ -43,6 +43,7 @@ sudo apt-get install -y python3.10-dev python-dev python-numpy python3-numpy
 sudo apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
 sudo apt-get install -y libv4l-dev v4l-utils qv4l2 v4l2ucp    
 sudo apt-get install -y libopenblas-base libopenmpi-dev libomp-dev 
+sudo apt-get install -y libcudart
 
 
 
@@ -237,12 +238,9 @@ export TORCH_INSTALL=$(pwd)/torch-2.2.0a0+6a974be.nv23.11-cp310-cp310-linux_aarc
 #sudo pip3 install numpy=='1.24.4'
 sudo python${PYTHON_VERSION} -m pip install $TORCH_INSTALL
 
-d.test install
-python 
-import torch
-print(torch.__version__)
-print(str(torch.cuda.is_available()))
-quit()
+# test install
+python -c "import torch; print(torch.__version__); print(str(torch.cuda.is_available()))"
+
 ############################################
 - install torchvision
 
