@@ -110,13 +110,7 @@ if [ 1 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
   git push
   }
 
-  function pushnh(){
-  head=git rev-parse HEAD
-  pushn
-  git checkout ros1_main
-  git merge $head
-  git push
-  }
+
 
 UTILSN="${UTILSN}
 

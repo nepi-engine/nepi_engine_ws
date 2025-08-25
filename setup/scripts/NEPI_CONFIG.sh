@@ -11,7 +11,7 @@
 # This file sets up the setup variables for a NEPI file system
 CURRENT_FOLDER=$PWD
 SYSTEMD_SERVICE_PATH=/etc/systemd/system
-PYTHON_VERSION=3.10
+PYTHON_VERSION=3.8
 NUMPY_VERSION=
 PYTORCH_VERSION=1.13.0
 
