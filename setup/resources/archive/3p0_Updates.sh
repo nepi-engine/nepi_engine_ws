@@ -302,8 +302,8 @@ https://developer.download.nvidia.com/compute/redist/jp/
 
 Copy link address and 
 
-wget <link to whl file>
-export TORCH_INSTALL=<whl location>
+downlowd <link to whl file>
+export TORCH_INSTALL=<whl_file_path>
 
 Ex
 5.0.2
@@ -320,6 +320,7 @@ export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-2.1.0a0+41361538.nv23.06-cp38-c
 c. Setup Pytorch in NEPI device 3
 
 sudo python3 -m pip install --upgrade pip
+sudo 
 sudo pip3 install numpy=='1.24.4'
 sudo pip3 install --no-cache $TORCH_INSTALL
 

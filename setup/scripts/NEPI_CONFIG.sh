@@ -12,6 +12,8 @@
 CURRENT_FOLDER=$PWD
 SYSTEMD_SERVICE_PATH=/etc/systemd/system
 PYTHON_VERSION=3.10
+NUMPY_VERSION=
+PYTORCH_VERSION=1.13.0
 
 # NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
 export NEPI_HW_TYPE=JETSON
@@ -26,6 +28,8 @@ export NEPI_IN_CONTAINER=0
 
 export NEPI_HAS_CUDA=1
 export NEPI_CUDA_VERSION=11.8
+# Find Compatable PyTorch Version https://github.com/pytorch/pytorch/blob/main/RELEASE.md
+
 
 export NEPI_HAS_XPU=0
 
