@@ -88,6 +88,20 @@ sudo apt-get install kgpg -y
 ### Install NEPI Managed Services 
 sudo apt-get install supervisor -y
 
+sudo apt-get install snapd -y
+sudo apt-get install xz-utils
+
+
+# Install ccache
+#https://askubuntu.com/questions/470545/how-do-i-set-up-ccache
+cd $TMP
+sudo apt install -y ccache
+#sudo /usr/sbin/update-ccache-symlinks
+echo 'export PATH="/usr/lib/ccache:$PATH"' | tee -a ~/.bashrc
+source ~/.bashrc && echo $PATH
+ccache --version
+
+
 
 sudo apt-get install openssh-server -y
 if [ $NEPI_MANAGES_SSH == 1 ]; then

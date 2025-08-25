@@ -128,8 +128,8 @@ wait
 ############################################
 # Install cv2 with cuda support
 ############################################
-
 echo 'Installing CV2 with Cuda support'
+cd $TMP
 #############
 ### TO DO: DOWNLOAD and INSTALL From NEPI PREMADE BUILD PACKAGE
 git clone https://github.com/opencv/opencv.git
@@ -216,15 +216,14 @@ python -c "import cv2; print(cv2.__version__); print(cv2.cuda.getCudaEnabledDevi
 # Install Pytorch 
 ############################################
 echo 'Installing PyTorch with Cuda support'
-PYTORCH_VERSION=2.0.1
-
+# Find Compatable PyTorch Version https://github.com/pytorch/pytorch/blob/main/RELEASE.md
 cd $TMP
 git clone --recursive --branch v${PYTORCH_VERSION} https://github.com/pytorch/pytorch.git
 cd pytorch
 
 export USE_NCCL=0  # Disable NCCL if not using distributed training
 export USE_DISTRIBUTED=0 # Disable distributed training if not needed
-export TORCH_CUDA_ARCH_LIST="${CUDA_ARCH}" # Specify CUDA architecture for Orin NX
+export TORCH_CUDA_ARCH_LIST="${CUDA_ARCH}" # Specify CUDA architecture for Host Device
 export PYTORCH_BUILD_VERSION=$PYTORCH_VERSION # Match your chosen PyTorch version
 export PYTORCH_BUILD_NUMBER=1
 
@@ -238,14 +237,15 @@ pip install dist/*.whl
 python -c "import torch; print(torch.__version__)"
 
 
-
 ############################################
 # Install Torchvision 
 ############################################
 echo 'Installing Torchvision with Cuda support'
 cd $TMP
 #Installing Torchvision
-# find compatable version to torch version https://pypi.org/project/torchvision/
+# find Numpy and Python compatable version to torch version https://pypi.org/project/torchvision/
+
+
 #Instructions can be found https://forums.developer.nvidia.com/t/pytorch-forjetson/
 #https://forums.developer.nvidia.com/t/how-to-install-torchvision-with-torch1-14-0-with-cuda-11-4/245657/2
 
