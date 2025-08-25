@@ -12,7 +12,7 @@
 
 # This file contains nepi bash utility functions
 
-INFO="
+UTILSN="
 #############################
 ## NEPI Util Functions ##
 #############################"
@@ -302,6 +302,7 @@ if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
       mv ${narch}/* $nimg/
   }
 
+  BUILD=/mnt/nepi_storage/nepi_src/nepi_engine_ws
   ## NEPI build shortcuts
   alias nepibld="
   cd $BUILD

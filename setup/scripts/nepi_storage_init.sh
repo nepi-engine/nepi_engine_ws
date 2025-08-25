@@ -10,7 +10,7 @@
 
 # This file initializes a NEPI Storage Drive Folder
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
 
 echo ""
 echo "Initializing NEPI Storage Drive"

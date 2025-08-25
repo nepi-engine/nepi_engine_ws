@@ -12,8 +12,8 @@
 
 # This file installs the NEPI Engine File System installation
 
-source ${PWD}/NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+source ./NEPI_CONFIG.sh
+wait
 
 
 echo ""
@@ -67,7 +67,8 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 echo "Updating nepi config file etc/nepi_config.yaml"
 NEPI_ETC_CONFIG=${NEPI_ETC}/nepi_config.yaml
 cat /dev/null > $NEPI_ETC_CONFIG
-echo "NEPI_HW: ${NEPI_HW}" >> $NEPI_ETC_CONFIG
+echo "NEPI_HW_TYPE: ${NEPI_HW_TYPE}" >> $NEPI_ETC_CONFIG
+echo "NEPI_HW_MODEL: ${NEPI_HW_MODEL}" >> $NEPI_ETC_CONFIG
 
 # PYTHON VERSION
 echo "NEPI_PYTHON: ${NEPI_PYTHON}" >> $NEPI_ETC_CONFIG
@@ -95,6 +96,7 @@ echo "NEPI_STORAGE: ${NEPI_STORAGE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_CONFIG: ${NEPI_CONFIG}" >> $NEPI_ETC_CONFIG
 
 # NEPI File System 
+echo "NEPI_ENV: ${NEPI_ENV}" >> $NEPI_ETC_CONFIG
 echo "NEPI_HOME: ${NEPI_HOME}" >> $NEPI_ETC_CONFIG
 echo "NEPI_BASE: ${NEPI_BASE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_RUI: ${NEPI_RUI}" >> $NEPI_ETC_CONFIG
@@ -346,11 +348,44 @@ sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 ###########################################
 # Fix some NEPI package issues
 ###########################################
+
+'
+FILE=/usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+KEY=
+LINE=69
+UPDATE=
+echo "Updating docker file ${FILE} line: ${Line}"
+sed -i "/^$KEY/c\\$UPDATE" "$FILE"
+'
+
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
 ## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 ## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
 
+
+
+##############################################
+# Populate factory config folder
+##############################################
+echo "Populating NEPI Factory Config Folder ${NEPI_FACTORY_CONFIG}"
+sudo cp /opt/nepi/sys_env.bash ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/nepi_config.yaml ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/hostname ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/hosts ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/wpa_supplicant/wpa_supplicant.conf ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/ssh/sshd_config ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/chrony/chrony.conf ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/network/nepi_iptables.rules ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/network/interfaces.d/nepi_user_ip_aliases ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/network/interfaces.d/nepi_static_ip ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/fstabs/fstab ${NEPI_FACTORY_CONFIG}/
+sudo cp /opt/nepi/etc/samba/smb.conf ${NEPI_FACTORY_CONFIG}/
+
+
+##############################################
+echo "NEPI Engine Setup Complete"
+##############################################
 
 
 # Source nepi aliases before exit

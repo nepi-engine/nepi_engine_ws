@@ -14,7 +14,7 @@
 
 
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
 
 
 #######################################
@@ -38,6 +38,8 @@ cd $TMP
 sudo apt-get update
 
 #### Install Software
+
+sudo apt-get install nvidia-utils-515 -y
 sudo apt-get install cmake -y
 sudo apt-get install lsb-release -y
 sudo apt-get install nano -y

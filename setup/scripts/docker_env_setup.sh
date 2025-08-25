@@ -14,7 +14,7 @@
 
 
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
 
 echo ""
 echo "NEPI Docker Enviorment Setup"
@@ -102,7 +102,7 @@ sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 # Edit Docker Config
 
 
-if [[ "$NEPI_HW" -eq "JETSON" ]]; then
+if [[ "$NEPI_HW_TYPE" -eq "JETSON" ]]; then
     echo "Configuring Docker for NVIDIA Jetson 
     # Install nvidia toolkit
     #https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
@@ -128,11 +128,11 @@ if [[ "$NEPI_HW" -eq "JETSON" ]]; then
 
 fi
 
-if [[ "$NEPI_HW" -eq "GENERIC" ]]; then
+if [[ "$NEPI_HW_TYPE" -eq "GENERIC" ]]; then
     ### BLANK
 fi
 
-if [[ "$NEPI_HW" -eq "RPI" ]]; then
+if [[ "$NEPI_HW_TYPE" -eq "RPI" ]]; then
     ### BLANK
 fi
 

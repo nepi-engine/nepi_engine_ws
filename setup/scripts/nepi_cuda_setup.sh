@@ -14,7 +14,8 @@
 
 
 source ./NEPI_CONFIG.sh
-echo "Starting with NEPI Home folder: ${NEPI_HOME}"
+wait
+
 
 echo ""
 echo "Installing CUDA Software Support"
@@ -25,13 +26,39 @@ TMP=${STORAGE}\tmp
 mkdir $TMP
 cd $TMP
 
-############################################
-### TO DO: DOWNLOAD and UNZIP NEPI PREMADE CUDA PACKAGE
-# Auto Download based on set NEPI_HW and MODEL HW and MODEL then download
-############################################
 
+#***************************************
+# Run CMake with CUDA flags and other desired options. Adjust CUDA_ARCH_BIN to match your gpu architecture 
+# CUDA_ARCH OPTIONS
+#Jetson ORIN 8.7
+#Jetson XAVIER 7.2
+#Jetson TX2	6.2
+#Jetson NANO 5.3
+
+CUDA_ARCH=8.7
+
+declare -A cuda_archs
+cuda_archs["ORIN"]=8.7
+cuda_archs["XAVIER"]=7.2
+cuda_archs["TX2"]=6.2
+cuda_archs["NANO"]=5.3
+
+# Iterate through the dictionary to find a match
+for key in "${!cuda_archs[@]}"; do
+  if [[ "$key" == "$NEPI_HW_MODEL" ]]; then
+    CUDA_ARCH="${cuda_archs[$key]}"
+    break # Exit the loop once a match is found
+  fi
+done
+
+
+
+
+
+####################################
 # Create USER python folder
 mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
+####################################
 
 ####################################
 # Install Required Libriaries
@@ -43,7 +70,7 @@ sudo apt-get install -y python3.10-dev python-dev python-numpy python3-numpy
 sudo apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
 sudo apt-get install -y libv4l-dev v4l-utils qv4l2 v4l2ucp    
 sudo apt-get install -y libopenblas-base libopenmpi-dev libomp-dev 
-sudo apt-get install -y libcudart
+sudo apt-get install -y ninja
 
 
 
@@ -116,12 +143,7 @@ git checkout 4.x
 cd ../opencv
 mkdir build
 
-#***************************************
-# Run CMake with CUDA flags and other desired options. Adjust CUDA_ARCH_BIN to match your gpu architecture 
-# (e.g., 8.7 for Orin):
-# TO DO: Add USER INPUT with defualt 8.7
-CUDA_ARCH=8.7
-#***************************************
+
 
 # https://stackoverflow.com/questions/42638342/cannot-install-opencv-3-1-0-with-python3-cmake-not-including-or-linking-python
 
@@ -191,97 +213,50 @@ python -c "import cv2; print(cv2.__version__); print(cv2.cuda.getCudaEnabledDevi
 
 
 ############################################
-# Install pytorch for jetson
+# Install Pytorch 
 ############################################
 echo 'Installing PyTorch with Cuda support'
+PYTORCH_VERSION=2.0.1
 
-#git clone --recursive --branch <desired_pytorch_version> https://github.com/pytorch/pytorch.git
-#cd pytorch
+cd $TMP
+git clone --recursive --branch v${PYTORCH_VERSION} https://github.com/pytorch/pytorch.git
+cd pytorch
 
+export USE_NCCL=0  # Disable NCCL if not using distributed training
+export USE_DISTRIBUTED=0 # Disable distributed training if not needed
+export TORCH_CUDA_ARCH_LIST="${CUDA_ARCH}" # Specify CUDA architecture for Orin NX
+export PYTORCH_BUILD_VERSION=$PYTORCH_VERSION # Match your chosen PyTorch version
+export PYTORCH_BUILD_NUMBER=1
 
+pip install -r requirements.txt
+pip install scikit-build
 
-#https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html
-#https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html#prereqs-install
+MAX_JOBS=1 python setup.py bdist_wheel
 
-#https://medium.com/@yixiaozengprc/set-up-pytorch-environment-on-nvidia-jetson-platform-9eda291db716
-#https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/index.html
-
-# Setup Pytorch in NEPI device
-
-#find cuda version
-#nvcc --version
-
-#find numpy version:
-#python -c "import numpy; print(numpy.__version__)"
-
-#find cuda version
-sudo apt-cache show nvidia-jetpack
-
-
-#Dowload latest version for your jetpack version from
-#Find pytorch version for jetpack version
-#https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048
-#NOT SURE ABOUT THIS ONE: https://developer.download.nvidia.com/compute/redist/jp/
-
-
-#export TORCH_INSTALL=<path to whl file>
-
-# For Jetpack 5.0.2
-export TORCH_INSTALL=$(pwd)/torch-2.2.0a0+6a974be.nv23.11-cp310-cp310-linux_aarch64.whl
-#export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-1.13.0a0+410ce96a.nv22.12-cp38-cp38-linux_aarch64.whl
-
-# For Jetpack 5.1.2
-#export TORCH_INSTALL=/mnt/nepi_storage/tmp/torch-2.1.0a0+41361538.nv23.06-cp38-cp38-linux_aarch64.whl
-
-
-# Setup Pytorch in NEPI device 3
-#sudo pip3 install numpy=='1.24.4'
-sudo python${PYTHON_VERSION} -m pip install $TORCH_INSTALL
+pip install dist/*.whl
 
 # test install
 python -c "import torch; print(torch.__version__); print(str(torch.cuda.is_available()))"
 
 ############################################
-- install torchvision
+# Install Torchvision 
+############################################
+echo 'Installing Torchvision with Cuda support'
+cd $TMP
+#Installing Torchvision
+# find compatable version to torch version https://pypi.org/project/torchvision/
+#Instructions can be found https://forums.developer.nvidia.com/t/pytorch-forjetson/
+#https://forums.developer.nvidia.com/t/how-to-install-torchvision-with-torch1-14-0-with-cuda-11-4/245657/2
 
-f) Fix NEPI package versions
-
-pip install setuptools==49.4.0
-sudo pip install setuptools==49.4.0
-
-Installing Torchvision
-Instructions can be found https://forums.developer.nvidia.com/t/pytorch-forjetson/
-
-https://forums.developer.nvidia.com/t/how-to-install-torchvision-with-torch1-14-0-with-cuda-11-4/245657/2
-a. find compatable version to torch version https://pypi.org/project/torchvision/
-
-python 
-import torch
-print(torch.__version__)
-quit()
-
-NOTE: You can find the torch and torchvision compatibility matrix here:
-https://github.com/pytorch/vision 
-
-then look under "Tags" find version, then click the "tar.gz" file link
-
-b. download and install On your PC Download 
-Example:
-
-https://github.com/pytorch/vision/archive/refs/tags/v0.14.0.tar.gz
+# NOTE: You can find the torch and torchvision compatibility matrix here:
+# https://github.com/pytorch/vision 
+# then look under "Tags" find version, then click the "tar.gz" file link
 
 
-https://github.com/pytorch/vision/archive/refs/tags/v0.16.2.tar.gz
+wget https://files.pythonhosted.org/packages/25/44/ddd56d1637bac42a8c5da2c8c440d8a28c431f996dd9790f32dd9a96ca6e/torchvision-0.23.0-cp310-cp310-manylinux_2_28_aarch64.whl
 
 
-c. copy to your /mnt/nepi_storage/tmp/ folder and unzip 
-connect NEPI to internet
-
-sshn in
-
-sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libopenblas-dev libavcodec-dev libavformat-dev libswscale-dev
-cd /mnt/nepi_storage/tmp/
-
+'
 Example
 tar -xvzf vision-0.14.0.tar.gz
 cd vision-0cd.14.0
@@ -298,7 +273,7 @@ cd ..
 sudo chown -R nepi:nepi vision-0.16.2
 cd vision-0.16.2
 sudo python setup.py install
-
+'
 
 #Check Installed
 python -c "import torchvision; print(torchvision.__version__)"
