@@ -98,8 +98,7 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 #####################################
 ######       NEPI RUI Files          #####\
 # RUI deploy
-NEPI_RUI_TARGET_SRC_DIR=$NEPI_RUI
-sudo cp -R -p ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
+sudo cp -R -p ./src/nepi_rui $NEPI_RUI
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 #####################################
@@ -107,17 +106,22 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 # Auto Scripts deploy
 printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI Storage ***${CLEAR}\n"
 NEPI_AUTO_TARGET_USER_DIR="${NEPI_STORAGE}/automation_scripts"
-sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/ ${NEPI_AUTO_TARGET_USER_DIR}
+sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/* ${NEPI_AUTO_TARGET_USER_DIR}/
 printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 
 
-
+#####################################
+######       NEPI ETC Files          #####\
+# RUI deploy
+sudo mkdir ${NEPI_CONFIG}/factory_cfg
+sudo cp -R -p $NEPI_ETC ${NEPI_CONFIG}/factory_cfg/
+printf "\n${HIGHLIGHT}*** NEPI ETC Deploy Finished ***\n"
 
 #####################################
 ###### NEPI Engine #####
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  catkin build --profile=release
+  catkin build --profile=release --env-cache
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI Engine SDK Build by User Request ***${CLEAR}\n"

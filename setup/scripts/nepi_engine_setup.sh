@@ -43,13 +43,14 @@ sudo sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
 
 # Create System Folders
 echo ""
-echo "Creating system folders"
+echo "Creating system folders in ${NEPI_BASE}"
 sudo mkdir -p ${NEPI_BASE}
 sudo mkdir -p ${NEPI_RUI}
 sudo mkdir -p ${NEPI_ENGINE}
-sudo mkdir -p ${NEPI_ETC}
-sudo mkdir -p ${NEPI_SCRITPS}
 
+sudo mkdir -p ${NEPI_ETC}
+sudo mkdir -p ${NEPI_SCRIPTS}
+echo "Creating config folders"
 sudo mkdir -p ${NEPI_USR_CONFIG}
 sudo mkdir -p ${NEPI_FACTORY_CONFIG}
 sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
@@ -118,10 +119,17 @@ echo "NEPI_AB_FS: ${NEPI_AB_FS}" >> $NEPI_ETC_CONFIG
 
 # Set up the NEPI sys env bash file
 echo "Updating system env bash file"
-sudo cp ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
-sudo chmod +x ${NEPI_BASE}/sys_env.bash
-sudo cp ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash.bak
-sudo chmod +x ${NEPI_BASE}/sys_env.bash.bak
+sudo chmod +x ${NEPI_ETC}/sys_env.bash
+sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
+if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
+    sudo rm ${NEPI_BASE}/sys_env.bash
+fi
+sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
+if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
+    sudo rm ${NEPI_BASE}/sys_env.bash.bak
+fi
+sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
+
 
 ###################
 # Set up the default hostname
@@ -246,41 +254,43 @@ sudo ln -sf ${NEPI_ETC}/opt/baumer /opt/baumer
 sudo chown ${NEPI_USER}:${NEPI_USER} /opt/baumer
 
 # Disable apport to avoid crash reports on a display
+echo "Disabling apport service"
 sudo systemctl disable apport
 
 
 # Set up static IP addr.
+echo "Updating Network interfaces.d"
 if [ ! -f "/etc/network/interfaces.d" ]; then
     sudo rm -r /etc/network/interfaces.d
 fi
 sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
-
+echo "Updating Network interfaces"
 if [ ! -f "/etc/network/interfaces" ]; then
     sudo rm /etc/network/interfaces
 fi
 sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
 
 # Set up DHCP
+echo "Updating Network dhclient.conf"
 if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
     sudo rm /etc/dhcp/dhclient.conf
 fi
-sudo ln -sf ${NEPI_ETC}/dhclient.conf /etc/dhcp/dhclient.conf
-sudo dhclient
+sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+
 
 # Set up WIFI
-if [ ! -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
-    sudo rm /etc/wpa_supplicant/wpa_supplicant.conf
+echo "Updating Network wpa_supplicant.conf"
+if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
+    sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 fi
-sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
-sudo dhclient
 
 
 
 
 ##############
-# Install Manager File
-#sudo cp -R ${NEPI_CONFIG}/etc/license/nepi_check_license.py ${NEPI_ETC}/nepi_check_license.py
+# Install License Manager File
+echo "Setting Up Lic Mgr"
 sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
 sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
 sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
@@ -292,6 +302,7 @@ sudo systemctl enable nepi_check_license
 
 ################################
 # Update fstab
+echo "Updating fstab"
 sudo cp -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
 sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
 if [ ! -f "/etc/fstab.bak" ]; then
@@ -358,29 +369,23 @@ echo "Updating docker file ${FILE} line: ${Line}"
 sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 '
 
+
+'
+DO THIS MAYBE
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
 ## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 ## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
-
+'
 
 
 ##############################################
 # Populate factory config folder
 ##############################################
 echo "Populating NEPI Factory Config Folder ${NEPI_FACTORY_CONFIG}"
-sudo cp /opt/nepi/sys_env.bash ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/nepi_config.yaml ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/hostname ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/hosts ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/wpa_supplicant/wpa_supplicant.conf ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/ssh/sshd_config ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/chrony/chrony.conf ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/network/nepi_iptables.rules ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/network/interfaces.d/nepi_user_ip_aliases ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/network/interfaces.d/nepi_static_ip ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/fstabs/fstab ${NEPI_FACTORY_CONFIG}/
-sudo cp /opt/nepi/etc/samba/smb.conf ${NEPI_FACTORY_CONFIG}/
+sudo cp -R -p /opt/nepi/etc ${NEPI_FACTORY_CONFIG}/
+
+
 
 
 ##############################################
