@@ -378,10 +378,7 @@ echo "NEPI Script Setup Complete"
 #######################
 USER_SITE_PACKAGES_PATH=$(python -m site --user-site)
 NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
-# Install MSCL lib
-#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.0.1/MSCL_arm64_Python3.10_v67.0.1.deb
-#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.1.0/MSCL_arm64_Python3.10_v67.1.0.deb
-#sudo dpkg -i MSCL*
+
 
 sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 
@@ -426,6 +423,14 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
 sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
 
 
+
+################################
+# Misc Updates
+###############################
+
+
+# Mavros requires some additional setup for geographiclib
+sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
 
 ##############################################
 echo "NEPI Engine Setup Complete"

@@ -209,7 +209,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     # Function to search for topic containing string
     function ftopic(){
     if [ $NEEDS_ROS -eq 1 ]; then
-      sleep 1 & sros
+      sros
       wait
       NEEDS_ROS=0
     fi
