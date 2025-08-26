@@ -200,9 +200,29 @@ function import_nepi(){
   NEW_NAME=$INACTIVE_CONT
   echo $NEW_NAME
   NEW_TAG=$INACTIVE_TAG
-  echo $NEW_TAG
+  printf 'Create a Custom Tag (y/n)? '
+  read answer
+  if [ "$answer" != "${answer#[Yy]}" ] ;then 
+      echo 'Enter Custom Tag: ' 
+      read CUSTOM_TAG
+      NEW_TAG=$CUSTOM_TAG
+      echo ''
+  else
+      echo ''
+  fi
   NEW_VERSION=$IMAGE_VERSION
-  echo $NEW_VERSION
+  printf 'Create a Custom Version (y/n)? '
+  read answer
+  if [ "$answer" != "${answer#[Yy]}" ] ;then 
+      echo 'Enter Custom Version: ' 
+      read CUSTOM_TAG
+      NEW_TAG=$CUSTOM_TAG
+      echo ''
+  else
+      echo ''
+  fi
+
+
   sudo docker tag $ID ${NEW_NAME}:${NEW_TAG}
   #6) Update inactive version,tags,ids in nepi_docker_config.yaml
   update_yaml_value "INACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
@@ -232,7 +252,6 @@ function export_nepi(){
   else
     echo "No Running Container"
   fi
-
 }
 export -f export_nepi
 
@@ -272,6 +291,7 @@ function run_nepi(){
     #Run NEPI Complete
     sudo docker run --rm --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/mnt/nepi_config,target=/mnt/nepi_config \
     --mount type=bind,source=/dev,target=/dev \
     -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
@@ -296,8 +316,10 @@ export -f login_nepi
 ######################
 function run_nepi_dev(){
     #Run NEPI in Dev Mode
+
     sudo docker run --privileged -e UDEV=1 --user nepi --gpus all \
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage \
+    --mount type=bind,source=/mnt/nepi_config,target=/mnt/nepi_config \
     --mount type=bind,source=/dev,target=/dev \
     -it --net=host --runtime nvidia \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \

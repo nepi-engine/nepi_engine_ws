@@ -103,7 +103,7 @@ sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 
 
 if [[ "$NEPI_HW_TYPE" -eq "JETSON" ]]; then
-    echo "Configuring Docker for NVIDIA Jetson 
+    echo "Configuring Docker for NVIDIA Jetson "
     # Install nvidia toolkit
     #https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
     curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -189,47 +189,99 @@ if [ $NEPI_MANAGES_NETWORK -eq 1 ]; then
     sudo systemctl disable NetworkManager
 fi
 
+#####################################
+Update Docker Config File
+#####################################
+
+###############
+echo "Updating nepi config file etc/nepi_config.yaml"
+DOCKER_CONFIG_FILE=${DOCKER_CONFIG_FILE}/nepi_docker_config.yaml
+cat /dev/null > $DOCKER_CONFIG_FILE
+echo "NEPI_HW_TYPE: ${NEPI_HW_TYPE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_HW_MODEL: ${NEPI_HW_MODEL}" >> $DOCKER_CONFIG_FILE
+
+# PYTHON VERSION
+echo "NEPI_PYTHON: ${NEPI_PYTHON}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_ROS: ${NEPI_ROS}" >> $DOCKER_CONFIG_FILE
+
+# NEPI HOST SETTINGS
+echo "NEPI_IN_CONTAINER: ${NEPI_IN_CONTAINER}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_HAS_CUDA: ${NEPI_HAS_CUDA}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_HAS_XPU: ${NEPI_HAS_XPU}" >> $DOCKER_CONFIG_FILE
+
+# NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
+# Note, if enabled for a docker deployment, these system functions will be
+# disabled in the host OS environment
+echo "NEPI_MANAGES_SSH: ${NEPI_MANAGES_SSH}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_MANAGES_SHARE: ${NEPI_MANAGES_SHARE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_MANAGES_TIME: ${NEPI_MANAGES_TIME}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_MANAGES_NETWORK: ${NEPI_MANAGES_NETWORK}" >> $DOCKER_CONFIG_FILE
+
+# System Setup Variables
+echo "NEPI_USER: ${NEPI_USER}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_DEVICE_ID: ${NEPI_DEVICE_ID}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_IP: ${NEPI_IP}" >> $DOCKER_CONFIG_FILE
+
+
+# NEPI PARTITIONS
+echo "NEPI_DOCKER: ${NEPI_DOCKER}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_STORAGE: ${NEPI_STORAGE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_CONFIG: ${NEPI_CONFIG}" >> $DOCKER_CONFIG_FILE
+
+# NEPI File System 
+echo "NEPI_ENV: ${NEPI_ENV}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_HOME: ${NEPI_HOME}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_BASE: ${NEPI_BASE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_RUI: ${NEPI_RUI}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_ENGINE: ${NEPI_ENGINE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_ETC: ${NEPI_ETC}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_SCRIPTS: ${NEPI_SCRIPTS}" >> $DOCKER_CONFIG_FILE
+
+echo "NEPI_CODE: ${NEPI_CODE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_SRC: ${NEPI_SRC}" >> $DOCKER_CONFIG_FILE
+
+echo "NEPI_IMAGE_INSTALL: ${NEPI_IMAGE_INSTALL}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_IMAGE_ARCHIVE: ${NEPI_IMAGE_ARCHIVE}" >> $DOCKER_CONFIG_FILE
+
+echo "NEPI_USR_CONFIG: ${NEPI_USR_CONFIG}" >> $DOCKER_CONFIG_FILE
+echo "DOCKER_CONFIG_FILE: ${DOCKER_CONFIG_FILE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_FACTORY_CONFIG: ${NEPI_FACTORY_CONFIG}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_SYSTEM_CONFIG: ${NEPI_SYSTEM_CONFIG}" >> $DOCKER_CONFIG_FILE
+
+echo "NEPI_CODE: ${NEPI_CODE}" >> $DOCKER_CONFIG_FILE
+echo "NEPI_ALIASES_FILE: ${NEPI_ALIASES_FILE}" >> $DOCKER_CONFIG_FILE
+
+echo "NEPI_AB_FS: ${NEPI_AB_FS}" >> $DOCKER_CONFIG_FILE
+
+# NEPI Docker Config
+## NEED TO: Read these from nepi_config.yaml file
+ACTIVE_CONT: nepi_fs_a
+ACTIVE_VERSION: 3p2p0-RC2
+ACTIVE_UPLOAD_DATE: 0
+ACTIVE_TAG: jetson-3p2p0-rc2
+ACTIVE_ID: 0
+INACTIVE_CONT: nepi_fs_a
+INACTIVE_VERSION: 3p2p0
+INACTIVE_UPLOAD_DATE: 2025-08-26
+INACTIVE_TAG: 3p2p3-CUDA_PYTORCH
+INACTIVE_ID: 3p2p0
+STAGING_CONT: nepi_staging
+IMPORT_PATH: $NEPI_IMAGE_INSTALL
+EXPORT_PATH: $NEPI_IMAGE_ARCHIVE
+######  NEED TO: Update from current docker status
+RUNNING_CONT: None
+RUNNING_VERSION: uknown
+RUNNING_TAG: uknown
+RUNNING_ID: 0
+
+# UPDATED VARS
+COUNT: 0
+SUPPORTS_A_B: $NEPI_AB_FS
+
+sudo chown ${NEPI_USER}:${NEPI_USER} DOCKER_CONFIG_FILE
+
 ##################################
 echo ""
 echo 'NEPI Docker Setup Complete'
 ##################################
 
-
-#############################################################################
-
-
-##################################
-# Import Image Container
-##################################
-
-
-##################################
-# Switch Active Container
-##################################
-
-
-##################################
-# Build new Jetson Container
-##################################
-# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
-
-sudo docker run -it --net=host --runtime nvidia -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix nvcr.io/nvidia/l4t-jetpack:r35.1.0
-
-### Within container do this:
-# Set root password
-passwd
-nepi
-nepi
-
-
-## Add nepi user
-# https://stackoverflow.com/questions/27701930/how-to-add-users-to-docker-container
-addgroup nepi
-adduser --ingroup nepi nepi
-visudo /etc/sudoers
-nepi    ALL=(ALL:ALL) ALL
-
-su nepi
-passwd
-nepi
-nepi
