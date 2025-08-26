@@ -112,9 +112,6 @@ if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
 fi
 
 ROOTRC=/root/.bashrc
-sudo cp ${HOME}/.nepi_config /root/.nepi_config
-sudo cp ${HOME}/.nepi_system_aliases /root/.nepi_system_aliases
-sudo cp ${HOME}/.nepi_bash_utils /root/.nepi_bash_utils
 sudo cp $BASHRC /root/.bashrc
 
 

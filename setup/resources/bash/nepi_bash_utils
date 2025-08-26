@@ -194,13 +194,14 @@ fi
 ###################################
 
 HAS_ROS=$(dpkg -l | grep ros-)
-if [[ -z "$HAS_ROS" ]]; then
+if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     NEEDS_ROS=1
 
     # Function to search for topic containing string
     function sros(){
       # Source ROS Env
+      source /opt/ros/noetic/setup.bash
       source /opt/nepi/nepi_engine/setup.bash
       NEEDS_ROS=0
     }
