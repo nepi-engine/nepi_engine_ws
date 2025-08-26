@@ -23,8 +23,9 @@
 
 
 ### SOURCE NEPI UTIL FUNCTIONS
-NUSH=${HOME}/.nepi_bash_utils
+NUSH=/home/${USER}/.nepi_bash_utils
 source $NUSH
+wait
 UINFO="$(. ${NUSH} && utilsn)"
 
 

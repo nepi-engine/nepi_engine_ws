@@ -15,6 +15,9 @@
 source ./NEPI_CONFIG.sh
 wait
 
+sudo su
+exit
+
 
 echo ""
 echo "Setting up NEPI Engine"
@@ -43,17 +46,38 @@ sudo sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
 
 # Create System Folders
 echo ""
-echo "Creating system folders"
+echo "Creating system folders in ${NEPI_BASE}"
 sudo mkdir -p ${NEPI_BASE}
 sudo mkdir -p ${NEPI_RUI}
 sudo mkdir -p ${NEPI_ENGINE}
 sudo mkdir -p ${NEPI_ETC}
-sudo mkdir -p ${NEPI_SCRITPS}
+sudo mkdir -p ${NEPI_SCRIPTS}
 
+echo "Creating dev folders"
+sudo mkdir -p ${NEPI_CODE}
+sudo mkdir -p ${NEPI_SRC}
+
+
+echo "Creating image install folders"
+sudo mkdir -p ${NEPI_IMAGE_INSTALL}
+sudo mkdir -p ${NEPI_IMAGE_ARCHIVE}
+
+
+echo "Creating config folders"
 sudo mkdir -p ${NEPI_USR_CONFIG}
 sudo mkdir -p ${NEPI_FACTORY_CONFIG}
 sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
 
+# Create some backward compatable links
+sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/ros
+sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/engine
+sudo ln -sf ${NEPI_BASE}/nepi_rui ${NEPI_BASE}/rui
+
+
+# Update NEPI_FOLDER owners
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
 
 ###################
 # Copy Config Files
@@ -67,10 +91,12 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 echo "Updating nepi config file etc/nepi_config.yaml"
 NEPI_ETC_CONFIG=${NEPI_ETC}/nepi_config.yaml
 cat /dev/null > $NEPI_ETC_CONFIG
-echo "NEPI_HW: ${NEPI_HW}" >> $NEPI_ETC_CONFIG
+echo "NEPI_HW_TYPE: ${NEPI_HW_TYPE}" >> $NEPI_ETC_CONFIG
+echo "NEPI_HW_MODEL: ${NEPI_HW_MODEL}" >> $NEPI_ETC_CONFIG
 
 # PYTHON VERSION
 echo "NEPI_PYTHON: ${NEPI_PYTHON}" >> $NEPI_ETC_CONFIG
+echo "NEPI_ROS: ${NEPI_ROS}" >> $NEPI_ETC_CONFIG
 
 # NEPI HOST SETTINGS
 echo "NEPI_IN_CONTAINER: ${NEPI_IN_CONTAINER}" >> $NEPI_ETC_CONFIG
@@ -83,11 +109,13 @@ echo "NEPI_HAS_XPU: ${NEPI_HAS_XPU}" >> $NEPI_ETC_CONFIG
 echo "NEPI_MANAGES_SSH: ${NEPI_MANAGES_SSH}" >> $NEPI_ETC_CONFIG
 echo "NEPI_MANAGES_SHARE: ${NEPI_MANAGES_SHARE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_MANAGES_TIME: ${NEPI_MANAGES_TIME}" >> $NEPI_ETC_CONFIG
-echo "NEPI_MAGAGES_NETWORK: ${NEPI_MAGAGES_NETWORK}" >> $NEPI_ETC_CONFIG
+echo "NEPI_MANAGES_NETWORK: ${NEPI_MANAGES_NETWORK}" >> $NEPI_ETC_CONFIG
 
 # System Setup Variables
-echo "NEPI_IP: ${NEPI_IP}" >> $NEPI_ETC_CONFIG
 echo "NEPI_USER: ${NEPI_USER}" >> $NEPI_ETC_CONFIG
+echo "NEPI_DEVICE_ID: ${NEPI_DEVICE_ID}" >> $NEPI_ETC_CONFIG
+echo "NEPI_IP: ${NEPI_IP}" >> $NEPI_ETC_CONFIG
+
 
 # NEPI PARTITIONS
 echo "NEPI_DOCKER: ${NEPI_DOCKER}" >> $NEPI_ETC_CONFIG
@@ -95,12 +123,19 @@ echo "NEPI_STORAGE: ${NEPI_STORAGE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_CONFIG: ${NEPI_CONFIG}" >> $NEPI_ETC_CONFIG
 
 # NEPI File System 
+echo "NEPI_ENV: ${NEPI_ENV}" >> $NEPI_ETC_CONFIG
 echo "NEPI_HOME: ${NEPI_HOME}" >> $NEPI_ETC_CONFIG
 echo "NEPI_BASE: ${NEPI_BASE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_RUI: ${NEPI_RUI}" >> $NEPI_ETC_CONFIG
 echo "NEPI_ENGINE: ${NEPI_ENGINE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_ETC: ${NEPI_ETC}" >> $NEPI_ETC_CONFIG
 echo "NEPI_SCRIPTS: ${NEPI_SCRIPTS}" >> $NEPI_ETC_CONFIG
+
+echo "NEPI_CODE: ${NEPI_CODE}" >> $NEPI_ETC_CONFIG
+echo "NEPI_SRC: ${NEPI_SRC}" >> $NEPI_ETC_CONFIG
+
+echo "NEPI_IMAGE_INSTALL: ${NEPI_IMAGE_INSTALL}" >> $NEPI_ETC_CONFIG
+echo "NEPI_IMAGE_ARCHIVE: ${NEPI_IMAGE_ARCHIVE}" >> $NEPI_ETC_CONFIG
 
 echo "NEPI_USR_CONFIG: ${NEPI_USR_CONFIG}" >> $NEPI_ETC_CONFIG
 echo "NEPI_DOCKER_CONFIG: ${NEPI_DOCKER_CONFIG}" >> $NEPI_ETC_CONFIG
@@ -116,10 +151,17 @@ echo "NEPI_AB_FS: ${NEPI_AB_FS}" >> $NEPI_ETC_CONFIG
 
 # Set up the NEPI sys env bash file
 echo "Updating system env bash file"
-sudo cp ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
-sudo chmod +x ${NEPI_BASE}/sys_env.bash
-sudo cp ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash.bak
-sudo chmod +x ${NEPI_BASE}/sys_env.bash.bak
+sudo chmod +x ${NEPI_ETC}/sys_env.bash
+sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
+if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
+    sudo rm ${NEPI_BASE}/sys_env.bash
+fi
+sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
+if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
+    sudo rm ${NEPI_BASE}/sys_env.bash.bak
+fi
+sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
+
 
 ###################
 # Set up the default hostname
@@ -244,41 +286,43 @@ sudo ln -sf ${NEPI_ETC}/opt/baumer /opt/baumer
 sudo chown ${NEPI_USER}:${NEPI_USER} /opt/baumer
 
 # Disable apport to avoid crash reports on a display
+echo "Disabling apport service"
 sudo systemctl disable apport
 
 
 # Set up static IP addr.
+echo "Updating Network interfaces.d"
 if [ ! -f "/etc/network/interfaces.d" ]; then
     sudo rm -r /etc/network/interfaces.d
 fi
 sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
-
+echo "Updating Network interfaces"
 if [ ! -f "/etc/network/interfaces" ]; then
     sudo rm /etc/network/interfaces
 fi
 sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
 
 # Set up DHCP
+echo "Updating Network dhclient.conf"
 if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
     sudo rm /etc/dhcp/dhclient.conf
 fi
-sudo ln -sf ${NEPI_ETC}/dhclient.conf /etc/dhcp/dhclient.conf
-sudo dhclient
+sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+
 
 # Set up WIFI
-if [ ! -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
-    sudo rm /etc/wpa_supplicant/wpa_supplicant.conf
+echo "Updating Network wpa_supplicant.conf"
+if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
+    sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 fi
-sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
-sudo dhclient
 
 
 
 
 ##############
-# Install Manager File
-#sudo cp -R ${NEPI_CONFIG}/etc/license/nepi_check_license.py ${NEPI_ETC}/nepi_check_license.py
+# Install License Manager File
+echo "Setting Up Lic Mgr"
 sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
 sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
 sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
@@ -290,6 +334,7 @@ sudo systemctl enable nepi_check_license
 
 ################################
 # Update fstab
+echo "Updating fstab"
 sudo cp -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
 sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
 if [ ! -f "/etc/fstab.bak" ]; then
@@ -333,24 +378,63 @@ echo "NEPI Script Setup Complete"
 #######################
 USER_SITE_PACKAGES_PATH=$(python -m site --user-site)
 NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
-# Install MSCL lib
-#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.0.1/MSCL_arm64_Python3.10_v67.0.1.deb
-#sudo wget https://github.com/LORD-MicroStrain/MSCL/releases/download/v67.1.0/MSCL_arm64_Python3.10_v67.1.0.deb
-#sudo dpkg -i MSCL*
+
 
 sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 
 
-
+# Update NEPI_BASE owner
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
 
 ###########################################
 # Fix some NEPI package issues
 ###########################################
+
+'
+FILE=/usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+KEY=
+LINE=69
+UPDATE=
+echo "Updating docker file ${FILE} line: ${Line}"
+sed -i "/^$KEY/c\\$UPDATE" "$FILE"
+'
+
+
+'
+DO THIS MAYBE
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
 ## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
 sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 ## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
+'
 
+
+##############################################
+# Populate factory config folder
+##############################################
+echo "Populating NEPI Factory Config Folder ${NEPI_FACTORY_CONFIG}"
+sudo cp -R -p /opt/nepi/etc ${NEPI_FACTORY_CONFIG}/
+
+
+
+# Update NEPI_FOLDER owners
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
+
+
+
+################################
+# Misc Updates
+###############################
+
+
+# Mavros requires some additional setup for geographiclib
+sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
+
+##############################################
+echo "NEPI Engine Setup Complete"
+##############################################
 
 
 # Source nepi aliases before exit

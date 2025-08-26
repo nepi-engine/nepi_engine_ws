@@ -234,8 +234,8 @@ MAX_JOBS=1 python setup.py bdist_wheel
 
 pip install dist/*.whl
 
-python -c "import torch; print(torch.__version__)"
-
+# test install
+python -c "import torch; print(torch.__version__); print(str(torch.cuda.is_available()))"
 
 ############################################
 # Install Torchvision 

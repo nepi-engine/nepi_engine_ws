@@ -22,6 +22,11 @@ NEPI_USER=nepi
 NEPI_SSH_DIR=~/ssh_keys
 NEPI_SSH_FILE=nepi_engine_default_private_ssh_key
 
+
+#############
+# Install Required Software
+
+
 #############
 # Add nepi ip to /etc/hosts if not there
 HOST_FILE=/etc/hosts
@@ -32,6 +37,7 @@ if grep -qnw $HOST_FILE -e ${NEPI_HOST}; then
 else
     echo "Adding NEPI IP in ${HOST_FILE}"
     echo $NEPI_HOST | sudo tee -a $HOST_FILE
+    echo "${NEPI_HOST}-${NEPI_DEVICE_ID}" | sudo tee -a $HOST_FILE
 fi
 
 

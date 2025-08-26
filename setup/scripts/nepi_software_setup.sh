@@ -92,7 +92,7 @@ sudo apt-get install snapd -y
 sudo apt-get install xz-utils
 
 
-# Install ccache
+### Install ccache
 #https://askubuntu.com/questions/470545/how-do-i-set-up-ccache
 cd $TMP
 sudo apt install -y ccache
@@ -102,7 +102,40 @@ source ~/.bashrc && echo $PATH
 ccache --version
 
 
+### Install Boost 1.6.1
+# https://stackoverflow.com/questions/8430332/uninstall-boost-and-install-another-version
+# First uninstall older version
+sudo apt-get -y --purge remove libboost-all-dev libboost-doc libboost-dev
+echo "clear boost dir"
+sudo rm -r /usr/local/lib/libboost*
+sudo rm -r /usr/local/include/boost
+sudo rm -r /usr/local/lib/cmake/[Bb]oost*
+sudo rm -f /usr/lib/libboost_*
+sudo rm -r /usr/include/boost
 
+
+sudo apt-get -y install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev
+cd $TMP
+wget http://downloads.sourceforge.net/project/boost/boost/1.68.0/boost_1_68_0.tar.gz
+tar -zxf boost_1_68_0.tar.gz
+cd boost_1_68_0
+# get the no of cpucores to make faster
+./bootstrap.sh  # this will generate ./b2
+sudo ./b2 
+
+### Install MSCL
+# https://github.com/LORD-MicroStrain/MSCL/blob/master/BuildScripts/buildReadme_Linux.md
+cd $TMP
+git clone https://github.com/LORD-MicroStrain/MSCL.git
+cd MSCL
+mkdir build
+cd build
+cmake .. -DMSCL_BUILD_PYTHON3=ON
+cmake --build . -j$(nproc)
+
+
+###################################
+# Config System Services
 sudo apt-get install openssh-server -y
 if [ $NEPI_MANAGES_SSH == 1 ]; then
     sudo systemctl enable --now sshd.service
@@ -125,7 +158,7 @@ if [ $NEPI_MANAGES_NETWORK == 1 ]; then
     sudo systemctl disable NetworkManager
 fi
 
-
+######################################
 
 ### Install static IP tools
 echo "Installing static IP dependencies"
@@ -312,19 +345,16 @@ cat nepi_requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo
 #  Install ros
 #  https://wiki.ros.org/noetic/Installation/Ubuntu
 
-cd /mnt/nepi_storage/tmp
+cd $TMP
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-sudo apt-get install curl # if you haven't already installed curl
+sudo apt-get install curl -y # if you haven't already installed curl
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 sudo apt-get update
 ####################
 # Do if ROS not installed
-sudo apt-get install ros-noetic-desktop-full
+sudo apt-get install ros-noetic-desktop-full -y
 source /opt/ros/noetic/setup.bash
-sudo apt-get install python3-rosdep 
-sudo apt-get install python3-rosinstall 
-sudo apt-get install python3-rosinstall-generator 
-sudo apt-get install python3-wstool build-essential
+sudo apt-get install -y python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
 sudo rosdep init
 rosdep update
 
@@ -333,39 +363,45 @@ rosdep update
 #sudo apt-get install ros-noetic-catkin python-catkin-tools
 #sudo python${PYTHON_VERSION} -m pip3 install --user git+https://github.com/catkin/catkin_tools.git
 
-#remove old packages if installed
-sudo apt remove ros-noetic-cv-bridge -y
-sudo apt remove ros-noetic-web-video-server -y
 
 
-ROS_VERSION=noetic
+
+ros_version="${NEPI_ROS,,}"
+
+
+# If needed remove old packages if installed
+#sudo apt remove ros-noetic-cv-bridge -y
+#sudo apt remove ros-noetic-web-video-server -y
 
 ADDITIONAL_ROS_PACKAGES="python3-catkin-tools \
-    ros-${ROS_VERSION}-rosbridge-server \
-    ros-${ROS_VERSION}-pcl-ros \
-    ros-${ROS_VERSION}-web-video-server \
-    ros-${ROS_VERSION}-camera-info-manager \
-    ros-${ROS_VERSION}-tf2-geometry-msgs \
-    ros-${ROS_VERSION}-mavros \
-    ros-${ROS_VERSION}-mavros-extras \
-    ros-${ROS_VERSION}-serial \
+    ros-${ros_version}-rosbridge-server \
+    ros-${ros_version}-pcl-ros \
+    ros-${ros_version}-cv-bridge \
+    ros-${ros_version}-web-video-server \
+    ros-${ros_version}-camera-info-manager \
+    ros-${ros_version}-tf2-geometry-msgs \
+    ros-${ros_version}-mavros \
+    ros-${ros_version}-mavros-extras \
+    ros-${ros_version}-serial \
     python3-rosdep" 
 
     # Deprecated ROS packages?
-    #ros-${ROS_VERSION}-tf-conversions
-    #ros-${ROS_VERSION}-diagnostic-updater 
-    #ros-${ROS_VERSION}-vision-msgs
-
-sudo apt-get install $ADDITIONAL_ROS_PACKAGES
+    #ros-${ros_version}-tf-conversions
+    #ros-${ros_version}-diagnostic-updater 
+    #ros-${ros_version}-vision-msgs
 
 
-sudo apt-get install ros-noetic-cv-bridge
-sudo apt-get install ros-noetic-web-video-server
-
-# Mavros requires some additional setup for geographiclib
-sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
+sudo apt-get install ros-noetic-cv-bridge -y
 
 source /opt/ros/noetic/setup.bash
+
+
+#########################################
+# Install Some Driver Libs
+#########################################
+
+# Install MSCL
+
 
 
 

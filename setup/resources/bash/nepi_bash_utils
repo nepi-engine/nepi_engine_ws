@@ -110,13 +110,7 @@ if [ 1 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
   git push
   }
 
-  function pushnh(){
-  head=git rev-parse HEAD
-  pushn
-  git checkout ros1_main
-  git merge $head
-  git push
-  }
+
 
 UTILSN="${UTILSN}
 
@@ -200,13 +194,14 @@ fi
 ###################################
 
 HAS_ROS=$(dpkg -l | grep ros-)
-if [[ -z "$HAS_ROS" ]]; then
+if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     NEEDS_ROS=1
 
     # Function to search for topic containing string
     function sros(){
       # Source ROS Env
+      source /opt/ros/noetic/setup.bash
       source /opt/nepi/nepi_engine/setup.bash
       NEEDS_ROS=0
     }
@@ -214,7 +209,7 @@ if [[ -z "$HAS_ROS" ]]; then
     # Function to search for topic containing string
     function ftopic(){
     if [ $NEEDS_ROS -eq 1 ]; then
-      sleep 1 & sros
+      sros
       wait
       NEEDS_ROS=0
     fi
@@ -302,6 +297,7 @@ if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
       mv ${narch}/* $nimg/
   }
 
+  BUILD=/mnt/nepi_storage/nepi_src/nepi_engine_ws
   ## NEPI build shortcuts
   alias nepibld="
   cd $BUILD
