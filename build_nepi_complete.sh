@@ -29,7 +29,8 @@
 #   sdk
 #   rui
 # Repeat -s <component> for additional components to skip
-
+source /opt/ros/noetic/setup.bash
+wait
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then

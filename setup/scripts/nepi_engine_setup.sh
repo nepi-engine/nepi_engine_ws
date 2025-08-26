@@ -15,6 +15,9 @@
 source ./NEPI_CONFIG.sh
 wait
 
+sudo su
+exit
+
 
 echo ""
 echo "Setting up NEPI Engine"
@@ -47,14 +50,34 @@ echo "Creating system folders in ${NEPI_BASE}"
 sudo mkdir -p ${NEPI_BASE}
 sudo mkdir -p ${NEPI_RUI}
 sudo mkdir -p ${NEPI_ENGINE}
-
 sudo mkdir -p ${NEPI_ETC}
 sudo mkdir -p ${NEPI_SCRIPTS}
+
+echo "Creating dev folders"
+sudo mkdir -p ${NEPI_CODE}
+sudo mkdir -p ${NEPI_SRC}
+
+
+echo "Creating image install folders"
+sudo mkdir -p ${NEPI_IMAGE_INSTALL}
+sudo mkdir -p ${NEPI_IMAGE_ARCHIVE}
+
+
 echo "Creating config folders"
 sudo mkdir -p ${NEPI_USR_CONFIG}
 sudo mkdir -p ${NEPI_FACTORY_CONFIG}
 sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
 
+# Create some backward compatable links
+sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/ros
+sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/engine
+sudo ln -sf ${NEPI_BASE}/nepi_rui ${NEPI_BASE}/rui
+
+
+# Update NEPI_FOLDER owners
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
 
 ###################
 # Copy Config Files
@@ -73,6 +96,7 @@ echo "NEPI_HW_MODEL: ${NEPI_HW_MODEL}" >> $NEPI_ETC_CONFIG
 
 # PYTHON VERSION
 echo "NEPI_PYTHON: ${NEPI_PYTHON}" >> $NEPI_ETC_CONFIG
+echo "NEPI_ROS: ${NEPI_ROS}" >> $NEPI_ETC_CONFIG
 
 # NEPI HOST SETTINGS
 echo "NEPI_IN_CONTAINER: ${NEPI_IN_CONTAINER}" >> $NEPI_ETC_CONFIG
@@ -85,11 +109,13 @@ echo "NEPI_HAS_XPU: ${NEPI_HAS_XPU}" >> $NEPI_ETC_CONFIG
 echo "NEPI_MANAGES_SSH: ${NEPI_MANAGES_SSH}" >> $NEPI_ETC_CONFIG
 echo "NEPI_MANAGES_SHARE: ${NEPI_MANAGES_SHARE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_MANAGES_TIME: ${NEPI_MANAGES_TIME}" >> $NEPI_ETC_CONFIG
-echo "NEPI_MAGAGES_NETWORK: ${NEPI_MAGAGES_NETWORK}" >> $NEPI_ETC_CONFIG
+echo "NEPI_MANAGES_NETWORK: ${NEPI_MANAGES_NETWORK}" >> $NEPI_ETC_CONFIG
 
 # System Setup Variables
-echo "NEPI_IP: ${NEPI_IP}" >> $NEPI_ETC_CONFIG
 echo "NEPI_USER: ${NEPI_USER}" >> $NEPI_ETC_CONFIG
+echo "NEPI_DEVICE_ID: ${NEPI_DEVICE_ID}" >> $NEPI_ETC_CONFIG
+echo "NEPI_IP: ${NEPI_IP}" >> $NEPI_ETC_CONFIG
+
 
 # NEPI PARTITIONS
 echo "NEPI_DOCKER: ${NEPI_DOCKER}" >> $NEPI_ETC_CONFIG
@@ -104,6 +130,12 @@ echo "NEPI_RUI: ${NEPI_RUI}" >> $NEPI_ETC_CONFIG
 echo "NEPI_ENGINE: ${NEPI_ENGINE}" >> $NEPI_ETC_CONFIG
 echo "NEPI_ETC: ${NEPI_ETC}" >> $NEPI_ETC_CONFIG
 echo "NEPI_SCRIPTS: ${NEPI_SCRIPTS}" >> $NEPI_ETC_CONFIG
+
+echo "NEPI_CODE: ${NEPI_CODE}" >> $NEPI_ETC_CONFIG
+echo "NEPI_SRC: ${NEPI_SRC}" >> $NEPI_ETC_CONFIG
+
+echo "NEPI_IMAGE_INSTALL: ${NEPI_IMAGE_INSTALL}" >> $NEPI_ETC_CONFIG
+echo "NEPI_IMAGE_ARCHIVE: ${NEPI_IMAGE_ARCHIVE}" >> $NEPI_ETC_CONFIG
 
 echo "NEPI_USR_CONFIG: ${NEPI_USR_CONFIG}" >> $NEPI_ETC_CONFIG
 echo "NEPI_DOCKER_CONFIG: ${NEPI_DOCKER_CONFIG}" >> $NEPI_ETC_CONFIG
@@ -354,7 +386,8 @@ NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
 sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 
 
-
+# Update NEPI_BASE owner
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
 
 ###########################################
 # Fix some NEPI package issues
@@ -385,6 +418,12 @@ sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
 echo "Populating NEPI Factory Config Folder ${NEPI_FACTORY_CONFIG}"
 sudo cp -R -p /opt/nepi/etc ${NEPI_FACTORY_CONFIG}/
 
+
+
+# Update NEPI_FOLDER owners
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
 
 
 

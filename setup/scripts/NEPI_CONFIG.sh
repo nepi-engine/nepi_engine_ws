@@ -12,7 +12,7 @@
 CURRENT_FOLDER=$PWD
 SYSTEMD_SERVICE_PATH=/etc/systemd/system
 PYTHON_VERSION=3.8
-NUMPY_VERSION=
+ROS_VERSION=NOETIC
 PYTORCH_VERSION=1.13.0
 
 # NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
@@ -22,6 +22,7 @@ export NEPI_HW_MODEL=ORIN
 
 # PYTHON VERSION
 export NEPI_PYTHON=$PYTHON_VERSION
+export NEPI_ROS=$ROS_VERSION
 
 # NEPI HOST SETTINGS
 export NEPI_IN_CONTAINER=0
@@ -42,8 +43,10 @@ export NEPI_MANAGES_TIME=0
 export NEPI_MANAGES_NETWORK=0
 
 # System Setup Variables
-export NEPI_IP=192.168.179.103
 export NEPI_USER=nepi
+export NEPI_DEVICE_ID=device1
+export NEPI_IP=192.168.179.103
+
 
 # NEPI PARTITIONS
 export NEPI_DOCKER=/mnt/nepi_docker
@@ -63,7 +66,15 @@ export NEPI_ENGINE=${NEPI_BASE}/nepi_engine
 export NEPI_ETC=${NEPI_BASE}/etc
 export NEPI_SCRIPTS=${NEPI_BASE}/scripts
 
+# NEPI Dev Paths
+export NEPI_CODE=${NEPI_STORAGE}/code
+export NEPI_SRC=${NEPI_STORAGE}/nepi_src
 
+# NEPI Image Paths
+export NEPI_IMAGE_INSTALL=${NEPI_STORAGE}/nepi_images
+export NEPI_IMAGE_ARCHIVE=${NEPI_STORAGE}/nepi_images
+
+# NEPI Config Paths
 export NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
 export NEPI_FACTORY_CONFIG=${NEPI_CONFIG}/factory_cfg
 export NEPI_SYSTEM_CONFIG=${NEPI_CONFIG}/system_cfg
