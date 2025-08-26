@@ -112,8 +112,18 @@ sudo rm -r /usr/local/include/boost
 sudo rm -r /usr/local/lib/cmake/[Bb]oost*
 sudo rm -f /usr/lib/libboost_*
 sudo rm -r /usr/include/boost
+#/usr/lib/x86_64-linux-gnu
 
 
+
+####FROM THE NEPI BUILD PACKAGE
+# Install Boost
+cd $TMP
+sudo unzip Boost.XXX
+sudo ./b2 install
+
+# OR BUILD FROM SOURCE
+'
 sudo apt-get -y install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev
 cd $TMP
 wget http://downloads.sourceforge.net/project/boost/boost/1.68.0/boost_1_68_0.tar.gz
@@ -121,7 +131,10 @@ tar -zxf boost_1_68_0.tar.gz
 cd boost_1_68_0
 # get the no of cpucores to make faster
 ./bootstrap.sh  # this will generate ./b2
-sudo ./b2 
+sudo ./b2
+sudo ./b2 install
+'
+
 
 ### Install MSCL
 # https://github.com/LORD-MicroStrain/MSCL/blob/master/BuildScripts/buildReadme_Linux.md
@@ -130,7 +143,7 @@ git clone https://github.com/LORD-MicroStrain/MSCL.git
 cd MSCL
 mkdir build
 cd build
-cmake .. -DMSCL_BUILD_PYTHON3=ON
+cmake .. -DMSCL_BUILD_PYTHON3=ON -DBOOST_ROOT=/usr/local/include/boost
 cmake --build . -j$(nproc)
 
 
@@ -390,8 +403,6 @@ ADDITIONAL_ROS_PACKAGES="python3-catkin-tools \
     #ros-${ros_version}-diagnostic-updater 
     #ros-${ros_version}-vision-msgs
 
-
-sudo apt-get install ros-noetic-cv-bridge -y
 
 source /opt/ros/noetic/setup.bash
 
