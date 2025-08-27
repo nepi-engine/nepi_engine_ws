@@ -103,16 +103,12 @@ ccache --version
 
 
 ### Install Boost 1.6.1
+
+
 # https://stackoverflow.com/questions/8430332/uninstall-boost-and-install-another-version
 # First uninstall older version
-sudo apt-get -y --purge remove libboost-all-dev libboost-doc libboost-dev
-echo "clear boost dir"
-sudo rm -r /usr/local/lib/libboost*
-sudo rm -r /usr/local/include/boost
-sudo rm -r /usr/local/lib/cmake/[Bb]oost*
-sudo rm -f /usr/lib/libboost_*
-sudo rm -r /usr/include/boost
-#/usr/lib/x86_64-linux-gnu
+sudo apt-get -y install libboost-all-dev libboost-doc libboost-dev
+
 
 
 

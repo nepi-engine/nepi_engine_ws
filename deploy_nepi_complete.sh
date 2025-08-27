@@ -27,8 +27,9 @@
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
 #######################################################################################################
 
-
-DEPLOY_3RD_PARTY=false
+if [[ ! -v DEPLOY_3RD_PARTY ]]; then
+  DEPLOY_3RD_PARTY=0
+fi
 
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
@@ -116,7 +117,7 @@ fi
 
 echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
-if [ ${DEPLOY_3RD_PARTY} == true ]; then
+if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
 
   # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
   RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \

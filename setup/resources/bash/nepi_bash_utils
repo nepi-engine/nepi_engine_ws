@@ -227,6 +227,8 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
       NEEDS_ROS=0
     }
 
+    export -f sros
+
 
 
     # Function to search for topic containing string

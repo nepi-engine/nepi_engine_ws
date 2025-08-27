@@ -107,10 +107,10 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 #####################################
 ######       NEPI Auto Scripts           #####
 # Auto Scripts deploy
-printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI Storage ***${CLEAR}\n"
-NEPI_AUTO_TARGET_USER_DIR="${NEPI_STORAGE}/automation_scripts"
-sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/* ${NEPI_AUTO_TARGET_USER_DIR}/
-printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
+#printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI Storage ***${CLEAR}\n"
+#NEPI_AUTO_TARGET_USER_DIR="${NEPI_STORAGE}/automation_scripts"
+#sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/* ${NEPI_AUTO_TARGET_USER_DIR}/
+#printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 
 
 #####################################
