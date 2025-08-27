@@ -28,7 +28,7 @@
 #######################################################################################################
 
 
-DEPLOY_3RD_PARTY=true
+DEPLOY_3RD_PARTY=false
 
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
