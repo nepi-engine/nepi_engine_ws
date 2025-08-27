@@ -99,7 +99,8 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 #####################################
 ######       NEPI RUI Files          #####\
 # RUI deploy
-sudo cp -R -p ./src/nepi_rui $NEPI_RUI
+
+sudo rsync -arp ./src/nepi_rui ${NEPI_BASE}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 #####################################

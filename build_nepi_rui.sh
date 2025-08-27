@@ -62,9 +62,11 @@ ERROR='\033[0;31m' # RED
 CLEAR='\033[0m'
 
 
+#####################################
+######       NEPI RUI Files          #####\
 # RUI deploy
-NEPI_RUI_TARGET_SRC_DIR=$NEPI_RUI
-sudo cp -R -p ./src/nepi_rui/* ${NEPI_RUI_TARGET_SRC_DIR}
+
+sudo rsync -arp ./src/nepi_rui ${NEPI_BASE}
 printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 ######       NEPI RUI           #####

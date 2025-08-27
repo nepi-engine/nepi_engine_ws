@@ -19,7 +19,7 @@ JETPACK_VERSION=5.0.2 # Set to 0 if no nvidia jetpack
 # NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
 export NEPI_HW_TYPE=JETSON
 # NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
-export NEPI_HW_MODEL=ORIN
+export NEPI_HW_MODEL=XAVIER
 
 # PYTHON VERSION
 export NEPI_PYTHON=$PYTHON_VERSION
