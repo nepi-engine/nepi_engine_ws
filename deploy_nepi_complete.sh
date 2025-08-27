@@ -114,7 +114,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 fi
 
-
+echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 if [ ${DEPLOY_3RD_PARTY} == true ]; then
 
