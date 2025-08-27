@@ -10,7 +10,7 @@
 
 # Start NEPI Samba drive share service
 if [[ -v NEPI_MANAGES_SHARE ]]; then
-  if [ NEPI_MANAGES_SHARE == 1 ]; then
+  if [[ "$NEPI_MANAGES_SHARE" -eq 1 ]]; then
     echo "Starting NEPI Drive Share Management Services."
     sudo smbd -D
   else

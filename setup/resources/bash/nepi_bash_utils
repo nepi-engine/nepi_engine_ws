@@ -34,6 +34,12 @@ function pingi(){
 }
 export -f pingi
 
+# to ping nepi
+function pingn(){
+  ping $NEPI_IP
+}
+export -f pingn
+
 # source bashrc
 function sbrc(){
     source ${HOME}/.bashrc
@@ -168,12 +174,24 @@ if which docker &> /dev/null; then
     sudo docker ps -a
   }
 
-  function dstart(){
+  function drun(){
+    sudo docker run $1
+  }
+
+  function dstop(){
+    sudo docker stop $1
+  }  
+
+  function dattach(){
     sudo docker start -ai $1
   }
 
   function dlogin(){
     sudo docker exec -it $1 /bin/bash
+  }
+
+  function dcommit(){
+    sudo docker commit $1  $2:$3
   }
   
 UTILSN="${UTILSN}

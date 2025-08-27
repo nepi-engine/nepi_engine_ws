@@ -111,6 +111,8 @@ if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
     fi
 fi
 
+sudo chmod 755 ${HOME}/.*
+
 ROOTRC=/root/.bashrc
 sudo cp $BASHRC /root/.bashrc
 

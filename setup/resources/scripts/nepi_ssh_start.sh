@@ -9,8 +9,8 @@
 ##
 
 # Start NEPI ssh service
-sif [[ -v NEPI_MANAGES_SSH ]]; then
-  if [ NEPI_MANAGES_SSH == 1 ]; then
+if [[ -v NEPI_MANAGES_SSH ]]; then
+  if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
     echo "Starting NEPI SSH Management Services."
     sudo /etc/init.d/sshd start
   else

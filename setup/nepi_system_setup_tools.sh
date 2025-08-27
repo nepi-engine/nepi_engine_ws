@@ -20,7 +20,7 @@ echo "Starting with NEPI Home folder: ${NEPI_HOME}"
 # Requirments
 
 INTERNET_REQ=0
-PARTS_REQ=0
+FOLDERS_REQ=0
 DOCKER_REQ=0
 
 ###############################
@@ -39,8 +39,8 @@ echo "Select NEPI Tools option:"
 select yn in 'NEPI Drive Tools' 'NEPI Docker Tools' 'NEPI Software Tools' 'NEPI Config Tools'; do
     case $yn in
         NEPI Drive Tools )  NEPI_STORAGE_TOOLS=1;;
-        NEPI Docker Tools ) INTERNET_REQ=1; PARTS_REQ=1; NEPI_DOCKER_TOOLS=1;;
-        NEPI Software Tools ) INTERNET_REQ=1; PARTS_REQ=1; NEPI_SOFTWARE_TOOLS=1;;
+        NEPI Docker Tools ) INTERNET_REQ=1; FOLDERS_REQ=1; NEPI_DOCKER_TOOLS=1;;
+        NEPI Software Tools ) INTERNET_REQ=1; FOLDERS_REQ=1; NEPI_SOFTWARE_TOOLS=1;;
         NEPI Config Tools ) NEPI_CONFIG_Tools=1;;
     esac
     OP_SELECTION=${yn}
@@ -92,56 +92,10 @@ if [ "$INTERNET_REQ" -eq 1 ]; then
 
 
 ###################
-## Check Partitions
-
-NEPI_DOCKER=/mnt/nepi_docker
-NEPI_STORAGE=/mnt/nepi_storage
-NEPI_CONFIG=/mnt/nepi_config
-
-DOCKER_MIN_GB=100
-STORAGE_MIN_GB=150
-CONFIG_MIN_GB=1
-
-if [ $PARTS_REQ -eq 1 ]; then
-    echo "Checking for rerquired NEPI SSD Folders"
-    check=0
-    while [ $check -eq 0 ]
-    do
-        check = 0
-        if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER -eq 1]; then
-            check = 
-            echo "Missing required folder: ${NEPI_DOCKER} with min size ${DOCKER_MIN_GB} GB"
-            check=0
-        else
-            check=1
-        fi
-
-        if [! -d ${NEPI_STORAGE} ]; then
-            check = 
-            echo "Missing required folder: ${NEPI_STORAGE} with min size ${STORAGE_MIN_GB} GB"
-            check=0
-        else
-            check=1
-        fi
-
-        if [! -d ${NEPI_CONFIG} ]; then
-            check = 
-            echo "Missing required folder: ${NEPI_CONFIG} with min size ${STORAGE_MIN_GB} GB"
-            check=0
-        else
-            check=1
-        fi
-
-        if [ "$check" -eq 0]; then
-            echo "Please create missing nepi folders with required minumum space"
-            select yn in "Yes" "No"; do
-                case $yn in
-                    Try Again ) break;;
-                    Quit Setup ) exit 1;;
-                esac
-            done
-        fi
-    done
+## Check NEPI Folders
+if [ $FOLDERS_REQ -eq 1 ]; then
+    . ./nepi_storage_setup.sh
+fi
 
 ###################
 ## Check HARDWARE
