@@ -14,6 +14,7 @@ SYSTEMD_SERVICE_PATH=/etc/systemd/system
 PYTHON_VERSION=3.8
 ROS_VERSION=NOETIC
 PYTORCH_VERSION=1.13.0
+JETPACK_VERSION=5.0.2 # Set to 0 if no nvidia jetpack
 
 # NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
 export NEPI_HW_TYPE=JETSON
@@ -84,7 +85,6 @@ export NEPI_CODE=${NEPI_STORAGE}/code
 export NEPI_ALIASES_FILE=.nepi_system_aliases
 
 export NEPI_AB_FS=1
-
 
 
 
