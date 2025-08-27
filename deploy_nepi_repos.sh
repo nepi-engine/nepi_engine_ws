@@ -89,6 +89,8 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
   fi
 
+  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+
   # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
   RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
   --exclude .git \
@@ -110,6 +112,8 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
 
     fi
+
+  echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
   done
 fi
