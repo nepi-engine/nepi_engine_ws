@@ -28,7 +28,7 @@
 #######################################################################################################
 
 
-DEPLOY_3RD_PARTY=false
+DEPLOY_3RD_PARTY=true
 
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
@@ -59,8 +59,6 @@ fi
 if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
-
-
 
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
@@ -107,11 +105,11 @@ RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
 --exclude devel_* --exclude logs_* --exclude install_* "
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  rsync -avzhe   ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_ENGINE}
+  rsync -avzhe ${RSYNC_EXCLUDES} ./.catkin_tools ${NEPI_ENGINE}
   rsync -avzhe  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
   rsync -avzhe ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./${CATKIN} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_ENGINE}
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./.catkin_tools ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_ENGINE}
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 fi

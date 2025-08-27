@@ -10,7 +10,7 @@
 
 # Start NEPI Time Management Processes
 if [[ -v NEPI_MANAGES_TIME ]]; then
-  if [ NEPI_MANAGES_TIME == 1 ]; then
+  if [[ "$NEPI_MANAGES_TIME" -eq 1] ]; then
     echo "Starting NEPI Time Management Services."
     sudo /usr/sbin/chronyd
   else

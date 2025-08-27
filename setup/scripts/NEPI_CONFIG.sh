@@ -72,8 +72,8 @@ export NEPI_CODE=${NEPI_STORAGE}/code
 export NEPI_SRC=${NEPI_STORAGE}/nepi_src
 
 # NEPI Image Paths
-export NEPI_IMAGE_INSTALL=${NEPI_STORAGE}/nepi_images
-export NEPI_IMAGE_ARCHIVE=${NEPI_STORAGE}/nepi_images
+export NEPI_IMPORT_PATH=${NEPI_STORAGE}/nepi_images
+export NEPI_EXPORT_PATH=${NEPI_STORAGE}/nepi_images
 
 # NEPI Config Paths
 export NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg

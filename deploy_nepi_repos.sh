@@ -102,7 +102,14 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 
     echo "Syncing repo ${REPO}"
     # Push everything but the EXCLUDES to the specified source folder on the target
+
+    if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+    rsync -avzhe ${RSYNC_EXCLUDES} ./src/${REPO} ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+
+    elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+
+    fi
 
   done
 fi

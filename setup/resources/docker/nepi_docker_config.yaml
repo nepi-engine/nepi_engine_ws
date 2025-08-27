@@ -1,21 +1,39 @@
-NEPI_HW: aaa
-### NEED TO: Read these from nepi_config.yaml file
+
+# NEPI Docker Environment Variables
+USER_NAME: nepi
+DEVICE_ID: device1
+HW_TYPE: JETSON
+
+STATIC_IP: 192.168.179.103
+IP_ALIASES: []
+
+MANAGES_CLOCK: 1 # 1 -> Disables host clock auto updates allowing nepi ntp to update clock
+
+SUPPORTS_AB_FS: 1
+IMPORT_PATH: /mnt/nepi_storage/nepi_images
+EXPORT_PATH: /mnt/nepi_storage/nepi_images
+
+# NEPI Docker File System Variables
 ACTIVE_CONT: nepi_fs_a
-ACTIVE_VERSION: 3p2p0
-ACTIVE_TAG: ${NEPI_HW}-${ACTIVE_VERSION}
+ACTIVE_VERSION: 0p0p0
+ACTIVE_TAG: ${DEVICE_ID}-${ACTIVE_VERSION}
+ACTIVE_ID: $(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
+
 INACTIVE_CONT: nepi_fs_b
 INACTIVE_VERSION: uknown
-INACTIVE_TAG: ${NEPI_HW}-${INACTIVE_VERSION}
-STAGING_CONT: nepi_staging
-LOAD_PATH: /media/nepidev/NServer_Backup
-SAVE_PATH: /mnt/nepi_storage/nepi_full_img_archive
-######  NEED TO: Update from current docker status
+INACTIVE_TAG: ${DEVICE_ID}-${ACTIVE_VERSION}
+INACTIVE_ID: $(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
+
+STAGING_CONT: nepi_fs_staging
+
+# Running NEPI Container Info
+RUNNING: 0
 RUNNING_CONT: None
 RUNNING_VERSION: uknown
 RUNNING_TAG: uknown
 RUNNING_ID: 0
-# UPDATED VARS
-ACTIVE_ID: $(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
-INACTIVE_ID: $(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
-count: 0
-supports_a_b: false
+
+# FAIL COUNTER
+MAX_COUNT: 3
+FAIL_COUNT: 0
+

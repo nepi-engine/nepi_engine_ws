@@ -10,7 +10,7 @@
 
 # Start NEPI Network Processes
 if [[ -v NEPI_MAGAGES_NETWORK ]]; then
-  if [ NEPI_MAGAGES_NETWORK == 1 ]; then
+  if [[ "$NEPI_MAGAGES_NETWORK" -eq 1 ]]; then
     echo "Starting NEPI Network Management Services."
     # Nothing to Do
   else
