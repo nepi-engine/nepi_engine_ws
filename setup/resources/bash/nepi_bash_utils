@@ -210,7 +210,7 @@ fi
 ###################################
 # ROS Util Functions
 ###################################
-
+NROS=/opt/nepi/nepi_engine/setup.bash
 HAS_ROS=$(dpkg -l | grep ros-)
 if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
@@ -219,10 +219,15 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     # Function to search for topic containing string
     function sros(){
       # Source ROS Env
-      source /opt/ros/noetic/setup.bash
-      source /opt/nepi/nepi_engine/setup.bash
+      if [[ -v NROS ]]; then
+        source $NROS
+      else
+        source /opt/ros/noetic/setup.bash
+      fi
       NEEDS_ROS=0
     }
+
+
 
     # Function to search for topic containing string
     function ftopic(){

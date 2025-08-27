@@ -31,6 +31,10 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+sros
+wait
+echo "ROS Sourced"
+
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
     NEPI_USER=nepi

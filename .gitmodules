@@ -23,3 +23,6 @@
 [submodule "src/nepi_rui"]
 	path = src/nepi_rui
 	url = git@github.com:nepi-engine/nepi_rui.git
+[submodule "src/nepi_interfaces"]
+	path = src/nepi_interfaces
+	url = git@github.com:nepi-engine/nepi_interfaces.git
