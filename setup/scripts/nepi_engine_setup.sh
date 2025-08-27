@@ -15,9 +15,6 @@
 source ./NEPI_CONFIG.sh
 wait
 
-sudo su
-exit
-
 
 echo ""
 echo "Setting up NEPI Engine"
