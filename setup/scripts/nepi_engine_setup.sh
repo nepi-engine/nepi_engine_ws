@@ -70,6 +70,8 @@ sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/ros
 sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/engine
 sudo ln -sf ${NEPI_BASE}/nepi_rui ${NEPI_BASE}/rui
 
+# Clear any old nepi engine files/folders
+source ./nepi_engine_clear.sh
 
 # Update NEPI_FOLDER owners
 sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
@@ -163,19 +165,20 @@ sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
 ###################
 # Set up the default hostname
 # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
-echo " "
-echo "Updating system hostname"
+if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+    echo " "
+    echo "Updating system hostname"
 
-if [ ! -f /etc/hosts ]; then
-    sudo rm /etc/hosts
+    if [ ! -f /etc/hosts ]; then
+        sudo rm /etc/hosts
+    fi
+    sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
+
+    if [ ! -f "/etc/hostname" ]; then
+        sudo rm /etc/hostname
+    fi
+    sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
 fi
-sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
-
-if [ ! -f "/etc/hostname" ]; then
-    sudo rm /etc/hostname
-fi
-sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
-
 
 ##############################################
 # Update the Desktop background image
@@ -220,7 +223,7 @@ sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_ETC}/ssh/authorized_keys
 sudo chmod 0600 ${NEPI_ETC}/ssh/authorized_keys
 
 
-
+sudo rm ${NEPI_HOME}/.ssh/authorized_keys
 sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
 sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh/authorized_keys
 sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
