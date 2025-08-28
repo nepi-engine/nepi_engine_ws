@@ -312,8 +312,23 @@ fi
 
 if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
   # NEPI stop and start shortcuts
-  alias nepistop="sudo systemctl stop nepi_engine"
-  alias nepistart="sudo /opt/nepi/nepi_engine/etc/nepi_env/nepi_launch.sh"
+  function nepistop(){
+    if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
+      sudo supervisorctl stop nepi_engine
+    else
+      sudo systemctl stop nepi_engine
+    fi
+  }
+
+  function nepistart(){
+    if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
+      sudo /opt/nepi/nepi_engine/etc/nepi_env/nepi_launch.sh
+    else
+      sudo /opt/nepi/nepi_engine/etc/nepi_env/nepi_launch.sh
+    fi
+  }
+
+
 
   # copy arvhived images to install folder
   function mimg(){

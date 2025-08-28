@@ -148,3 +148,4 @@ ucfg = /mnt/nepi_storage/user_cfg
 
 ##### NEPI SETUP #####
 export NEPI_REMOTE_SETUP=0
+export PATH=${PATH}:${NEPI_SCRIPTS}
