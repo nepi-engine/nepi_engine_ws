@@ -22,7 +22,7 @@ echo "Setting up NEPI Engine"
 
 #####################################
 # Add nepi aliases to bashrc
-source nepi_bash_setup.sh
+source nepi_etc_update.sh
 
 
 
@@ -66,9 +66,10 @@ sudo mkdir -p ${NEPI_FACTORY_CONFIG}
 sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
 
 # Create some backward compatable links
-sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/ros
-sudo ln -sf ${NEPI_BASE}/nepi_engine ${NEPI_BASE}/engine
-sudo ln -sf ${NEPI_BASE}/nepi_rui ${NEPI_BASE}/rui
+cd ${NEPI_BASE}
+sudo ln -sf nepi_engine ros
+sudo ln -sf nepi_engine engine
+sudo ln -sf nepi_rui rui
 
 # Clear any old nepi engine files/folders
 source ./nepi_engine_clear.sh
@@ -84,67 +85,8 @@ NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
 echo ""
 echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
 sudo cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
+sudo cp nepi_etc_update.sh ${NEPI_ETC}/
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
-
-###############
-echo "Updating nepi config file etc/nepi_config.yaml"
-NEPI_ETC_CONFIG=${NEPI_ETC}/nepi_config.yaml
-cat /dev/null > $NEPI_ETC_CONFIG
-echo "NEPI_HW_TYPE: ${NEPI_HW_TYPE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_HW_MODEL: ${NEPI_HW_MODEL}" >> $NEPI_ETC_CONFIG
-
-# PYTHON VERSION
-echo "NEPI_PYTHON: ${NEPI_PYTHON}" >> $NEPI_ETC_CONFIG
-echo "NEPI_ROS: ${NEPI_ROS}" >> $NEPI_ETC_CONFIG
-
-# NEPI HOST SETTINGS
-echo "NEPI_IN_CONTAINER: ${NEPI_IN_CONTAINER}" >> $NEPI_ETC_CONFIG
-echo "NEPI_HAS_CUDA: ${NEPI_HAS_CUDA}" >> $NEPI_ETC_CONFIG
-echo "NEPI_HAS_XPU: ${NEPI_HAS_XPU}" >> $NEPI_ETC_CONFIG
-
-# NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
-# Note, if enabled for a docker deployment, these system functions will be
-# disabled in the host OS environment
-echo "NEPI_MANAGES_SSH: ${NEPI_MANAGES_SSH}" >> $NEPI_ETC_CONFIG
-echo "NEPI_MANAGES_SHARE: ${NEPI_MANAGES_SHARE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_MANAGES_TIME: ${NEPI_MANAGES_TIME}" >> $NEPI_ETC_CONFIG
-echo "NEPI_MANAGES_NETWORK: ${NEPI_MANAGES_NETWORK}" >> $NEPI_ETC_CONFIG
-
-# System Setup Variables
-echo "NEPI_USER: ${NEPI_USER}" >> $NEPI_ETC_CONFIG
-echo "NEPI_DEVICE_ID: ${NEPI_DEVICE_ID}" >> $NEPI_ETC_CONFIG
-echo "NEPI_IP: ${NEPI_IP}" >> $NEPI_ETC_CONFIG
-
-
-# NEPI PARTITIONS
-echo "NEPI_DOCKER: ${NEPI_DOCKER}" >> $NEPI_ETC_CONFIG
-echo "NEPI_STORAGE: ${NEPI_STORAGE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_CONFIG: ${NEPI_CONFIG}" >> $NEPI_ETC_CONFIG
-
-# NEPI File System 
-echo "NEPI_ENV: ${NEPI_ENV}" >> $NEPI_ETC_CONFIG
-echo "NEPI_HOME: ${NEPI_HOME}" >> $NEPI_ETC_CONFIG
-echo "NEPI_BASE: ${NEPI_BASE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_RUI: ${NEPI_RUI}" >> $NEPI_ETC_CONFIG
-echo "NEPI_ENGINE: ${NEPI_ENGINE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_ETC: ${NEPI_ETC}" >> $NEPI_ETC_CONFIG
-echo "NEPI_SCRIPTS: ${NEPI_SCRIPTS}" >> $NEPI_ETC_CONFIG
-
-echo "NEPI_CODE: ${NEPI_CODE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_SRC: ${NEPI_SRC}" >> $NEPI_ETC_CONFIG
-
-echo "NEPI_IMAGE_INSTALL: ${NEPI_IMAGE_INSTALL}" >> $NEPI_ETC_CONFIG
-echo "NEPI_IMAGE_ARCHIVE: ${NEPI_IMAGE_ARCHIVE}" >> $NEPI_ETC_CONFIG
-
-echo "NEPI_USR_CONFIG: ${NEPI_USR_CONFIG}" >> $NEPI_ETC_CONFIG
-echo "NEPI_DOCKER_CONFIG: ${NEPI_DOCKER_CONFIG}" >> $NEPI_ETC_CONFIG
-echo "NEPI_FACTORY_CONFIG: ${NEPI_FACTORY_CONFIG}" >> $NEPI_ETC_CONFIG
-echo "NEPI_SYSTEM_CONFIG: ${NEPI_SYSTEM_CONFIG}" >> $NEPI_ETC_CONFIG
-
-echo "NEPI_CODE: ${NEPI_CODE}" >> $NEPI_ETC_CONFIG
-echo "NEPI_ALIASES_FILE: ${NEPI_ALIASES_FILE}" >> $NEPI_ETC_CONFIG
-
-echo "NEPI_AB_FS: ${NEPI_AB_FS}" >> $NEPI_ETC_CONFIG
 
 
 
@@ -169,6 +111,7 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     echo " "
     echo "Updating system hostname"
 
+    sudo chmod 744 /etc/host*
     if [ ! -f /etc/hosts ]; then
         sudo rm /etc/hosts
     fi
@@ -422,7 +365,9 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
 sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
 sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
 
-
+#####################################
+# Update NEPI ETC files
+source nepi_etc_update.sh
 
 ################################
 # Misc Updates

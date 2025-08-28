@@ -349,70 +349,8 @@ cat nepi_requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo
 ############################################
 ## Setup ROS
 ############################################
-
-
-#  Install ros
-#  https://wiki.ros.org/noetic/Installation/Ubuntu
-
-cd $TMP
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-sudo apt-get install curl -y # if you haven't already installed curl
-curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-sudo apt-get update
-####################
-# Do if ROS not installed
-sudo apt-get install ros-noetic-desktop-full -y
-source /opt/ros/noetic/setup.bash
-sudo apt-get install -y python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
-sudo rosdep init
-rosdep update
-
-
-# Then
-#sudo apt-get install ros-noetic-catkin python-catkin-tools
-#sudo python${PYTHON_VERSION} -m pip3 install --user git+https://github.com/catkin/catkin_tools.git
-
-
-
-
-ros_version="${NEPI_ROS,,}"
-
-
-# If needed remove old packages if installed
-#sudo apt remove ros-noetic-cv-bridge -y
-#sudo apt remove ros-noetic-web-video-server -y
-
-ADDITIONAL_ROS_PACKAGES="python3-catkin-tools \
-    ros-${ros_version}-rosbridge-server \
-    ros-${ros_version}-pcl-ros \
-    ros-${ros_version}-cv-bridge \
-    ros-${ros_version}-web-video-server \
-    ros-${ros_version}-camera-info-manager \
-    ros-${ros_version}-tf2-geometry-msgs \
-    ros-${ros_version}-mavros \
-    ros-${ros_version}-mavros-extras \
-    ros-${ros_version}-serial \
-    python3-rosdep" 
-
-    # Deprecated ROS packages?
-    #ros-${ros_version}-tf-conversions
-    #ros-${ros_version}-diagnostic-updater 
-    #ros-${ros_version}-vision-msgs
-
-
-source /opt/ros/noetic/setup.bash
-
-
-#########################################
-# Install Some Driver Libs
-#########################################
-
-# Install MSCL
-
-
-
-
-
+source ros_setup.sh
+wait
 
 #########################################
 # Setup RUI Required Software

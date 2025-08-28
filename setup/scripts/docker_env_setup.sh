@@ -163,6 +163,10 @@ sudo docker info
 '
 
 
+####### Add NEPI IP Addr to eth0
+sudo ip addr add ${NEPI_IP}/24 dev eth0
+
+
 ##################################
 echo ""
 echo 'NEPI Docker Environment Setup Complete'
