@@ -11,9 +11,9 @@
 
 
 # This file Switches a Running Containers
-
-source /home/${USER}/NEPI_CONFIG.sh
+source /home/${USER}/.nepi_bash_utils
 wait
+NEPI_DOCKER_CONFIG_FILE=/mnt/nepi_config/docker_cfg/nepi_docker_config.yaml
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml
@@ -43,6 +43,6 @@ wait
 
 #######
 # Start Switched Container
-  . ./start_nepi_docker
+#  . ./start_nepi_docker
 
 
