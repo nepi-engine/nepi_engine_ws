@@ -269,20 +269,6 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
     fi
 
 
-
-
-    ##############
-    # Install License Manager File
-    echo "Setting Up Lic Mgr"
-    sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
-    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
-    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
-    sudo ln -sf ${NEPI_ETC}/license/nepi_check_license.service /etc/systemd/system/
-    sudo gpg --import ${NEPI_ETC}/license/nepi_license_management_public_key.gpg
-    sudo systemctl enable nepi_check_license
-    #gpg --import /opt/nepi/config/etc/nepi/nepi_license_management_public_key.gpg
-
-
     ################################
     # Update fstab
     echo "Updating fstab"
@@ -304,6 +290,20 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
         sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
     fi
     sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
+
+
+
+   ##############
+    # Install License Manager File
+    echo "Setting Up Lic Mgr"
+    sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
+    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
+    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
+    sudo ln -sf ${NEPI_ETC}/license/nepi_check_license.service /etc/systemd/system/
+    sudo gpg --import ${NEPI_ETC}/license/nepi_license_management_public_key.gpg
+    sudo systemctl enable nepi_check_license
+    #gpg --import /opt/nepi/config/etc/nepi/nepi_license_management_public_key.gpg
+
 
     #########################################
     # Setup system scripts

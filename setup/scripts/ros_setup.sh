@@ -37,7 +37,7 @@ cd $TMP
 ros_version="${NEPI_ROS,,}"
 
 if [[ "$ros_version" == 'noetic' ]]; then
-
+    sudo apt-get update --fix-missing
     #  Install ros
     #  https://wiki.ros.org/noetic/Installation/Ubuntu
 
@@ -55,7 +55,9 @@ if [[ "$ros_version" == 'noetic' ]]; then
     sudo rosdep init
     rosdep update
 
-
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F42ED6FBAB17C654
+    sudo apt-get update --fix-missing
+    
     # Then
     #sudo apt-get install ros-noetic-catkin python-catkin-tools
     #sudo python${PYTHON_VERSION} -m pip3 install --user git+https://github.com/catkin/catkin_tools.git
@@ -92,18 +94,19 @@ if [[ "$ros_version" == 'noetic' ]]; then
     #########################################
     ros_version="${NEPI_ROS,,}"
     sudo apt-get update --fix-missing
-    cd $TMP
+    
     # Install PIX4 & Mavros
     cd $TMP
     git clone https://github.com/PX4/PX4-Autopilot.git --recursive
     bash ./PX4-Autopilot/Tools/setup/ubuntu.sh
 
-    sudo apt-get install ros-${ROS_DISTRO}-mavros ros-${ROS_DISTRO}-mavros-extras ros-${ROS_DISTRO}-mavros-msgs
+    sudo apt-get install ros-${ros_version}-mavros ros-${ros_version}-mavros-extras ros-${ros_version}-mavros-msgs
     wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh
     sudo bash ./install_geographiclib_datasets.sh
 
 
     # Install ROS Microstrain
+    cd $TMP
     sudo apt-get install -y ros-${ros_version}-nmea-navsat-driver
     sudo apt-get install -y ros-${ros_version}-microstrain-inertial-driver
 
