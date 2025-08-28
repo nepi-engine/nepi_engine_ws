@@ -98,12 +98,11 @@ fi
 git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
---exclude .git \
---exclude .gitmodules \
---exclude .catkin_tools/profiles/*/packages \
---exclude src/nepi_3rd_party \
---exclude devel_* --exclude logs_* --exclude install_* "
+RSYNC_EXCLUDES=" --exclude '.git/*' \
+--exclude '.git' \
+--exclude '.gitmodules' \
+--exclude '.catkin_tools/profiles/*/packages' \
+--exclude 'devel_*' --exclude 'logs_* --exclude install_*' "
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   rsync -avzhe ${RSYNC_EXCLUDES} ./.catkin_tools ${NEPI_ENGINE}
