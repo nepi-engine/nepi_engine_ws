@@ -192,7 +192,7 @@ if [ $NEPI_IN_CONTAINER == 0 ]; then
     sudo apt install usbmount -y
 fi
 
-
+#sudo apt install -y apt-show-versions
 #######################
 # To Updgrade from an existing python version
 #######################

@@ -66,18 +66,15 @@ sudo mkdir -p ${NEPI_FACTORY_CONFIG}
 sudo mkdir -p ${NEPI_SYSTEM_CONFIG}
 
 # Create some backward compatable links
-cd ${NEPI_BASE}
-sudo ln -sf nepi_engine ros
-sudo ln -sf nepi_engine engine
-sudo ln -sf nepi_rui rui
+#cd ${NEPI_BASE}
+#sudo ln -sf nepi_engine ros
+#sudo ln -sf nepi_engine engine
+#sudo ln -sf nepi_rui rui
 
 # Clear any old nepi engine files/folders
-source ./nepi_engine_clear.sh
+#source ./nepi_engine_clear.sh
 
-# Update NEPI_FOLDER owners
-sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
-sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
-sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
+
 
 ###################
 # Copy Config Files
@@ -327,7 +324,11 @@ sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 
 
 # Update NEPI_BASE owner
+# Update NEPI_FOLDER owners
+echo "All done.  Updating folder owners"
 sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
 
 ###########################################
 # Fix some NEPI package issues

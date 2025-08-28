@@ -45,7 +45,8 @@ if [[ "$ros_version" == 'noetic' ]]; then
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
     sudo apt-get install curl -y # if you haven't already installed curl
     curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-    sudo apt-get update
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F42ED6FBAB17C654
+    sudo apt-get update --fix-missing
     ####################
     # Do if ROS not installed
     sudo apt-get install ros-noetic-desktop-full -y
@@ -89,9 +90,13 @@ if [[ "$ros_version" == 'noetic' ]]; then
     #########################################
     # Install Some Driver Libs
     #########################################
-
+    ros_version="${NEPI_ROS,,}"
+    sudo apt-get update --fix-missing
+    
     # Install ROS Microstrain
-    sudo apt-get update && sudo apt-get install -y ros-${ros_version}-microstrain-inertial-driver
+
+    sudo apt-get install -y ros-${ros_version}-nmea-navsat-driver
+    sudo apt-get install -y ros-${ros_version}-microstrain-inertial-driver
 
 fi
 
