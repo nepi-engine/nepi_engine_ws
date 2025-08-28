@@ -90,8 +90,8 @@ if [[ "$ros_version" == 'noetic' ]]; then
     # Install Some Driver Libs
     #########################################
 
-    # Install Microstrain
-    sudo apt-get update && sudo apt-get install ros-${ros_version}-microstrain-inertial-driver
+    # Install ROS Microstrain
+    sudo apt-get update && sudo apt-get install -y ros-${ros_version}-microstrain-inertial-driver
 
 fi
 
