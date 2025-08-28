@@ -106,7 +106,9 @@ fi
 # Finish Run Command
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
 ${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash '\'
--c '/opt/nepi/scripts/nepi_start_all.sh'"
+-c '/opt/nepi/scripts/nepi_rui_start.sh'"
+
+#-c '/opt/nepi/scripts/nepi_start_all.sh'"
 
 
 
