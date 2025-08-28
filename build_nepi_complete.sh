@@ -115,7 +115,6 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 #####################################
 ######       NEPI ETC Files          #####\
-# RUI deploy
 sudo mkdir ${NEPI_CONFIG}/factory_cfg
 sudo cp -R -p $NEPI_ETC ${NEPI_CONFIG}/factory_cfg/
 printf "\n${HIGHLIGHT}*** NEPI ETC Deploy Finished ***\n"
@@ -129,8 +128,6 @@ if [ "${DO_SDK}" -eq "1" ]; then
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI Engine SDK Build by User Request ***${CLEAR}\n"
 fi
-
-
 
 
 #####################################
