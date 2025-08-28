@@ -1,40 +1,30 @@
-
 # NEPI Docker Environment Variables
 USER_NAME: nepi
 DEVICE_ID: device1
 HW_TYPE: JETSON
-HW_MODEL: ORIN
-
+HW_MODEL: XAVIER
 STATIC_IP: 192.168.179.103
 IP_ALIASES: []
-
-MANAGES_CLOCK: 1 # 1 -> Disables host clock auto updates allowing nepi ntp to update clock
-
+MANAGES_CLOCK: 
 SUPPORTS_AB_FS: 1
 IMPORT_PATH: /mnt/nepi_storage/nepi_images
 EXPORT_PATH: /mnt/nepi_storage/nepi_images
-
 # NEPI Docker File System Variables
 ACTIVE_CONT: nepi_fs_a
-ACTIVE_VERSION: 0p0p0
-ACTIVE_TAG: ${DEVICE_ID}-${ACTIVE_VERSION}
-ACTIVE_ID: $(sudo docker images -q ${ACTIVE_CONT}:${ACTIVE_TAG})
-
+ACTIVE_VERSION: 3p2p0
+ACTIVE_TAG: JETSON-0p0p0}
+ACTIVE_ID: 0
 INACTIVE_CONT: nepi_fs_b
 INACTIVE_VERSION: uknown
-INACTIVE_TAG: ${DEVICE_ID}-${ACTIVE_VERSION}
-INACTIVE_ID: $(sudo docker images -q ${INACTIVE_CONT}:${INACTIVE_TAG})
-
+INACTIVE_TAG: JETSON-uknown
+INACTIVE_ID: 0
 STAGING_CONT: nepi_fs_staging
-
 # Running NEPI Container Info
 RUNNING: 0
 RUNNING_CONT: None
 RUNNING_VERSION: uknown
 RUNNING_TAG: uknown
 RUNNING_ID: 0
-
 # FAIL COUNTER
 MAX_COUNT: 3
 FAIL_COUNT: 0
-
