@@ -92,9 +92,18 @@ if [[ "$ros_version" == 'noetic' ]]; then
     #########################################
     ros_version="${NEPI_ROS,,}"
     sudo apt-get update --fix-missing
-    
-    # Install ROS Microstrain
+    cd $TMP
+    # Install PIX4 & Mavros
+    cd $TMP
+    git clone https://github.com/PX4/PX4-Autopilot.git --recursive
+    bash ./PX4-Autopilot/Tools/setup/ubuntu.sh
 
+    sudo apt-get install ros-${ROS_DISTRO}-mavros ros-${ROS_DISTRO}-mavros-extras ros-${ROS_DISTRO}-mavros-msgs
+    wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh
+    sudo bash ./install_geographiclib_datasets.sh
+
+
+    # Install ROS Microstrain
     sudo apt-get install -y ros-${ros_version}-nmea-navsat-driver
     sudo apt-get install -y ros-${ros_version}-microstrain-inertial-driver
 
