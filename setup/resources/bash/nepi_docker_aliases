@@ -49,10 +49,12 @@ wait
 function create_tag(){
     refresh_nepi
   wait
-    HW_NAME=$1
-    SW_VERSION=$2
-    TAG_VARIABLE=$3
-    tag=${HW_NAME}-${SW_VERSION}
+    SW_VERSION=$1
+    HW_TYPE=$2
+    HW_MODEL=$3
+    
+    TAG_VARIABLE=$4
+    tag=${SW_VERSION}-${HW_TYPE}-${HW_MODEL}
     export TAG_VARIABLE="${tag,,}" # Convert to lowercase
     echo "$TAG_VARIABLE"
 }
