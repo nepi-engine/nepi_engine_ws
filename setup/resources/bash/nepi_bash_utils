@@ -321,10 +321,19 @@ fi
     if [ -d "${SOURCE_FOLDER}" ]; then
       echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
     else
+      BRANCH=main
+      if [[ "$NEPI_ROS" == "NOETIC" ]]; then
+        SUBBRANCH=ros1_main
+      else
+        SUBBRANCH=ros2_main
+      fi
       git clone git@github.com:nepi-engine/nepi_engine_ws.git
       cd nepi_engine_ws
-      git checkout main
-      git submodule update --init --recursive
+      git checkout $BRANCH
+      #git submodule update --init --recursive
+      git submodule update 
+      git submodule foreach git checkout $SUBBRANCH 
+      git submodule foreach git pull origin $SUBBRANCH
     fi
   fi
   }
@@ -338,14 +347,20 @@ fi
     if [ -d "${SOURCE_FOLDER}" ]; then
       echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
     else
+      if [[ "$NEPI_ROS" == "NOETIC" ]]; then
+        BRANCH=ros1_develop
+        SUBBRANCH=ros1_main
+      else
+        BRANCH=ros2_develop
+        SUBBRANCH=ros2_main
+      fi
       git clone git@github.com:nepi-engine/nepi_engine_ws.git
       cd nepi_engine_ws
-      if [[ "$NEPI_ROS" == "NOETIC" ]]; then
-        git checkout ros1_develop
-      else
-        git checkout ros2_develop
-      fi
-      git submodule update --init --recursive
+      git checkout $BRANCH
+      #git submodule update --init --recursive
+      git submodule update 
+      git submodule foreach git checkout $SUBBRANCH
+      git submodule foreach git pull origin $SUBBRANCH
     fi
   fi
   }
