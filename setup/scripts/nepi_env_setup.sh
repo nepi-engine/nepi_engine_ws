@@ -30,9 +30,17 @@ TMP=${STORAGE}\tmp
 mkdir $TMP
 cd $TMP
 
+echo ""
+echo "Installing vim full package"
+
+#sudo update-alternatives --config vim
+vim --version | grep clipboard
 
 
 
+
+#Install yq
+#https://mikefarah.gitbook.io/yq/v3.x
 
 
 sudo apt-get update
@@ -91,6 +99,10 @@ sudo apt-get install supervisor -y
 sudo apt-get install snapd -y
 sudo apt-get install xz-utils
 
+sudo add-apt-repository ppa:rmescandon/yq
+sudo apt install yq -y
+
+sudo apt install vim-gtk3 -y
 
 ### Install ccache
 #https://askubuntu.com/questions/470545/how-do-i-set-up-ccache

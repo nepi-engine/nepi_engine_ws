@@ -114,10 +114,19 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 
 #####################################
-######       NEPI ETC Files          #####\
+######       Update NEPI Config Files          #####\
+sudo mkdir $NEPI_ETC
+sudo cp -R -p $(pwd)/resources/etc/* ${NEPI_ETC}/
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
+printf "\n${HIGHLIGHT}*** NEPI Config Files Updated***\n"
+
+
+
+######       NEPI Update Factory Config Files          #####\
 sudo mkdir ${NEPI_CONFIG}/factory_cfg
 sudo cp -R -p $NEPI_ETC ${NEPI_CONFIG}/factory_cfg/
-printf "\n${HIGHLIGHT}*** NEPI ETC Deploy Finished ***\n"
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}/factory_cfg/
+printf "\n${HIGHLIGHT}*** NEPI Factory Config Files Updated***\n"
 
 #####################################
 ###### NEPI Engine #####

@@ -5,9 +5,22 @@ export ACTIVE_TAG=3p2p3-CUDA_CV2B
 export ACTIVE_ID=f5d05a684202
 
 
+# FOR CONTAINER
 
-sudo docker exec -it 668e300abe77 /bin/bash
 
+ID=668e300abe77
+udo docker start -ai $ID
+
+ID=668e300abe77
+sudo docker exec -it $ID /bin/bash
+
+ID=668e300abe77
+NAME=nepi
+TAG=3p2p3-jetson-orin
+sudo docker commit $ID ${NAME}:${TAG}
+
+
+# RUN CONTAINER
 
 
 ID=fcfa41c403c3
@@ -49,7 +62,7 @@ sudo docker run -it --privileged -e UDEV=1 --user nepi --gpus all \
 
 
     # Initialize Run Command
-    DOCKER_RUN_COMMAND=" sudo docker run --privileged -e UDEV=1 --user ${USER_NAME} '\'
+    DOCKER_RUN_COMMAND=" sudo docker run --privileged -e UDEV=1 --user nepi '\'
     --mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage '\'
     --mount type=bind,source=/mnt/nepi_config,target=/mnt/nepi_config '\'
     --mount type=bind,source=/dev,target=/dev '\'
@@ -124,10 +137,3 @@ sudo docker run -it --privileged -e UDEV=1 --user nepi --gpus all \
     -c '/opt/nepi/scripts/nepi_start_all.sh'"   
 
 
-ID=94fe8acffce7 
-sudo docker exec -it $ID /bin/bash
-
-ID=668e300abe77 
-sudo docker start -ai $ID
-
-sudo docker commit $ID ${NAME}:${TAG}

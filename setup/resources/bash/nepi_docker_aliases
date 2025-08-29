@@ -103,7 +103,7 @@ function commit_nepi(){
         exit 1
     fi 
 }
-export -f login_nepi
+export -f commit_nepi
 
 ######################
 # LOGIN_NEPI
