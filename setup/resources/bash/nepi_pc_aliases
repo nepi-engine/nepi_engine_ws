@@ -213,6 +213,9 @@ function ucfg(){
 
 
 
+export SETUPN="${NEPI_SOURCE}/nepi_engine_ws/setup"
+alias setupn="cd ${SETUPN}"
+
 # Print out the nepi shortcuts
 function helpn(){
     HELPN="${UINFO}
@@ -249,8 +252,22 @@ tmp = /mnt/nepi_storage/tmp
 
 fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/system_cfg
-ucfg = /mnt/nepi_storage/user_cfg
-"
+ucfg = /mnt/nepi_storage/user_cfg"
+}
+
+export SETUPN="${NEPI_SOURCE}/nepi_engine_ws/setup"
+alias setupn="cd ${SETUPN}"
+
+# Print out the nepi shortcuts
+function helpn(){
+    HELPN="${UINFO}
+
+################################
+## NEPI folder shortcuts ##
+################################
+
+setupn = ${NEPI_SOURCE}/nepi_engine_ws/setup"
     echo "$HELPN"
 }
 
+export NEPI_REMOTE_SETUP=1
