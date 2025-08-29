@@ -132,7 +132,7 @@ fi
 function update_yaml_value(){
     KEY=$1
     #echo $KEY
-    export VAL=$2
+    #export VAL=$2
     #echo $VAL
     FILE=$3
     #echo $FILE
@@ -147,7 +147,7 @@ function read_yaml_value(){
     #echo $KEY
     FILE=$3
     #echo=$FILE
-    export $VARIABLE=$(yq e '.'"$KEY"'' $FILE)
+    export ${VARIABLE}=$(yq e '.'"$KEY"'' $FILE)
     #yq e '.NEPI_HW' nepi_docker_config.yaml
     #echo $VARIABLE
 }

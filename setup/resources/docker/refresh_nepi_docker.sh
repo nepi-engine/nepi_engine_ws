@@ -13,7 +13,7 @@
 # This File Updates Variables from Docker Config
 source /home/${USER}/.nepi_bash_utils
 wait
-NEPI_DOCKER_CONFIG_FILE=/mnt/nepi_config/docker_cfg/nepi_docker_config.yaml
+NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
 
 ########################
 #export USER_NAME=nepi
