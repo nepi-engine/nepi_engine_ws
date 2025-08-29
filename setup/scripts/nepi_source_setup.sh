@@ -40,19 +40,40 @@ if [ ! -f "${SOURCE_FOLDER}" ]; then
         if [ -f "${SOURCE_FOLDER}" ]; then
             echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
         else
+            cd ${NEPI_SOURCE}
             git clone git@github.com:nepi-engine/nepi_engine_ws.git
             cd nepi_engine_ws
-            if [[ "$NEPI_BRANCH" != "main" ]]; then
+            if [[ "$NEPI_BRANCH" == "main" ]]; then
+                BRANCH=main
                 if [[ "$NEPI_ROS" == "NOETIC" ]]; then
-                NEPI_BRANCH=ros1_develop
+                BRANCH=ros1_develop
                 else
-                NEPI_BRANCH=ros2_develop
+                BRANCH=ros2_develop
                 fi
             fi
-            git clone git@github.com:nepi-engine/nepi_engine_ws.git 
+            if [[ "$NEPI_ROS" == "NOETIC" ]]; then
+                SUBBRANCH=ros1_main
+            else
+                SUBBRANCH=ros2_main
+            fi
+            # Now Clone
+            git clone git@github.com:nepi-engine/nepi_engine_ws.git
             cd nepi_engine_ws
-            git checkout ${NEPI_BRANCH}
+            git checkout $BRANCH
             git submodule update --init --recursive
+            git submodule foreach git checkout $SUBBRANCH
+            git submodule foreach git pull origin $SUBBRANCH
+            cd src
+            for dir in /*/; do
+            if [ -d "$dir" ]; then # Checks if the item is a directory
+                cd $dir
+                if [ -f ".gitmodules" ]; then
+                git submodule update --init --recursive
+                git submodule foreach git checkout $SUBBRANCH
+                git submodule foreach git pull origin $SUBBRANCH
+                fi
+            fi
+            fi
         fi
     else
         echo "Failed to create source code folder at: ${NEPI_SOURCE}"

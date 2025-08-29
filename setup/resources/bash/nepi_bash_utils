@@ -321,6 +321,7 @@ fi
     if [ -d "${SOURCE_FOLDER}" ]; then
       echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
     else
+      cd ${NEPI_SOURCE}
       BRANCH=main
       if [[ "$NEPI_ROS" == "NOETIC" ]]; then
         SUBBRANCH=ros1_main
@@ -347,6 +348,7 @@ fi
     if [ -d "${SOURCE_FOLDER}" ]; then
       echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
     else
+      cd ${NEPI_SOURCE}
       if [[ "$NEPI_ROS" == "NOETIC" ]]; then
         BRANCH=ros1_develop
         SUBBRANCH=ros1_main
