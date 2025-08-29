@@ -13,9 +13,6 @@
 	url = git@github.com:nepi-engine/nepi_3rd_party.git
 	branch = ros1_main
 	
-[submodule "src/nepi_ai_frameworks"]
-	path = src/nepi_ai_frameworks
-	url = git@github.com:nepi-engine/nepi_ai_frameworks.git
 [submodule "src/nepi_engine"]
 	path = src/nepi_engine
 	url = git@github.com:nepi-engine/nepi_engine.git
