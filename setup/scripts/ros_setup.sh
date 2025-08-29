@@ -21,7 +21,7 @@ wait
 
 
 echo ""
-echo "Installing Software Requirements"
+echo "Installing ROS ${NEPI_ROS}"
 
 # Create and change to tmp install folder
 sudo chown -R nepi:nepi ${STORAGE}
@@ -29,7 +29,10 @@ TMP=${STORAGE}\tmp
 mkdir $TMP
 cd $TMP
 
-
+HAS_ROS=$(dpkg -l | grep ros-)
+if [[ ! -z "$HAS_ROS" ]]; then
+    echo "ROS alread installed"
+else
 
 ############################################
 ## Setup ROS
@@ -117,20 +120,7 @@ fi
 
 
 
-#########################################
-# Setup RUI Required Software
-#########################################
 
-python${PYTHON_VERSION} -m pip install --no-input --user -U pip
-python${PYTHON_VERSION} -m pip install --no-input --user virtualenv
-
-
-# Install Base Node.js Tools and Packages (Required for RUI, etc.)
-curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
-export NVM_DIR="${NEPI_HOME}/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-nvm install 8.11.1 # RUI-required Node version as of this script creation
 
 
 

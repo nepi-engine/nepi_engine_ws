@@ -15,11 +15,12 @@ PYTHON_VERSION=3.8
 ROS_VERSION=NOETIC
 PYTORCH_VERSION=1.13.0
 JETPACK_VERSION=5.0.2 # Set to 0 if no nvidia jetpack
+SOURCE_CODE_FOLDER=/home/${USER}
 
 # NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
 export NEPI_HW_TYPE=JETSON
 # NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
-export NEPI_HW_MODEL=XAVIER
+export NEPI_HW_MODEL=ORIN
 
 # PYTHON VERSION
 export NEPI_PYTHON=$PYTHON_VERSION
@@ -49,7 +50,10 @@ export NEPI_DEVICE_ID=device1
 export NEPI_IP=192.168.179.103
 
 
-# NEPI PARTITIONS
+
+# NEPI Folders
+export NEPI_SOURCE=$SOURCE_CODE_FOLDER
+
 export NEPI_DOCKER=/mnt/nepi_docker
 export NEPI_STORAGE=/mnt/nepi_storage
 export NEPI_CONFIG=/mnt/nepi_config

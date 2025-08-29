@@ -25,11 +25,18 @@ mkdir $TMP
 cd $TMP
 
 
-
 #################################
 # Install Software Requirments
+
 echo ""
-echo "Installing NEPI Docker Required Software Packages"
+echo "Installing vim full package"
+sudo apt install vim-gtk3 -y
+#sudo update-alternatives --config vim
+vim --version | grep clipboard
+
+
+
+
 #Install yq
 #https://mikefarah.gitbook.io/yq/v3.x
 sudo add-apt-repository ppa:rmescandon/yq
@@ -40,6 +47,7 @@ sudo apt install git -y
 sudo apt install gitk -y
 
 # Visual Code?
+sudo snap install code --channel=edge --classic
 
 
 
@@ -165,6 +173,7 @@ sudo docker info
 
 ####### Add NEPI IP Addr to eth0
 sudo ip addr add ${NEPI_IP}/24 dev eth0
+
 
 
 ##################################
