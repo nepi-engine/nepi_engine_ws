@@ -42,15 +42,16 @@ if [ ! -f "${SOURCE_FOLDER}" ]; then
         else
             git clone git@github.com:nepi-engine/nepi_engine_ws.git
             cd nepi_engine_ws
-            if [[ "$NEPI_BRANCH" == "main" ]]; then
-                git checkout main
-            else
+            if [[ "$NEPI_BRANCH" != "main" ]]; then
                 if [[ "$NEPI_ROS" == "NOETIC" ]]; then
-                git checkout ros1_develop
+                NEPI_BRANCH=ros1_develop
                 else
-                git checkout ros2_develop
+                NEPI_BRANCH=ros2_develop
                 fi
             fi
+            git clone git@github.com:nepi-engine/nepi_engine_ws.git 
+            cd nepi_engine_ws
+            git checkout ${NEPI_BRANCH}
             git submodule update --init --recursive
         fi
     else
