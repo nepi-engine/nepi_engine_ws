@@ -21,7 +21,7 @@ INACTIVE_ID: 0
 STAGING_CONT: nepi_fs_staging
 # Running NEPI Container Info
 RUNNING: 0
-RUNNING_CONT: None
+RUNNING_CONT: nepi
 RUNNING_VERSION: uknown
 RUNNING_TAG: uknown
 RUNNING_ID: 0
