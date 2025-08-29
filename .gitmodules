@@ -1,28 +1,34 @@
 [submodule "src/nepi_drivers"]
 	path = src/nepi_drivers
 	url = git@github.com:nepi-engine/nepi_drivers.git
+	branch = ros1_main
 	
 [submodule "src/nepi_apps"]
 	path = src/nepi_apps
 	url = git@github.com:nepi-engine/nepi_apps.git
+	branch = ros1_main
 	
 [submodule "src/nepi_3rd_party"]
 	path = src/nepi_3rd_party
 	url = git@github.com:nepi-engine/nepi_3rd_party.git
+	branch = ros1_main
 	
-[submodule "src/nepi_ai_frameworks"]
-	path = src/nepi_ai_frameworks
-	url = git@github.com:nepi-engine/nepi_ai_frameworks.git
 [submodule "src/nepi_engine"]
 	path = src/nepi_engine
 	url = git@github.com:nepi-engine/nepi_engine.git
+	branch = ros1_main
 	
 [submodule "src/nepi_auto_scripts"]
 	path = src/nepi_auto_scripts
 	url = git@github.com:nepi-engine/nepi_auto_scripts.git
+	branch = ros1_main
+	
 [submodule "src/nepi_rui"]
 	path = src/nepi_rui
 	url = git@github.com:nepi-engine/nepi_rui.git
+	branch = ros1_main
+	
 [submodule "src/nepi_interfaces"]
 	path = src/nepi_interfaces
 	url = git@github.com:nepi-engine/nepi_interfaces.git
+	branch = ros1_main
