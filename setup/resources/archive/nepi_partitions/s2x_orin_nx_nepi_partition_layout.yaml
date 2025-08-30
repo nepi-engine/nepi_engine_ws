@@ -1,0 +1,32 @@
+##
+## NEPI Dual-Use License
+## Project: nepi_sdk
+##
+## This license applies to any user of NEPI Engine software
+##
+## Copyright (C) 2023 Numurus, LLC <https://www.numurus.com>
+## see https://github.com/numurus-nepi/nepi_sdk
+##
+## This software is dual-licensed under the terms of either a NEPI software developer license
+## or a NEPI software commercial license.
+##
+## The terms of both the NEPI software developer and commercial licenses
+## can be found at: www.numurus.com/licensing-nepi-engine
+##
+## Redistributions in source code must retain this top-level comment block.
+## Plagiarizing this software to sidestep the license obligations is illegal.
+##
+## Contact Information:
+## ====================
+## - https://www.numurus.com/licensing-nepi-engine
+## - mailto:nepi@numurus.com
+##
+##
+first_stage_rootfs_device: /dev/nvme0n1p1                # Specifies the device and partition for the NEPI first-stage/INIT rootfs.
+nepi_storage_device: /dev/nvme0n1p4                      # Specifies the device and partition for NEPI user partition; /etc/fstab takes precedent, however.
+new_img_staging_device: /dev/nvme0n1p4                   # Specifies the device and partition for new image staging. SSD partition 3 by default
+new_img_staging_device_removable: false                  # Specifies whether or not the new image staging media is removable (e.g., USB stick)
+usb_device: /dev/sda                                     # Device for USB storage. Can be "None" if not present
+sd_card_device: /dev/mmcblk1p                            # Device for SD card storage. Can be "None" if not present
+emmc_device: /dev/mmcblk0p                               # Device for EMMC storage. Can be "None" if not present
+ssd_device: /dev/nvme0n1p                                # Device for SSD storage. Can be "None" if not present

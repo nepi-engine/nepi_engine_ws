@@ -38,6 +38,9 @@ export NEPI_HAS_XPU=0
 # System Setup Variables
 export NEPI_USER=nepi
 export NEPI_DEVICE_ID=device1
+export NEPI_BOOT_DEVICE=container # /dev/mmcblk0p1    
+export NEPI_FS_DEVICE=container # /dev/mmcblk01           
+export NEPI_STORAGE_DEVICE=container # /dev/nvme0n1p3  
 
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
 # Note, if enabled for a docker deployment, these system functions will be

@@ -67,8 +67,27 @@ echo "# Boot Fail Config" >> $CONFIG_DEST
 echo "NEPI_MAX_COUNT: 3" >> $CONFIG_DEST
 echo "NEPI_FAIL_COUNT: 0" >> $CONFIG_DEST
 
+#######################
+# Copy the nepi_config.yaml file to the system_cfg folder
+sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
+echo "Updating NEPI System Config Files in ${sys_config}"
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo sudo mkdir $NEPI_CONFIG
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
+fi
 
-sudo chown -R ${USER}:${USER} $NEPI_DOCKER_CONFIG
+#if [ -f "$sys_config" ]; then
+#    sudo cp $sys_config ${sys_config}.bak
+#fi
+docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
+sudo cp docker_config sys_config
+sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 ##################################
 echo ""

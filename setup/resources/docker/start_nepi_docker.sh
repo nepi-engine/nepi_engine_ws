@@ -23,15 +23,22 @@ wait
 #######################
 # Copy the nepi_config.yaml file to the system_cfg folder
 echo "Upating NEPI System Config Files"
-sudo mkdir $NEPI_CONFIG
-sudo mkdir ${NEPI_CONFIG}/system_cfg
-sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
-sys_config = ${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
-if [ -f "$sys_config" ]; then
-    copy $sys_config ${sys_config}.bak
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo sudo mkdir $NEPI_CONFIG
 fi
-sudo copy ${NEPI_CONFIG}/docker_cfg/nepi_config.yaml ${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
-sudo chown ${USER}:${USER} $NEPI_CONFIG
+if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
+fi
+
+sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
+if [ -f "$sys_config" ]; then
+    sudo cp $sys_config ${sys_config}.bak
+fi
+sudo cp ${NEPI_CONFIG}/docker_cfg/nepi_config.yaml sys_config
+sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 ########################
 # Stop Any Running NEPI Containers

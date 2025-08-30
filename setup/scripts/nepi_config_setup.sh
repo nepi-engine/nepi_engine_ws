@@ -49,6 +49,9 @@ cat /dev/null > $CONFIG_DEST
 echo "# NEPI Settings" >> $CONFIG_DEST
 echo "NEPI_USER: ${NEPI_USER}" >> $CONFIG_DEST
 echo "NEPI_DEVICE_ID: ${NEPI_DEVICE_ID}" >> $CONFIG_DEST
+echo "NEPI_BOOT_DEVICE: ${NEPI_BOOT_DEVICE}" >> $CONFIG_DEST
+echo "NEPI_FS_DEVICE: ${NEPI_FS_DEVICE}" >> $CONFIG_DEST
+echo "NEPI_STORAGE_DEVICE: ${NEPI_STORAGE_DEVICE}" >> $CONFIG_DEST
 
 echo "NEPI_HW_TYPE: ${NEPI_HW_TYPE}" >> $CONFIG_DEST
 echo "NEPI_HW_MODEL: ${NEPI_HW_MODEL}" >> $CONFIG_DEST
@@ -125,7 +128,7 @@ echo "NEPI_AB_FS: ${NEPI_AB_FS}" >> $CONFIG_DEST
 
 
 # Update NEPI_FOLDER owners
-sudo chown -R ${NEPI_USER}:${NEPI_USER} ${CONFIG_DESTs}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${CONFIG_DEST}
 
 
 ##############################################
