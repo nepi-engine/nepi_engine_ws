@@ -31,7 +31,6 @@ if [[ ! -v DEPLOY_3RD_PARTY ]]; then
   DEPLOY_3RD_PARTY=0
 fi
 
-
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
     NEPI_USER=nepi
@@ -97,41 +96,25 @@ fi
 
 git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
-# Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-RSYNC_EXCLUDES=" --exclude '.git/*' \
---exclude '.git' \
---exclude '.gitmodules' \
---exclude '.catkin_tools/profiles/*/packages' \
---exclude 'devel_*' --exclude 'logs_* --exclude install_*' "
+echo $(pwd)
+
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  rsync -avzhe ${RSYNC_EXCLUDES} ./.catkin_tools ${NEPI_ENGINE}
-  rsync -avzhe  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
-  rsync -avzhe ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
+  rsync -arh ${RSYNC_EXCLUDES} $(pwd) ${NEPI_TARGET_SRC_DIR}/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ./.catkin_tools ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_ENGINE}
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='*/' ${RSYNC_EXCLUDES} ./* ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='.git/' --exclude 'nepi_3rd_party/' $(pwd) ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/
 fi
 
 echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
-
-  # Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-  RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
-  --exclude .git \
-  --exclude .gitmodules \
-  --exclude .catkin_tools/profiles/*/packages \
-  --exclude devel_* --exclude logs_* --exclude install_* "
-
   echo "Deploying nepi 3rd party repos"
 
     # Push Third Party Folders
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    rsync -avzhe ${RSYNC_EXCLUDES} ../nepi_engine_ws/src/nepi_3rd_party/ ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/nepi_3rd_party
+    rsync -arh --exclude='.git/' $(pwd)/src/nepi_3rd_party/ ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} ../nepi_engine_ws/src/nepi_3rd_party/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/nepi_3rd_party
+    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --exclude='.git/' $(pwd)/src/nepi_3rd_party/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
   fi
 
   

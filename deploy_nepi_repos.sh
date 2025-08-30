@@ -59,6 +59,7 @@ if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
 
+
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
   exit 1
@@ -85,31 +86,31 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     exit 1
   fi
 fi
+
+
 if [[ -z "${NEPI_TARGET_SRC_DIR}" ]]; then
   NEPI_TARGET_SRC_DIR="$NEPI_STORAGE/nepi_src"
   echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
 fi
 
-# Avoid pushing local build artifacts, git stuff, and a bunch of huge GPSD stuff
-RSYNC_EXCLUDES=" --exclude '.git/*' \
---exclude '.git' \
---exclude '.gitmodules' \
---exclude '.catkin_tools/profiles/*/packages' \
---exclude 'devel_*' --exclude 'logs_* --exclude install_*' "
+git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
-echo "Excluding ${RSYNC_EXCLUDES}"
+echo $(pwd)
+
+
 
 for REPO in $REPOS; do
+  REPO_PATH="$(pwd)/src/${REPO}"
+  echo "Syncing repo ${REPO} from ${REPO_PATH} to"
 
-  echo "Syncing repo ${REPO} from $(pwd)/src/${REPO} to"
   echo "${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/"
   # Push everything but the EXCLUDES to the specified source folder on the target
 
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    rsync -arp ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+    rsync -arh  --exclude='.git/' $(pwd)/src/${REPO}/ ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
 
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    rsync -arp "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --exclude='.git/' $(pwd)/src/${REPO}/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/${REPO}/
 
   fi
   

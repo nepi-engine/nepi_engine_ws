@@ -118,7 +118,11 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 sudo mkdir $NEPI_ETC
 sudo cp -R -p $(pwd)/resources/etc/* ${NEPI_ETC}/
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
+NEPI_ETC_BAK=${NEPI_ETC}.bak
+sudo cp -R -p $NEPI_ETC $NEPI_ETC_BAK
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC_BAK
 printf "\n${HIGHLIGHT}*** NEPI Config Files Updated***\n"
+
 
 
 
