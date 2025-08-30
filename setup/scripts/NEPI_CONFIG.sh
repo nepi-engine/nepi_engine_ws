@@ -32,24 +32,27 @@ export NEPI_IN_CONTAINER=0
 export NEPI_HAS_CUDA=1
 export NEPI_CUDA_VERSION=11.8
 # Find Compatable PyTorch Version https://github.com/pytorch/pytorch/blob/main/RELEASE.md
-
-
 export NEPI_HAS_XPU=0
+
+
+# System Setup Variables
+export NEPI_USER=nepi
+export NEPI_DEVICE_ID=device1
 
 # NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
 # Note, if enabled for a docker deployment, these system functions will be
 # disabled in the host OS environment
 export NEPI_MANAGES_SSH=1
 export NEPI_MANAGES_SHARE=1
-export NEPI_MANAGES_TIME=0
-export NEPI_MANAGES_NETWORK=0
 
-# System Setup Variables
-export NEPI_USER=nepi
-export NEPI_DEVICE_ID=device1
+export NEPI_MANAGES_NETWORK=1
 export NEPI_IP=192.168.179.103
+export NEPI_TCP_PORTS=(8080 2222 5003 9091)
+export NEPI_UDP_PORTS=(123)
+export NEPI_DHCP_ON_START=0
 
-
+export NEPI_MANAGES_TIME=1
+export NEPI_NTP_SOURCES=(time1.google.com 192.168.179.5)
 
 # NEPI Folders
 export NEPI_SOURCE=$SOURCE_CODE_FOLDER
