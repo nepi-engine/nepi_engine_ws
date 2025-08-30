@@ -58,10 +58,10 @@ echo "NEPI_STAGING_NAME: nepi_fs_staging" >> $CONFIG_DEST
 echo "# Running NEPI Container Info" >> $CONFIG_DEST
 echo "NEPI_RUNNING: 0" >> $CONFIG_DEST
 echo "NEPI_RUNNING_NAME: None" >> $CONFIG_DEST
-echo "NEPI_RUNNING_NAME: uknown" >> $CONFIG_DEST
 echo "NEPI_RUNNING_VERSION: uknown" >> $CONFIG_DEST
 echo "NEPI_RUNNING_TAG: uknown" >> $CONFIG_DEST
 echo "NEPI_RUNNING_ID: 0" >> $CONFIG_DEST
+echo "NEPI_RUNNING_LABEL: uknown" >> $CONFIG_DEST
 
 echo "# Boot Fail Config" >> $CONFIG_DEST
 echo "NEPI_MAX_COUNT: 3" >> $CONFIG_DEST
