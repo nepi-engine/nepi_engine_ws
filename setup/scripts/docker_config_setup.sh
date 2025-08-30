@@ -37,6 +37,7 @@ echo "Creating nepi config file ${CONFIG_DEST}"
 source nepi_config_setup.sh
 wait
 
+<<<<<<< HEAD
 echo "Adding NEPI Docker variables to nepi config file ${CONFIG_DEST}"
 
 echo "# NEPI Docker Docker System Variables" >> $CONFIG_DEST
@@ -88,6 +89,8 @@ docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
 echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
 sudo cp ${docker_config} ${sys_config}
 sudo chown -R ${USER}:${USER} $NEPI_CONFIG
+=======
+>>>>>>> 81a36dc49041eadf58349090423c03cb4f80f995
 
 ##################################
 echo ""
