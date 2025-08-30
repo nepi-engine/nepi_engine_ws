@@ -10,15 +10,36 @@
 ##
 
 # This script launches NEPI Container
-
-source /home/${USER}/NEPI_CONFIG.sh
+# This file Switches a Running Containers
+source /home/${USER}/.nepi_bash_utils
 wait
 
 ########################
-# Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi
+# Update NEPI Config Settings from nepi_config.yaml
+refresh_nepi_config
 wait
-########################
+
+#######################
+# Copy the nepi_config.yaml file to the system_cfg folder
+sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
+echo "Updating NEPI System Config Files in ${sys_config}"
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo sudo mkdir $NEPI_CONFIG
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
+fi
+
+#if [ -f "$sys_config" ]; then
+#    sudo cp $sys_config ${sys_config}.bak
+#fi
+docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
+sudo cp ${docker_config} ${sys_config}
+sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 
 ########################
@@ -34,9 +55,9 @@ echo "Building NEPI Docker Run Command"
 
 ########
 # Initialize Run Command
-DOCKER_RUN_COMMAND=" sudo docker run --privileged -e UDEV=1 --user ${USER_NAME} '\'
---mount type=bind,source=/mnt/nepi_storage,target=/mnt/nepi_storage '\'
---mount type=bind,source=/mnt/nepi_config,target=/mnt/nepi_config '\'
+DOCKER_RUN_COMMAND=" sudo docker run --privileged -e UDEV=1 --user ${NEPI_USER} '\'
+--mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} '\'
+--mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} '\'
 --mount type=bind,source=/dev,target=/dev '\'
 -e DISPLAY=${DISPLAY} '\'"
 
@@ -57,7 +78,7 @@ fi
 
 
 # Set Clock Settings
-if [[ "$MANAGES_CLOCK" -eq 1 ]]; then
+if [[ "$NEPI_MANAGES_CLOCK" -eq 1 ]]; then
     echo "Disabling Host Auto Clock Updating"
     sudo timedatectl set-ntp no
 
@@ -67,30 +88,19 @@ DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
 fi 
 
 
-# Update Network Settings
-echo "Setting Static IP"
-echo "IP_ADDRESS"
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
---hostname ${USER_NAME}:${DEVICE_ID} '\'
---publish ${IP_ADDRESS}:80:8080 '\'"
 
 
-#--net=host '\'
-#"
 
-#-add-host=${USER_NAME}:${NEPI_IP_ADDRESS} '\'"
-
-
-if [[ LENGTH OF $IP_ALIASES > 0 ]]; then
+if [[ LENGTH OF $NEPI_IP_ALIASES > 0 ]]; then
     echo "Adding IP Aliases"
-    echo $IP_ALIASES
+    echo $NEPI_IP_ALIASES
 
 
 fi 
 
 
 # Set cuda support if needed
-if [[ "$DEVICE_ID" == "JETSON" ]]; then
+if [[ "$NEPI_DEVICE_ID" == "JETSON" ]]; then
     echo "Enabling Jetson GPU Support TRUE"
 
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
@@ -105,7 +115,7 @@ fi
 
 # Finish Run Command
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
-${ACTIVE_CONT}:${ACTIVE_TAG} /bin/bash '\'
+${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash '\'
 -c 'nepi_rui_start'"
 
 #-c 'nepi_start_all'"

@@ -10,14 +10,10 @@
 ##
 
 
-# This file configigues an installed NEPI File System
-
-
-source ./NEPI_CONFIG.sh
-wait
+# This file initializes the nepi_docker_config.yaml file
 
 echo ""
-echo "NEPI Docker Enviorment Setup"
+echo "NEPI Docker Config Setup"
 
 
 #####################################
@@ -26,7 +22,7 @@ echo "NEPI Docker Enviorment Setup"
 sudo mkdir $NEPI_DOCKER_CONFIG
 echo "Copying nepi config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
-sudo chown -R ${USER}:${USER} $NEPI_DOCKER_CONFIG
+
 
 
 #####################################
@@ -34,58 +30,64 @@ sudo chown -R ${USER}:${USER} $NEPI_DOCKER_CONFIG
 #####################################
 
 ###############
-echo "Updating nepi config file ${DOCKER_CONFIG_FILE}"
-
-export DOCKER_CONFIG_FILE=${NEPI_DOCKER_CONFIG}/nepi_docker_config.yaml
-cat /dev/null > $DOCKER_CONFIG_FILE
-echo "# NEPI Docker Environment Variables" >> $DOCKER_CONFIG_FILE
-echo "USER_NAME: ${NEPI_USER}" >> $DOCKER_CONFIG_FILE
-echo "DEVICE_ID: ${NEPI_DEVICE_ID}" >> $DOCKER_CONFIG_FILE
-echo "HW_TYPE: ${NEPI_HW_TYPE}" >> $DOCKER_CONFIG_FILE
-echo "HW_MODEL: ${NEPI_HW_MODEL}" >> $DOCKER_CONFIG_FILE
-
-echo "STATIC_IP: ${NEPI_IP}" >> $DOCKER_CONFIG_FILE
-echo "IP_ALIASES: []" >> $DOCKER_CONFIG_FILE
-
-echo "MANAGES_CLOCK: ${NEPI_MANAGES_CLOCK}" >> $DOCKER_CONFIG_FILE
-
-echo "SUPPORTS_AB_FS: 1" >> $DOCKER_CONFIG_FILE
-echo "IMPORT_PATH: ${NEPI_IMPORT_PATH}" >> $DOCKER_CONFIG_FILE
-echo "EXPORT_PATH: ${NEPI_EXPORT_PATH}" >> $DOCKER_CONFIG_FILE
-
-echo "# NEPI Docker File System Variables" >> $DOCKER_CONFIG_FILE
-echo "ACTIVE_CONT: nepi_fs_a" >> $DOCKER_CONFIG_FILE
-echo "ACTIVE_VERSION: 3p2p0" >> $DOCKER_CONFIG_FILE
-echo "ACTIVE_TAG: ${NEPI_HW_TYPE}-${ACTIVE_VERSION}}" >> $DOCKER_CONFIG_FILE
-echo "ACTIVE_ID: 0" >> $DOCKER_CONFIG_FILE
-echo "ACTIVE_LABEL: uknown" >> $DOCKER_CONFIG_FILE
 
 
-echo "INACTIVE_CONT: nepi_fs_b" >> $DOCKER_CONFIG_FILE
-echo "INACTIVE_VERSION: uknown" >> $DOCKER_CONFIG_FILE
-echo "INACTIVE_TAG: ${NEPI_HW_TYPE}-${INACTIVE_VERSION}" >> $DOCKER_CONFIG_FILE
-echo "INACTIVE_ID: 0" >> $DOCKER_CONFIG_FILE
-echo "INACTIVE_LABEL: uknown" >> $DOCKER_CONFIG_FILE
+export CONFIG_DEST=${NEPI_DOCKER_CONFIG}/nepi_config.yaml
+echo "Creating nepi config file ${CONFIG_DEST}"
+source nepi_config_setup.sh
+wait
+
+echo "Adding NEPI Docker variables to nepi config file ${CONFIG_DEST}"
+
+echo "# NEPI Docker Docker System Variables" >> $CONFIG_DEST
+echo "NEPI_ACTIVE_NAME: nepi_fs_a" >> $CONFIG_DEST
+echo "NEPI_ACTIVE_VERSION: 3p2p0" >> $CONFIG_DEST
+echo "NEPI_ACTIVE_TAG: ${NEPI_HW_TYPE}-${ACTIVE_VERSION}}" >> $CONFIG_DEST
+echo "NEPI_ACTIVE_ID: 0" >> $CONFIG_DEST
+echo "NEPI_ACTIVE_LABEL: uknown" >> $CONFIG_DEST
 
 
+echo "NEPI_INACTIVE_NAME: nepi_fs_b" >> $CONFIG_DEST
+echo "NEPI_INACTIVE_VERSION: uknown" >> $CONFIG_DEST
+echo "NEPI_INACTIVE_TAG: ${NEPI_HW_TYPE}-${INACTIVE_VERSION}" >> $CONFIG_DEST
+echo "NEPI_INACTIVE_ID: 0" >> $CONFIG_DEST
+echo "NEPI_INACTIVE_LABEL: uknown" >> $CONFIG_DEST
 
-echo "STAGING_CONT: nepi_fs_staging" >> $DOCKER_CONFIG_FILE
+echo "NEPI_STAGING_NAME: nepi_fs_staging" >> $CONFIG_DEST
 
-echo "# Running NEPI Container Info" >> $DOCKER_CONFIG_FILE
-echo "RUNNING: 0" >> $DOCKER_CONFIG_FILE
-echo "RUNNING_CONT: None" >> $DOCKER_CONFIG_FILE
-echo "RUNNING_VERSION: uknown" >> $DOCKER_CONFIG_FILE
-echo "RUNNING_TAG: uknown" >> $DOCKER_CONFIG_FILE
-echo "RUNNING_ID: 0" >> $DOCKER_CONFIG_FILE
-echo "RUNNING_LABEL: uknown" >> $DOCKER_CONFIG_FILE
+echo "# Running NEPI Container Info" >> $CONFIG_DEST
+echo "NEPI_RUNNING: 0" >> $CONFIG_DEST
+echo "NEPI_RUNNING_NAME: None" >> $CONFIG_DEST
+echo "NEPI_RUNNING_NAME: uknown" >> $CONFIG_DEST
+echo "NEPI_RUNNING_VERSION: uknown" >> $CONFIG_DEST
+echo "NEPI_RUNNING_TAG: uknown" >> $CONFIG_DEST
+echo "NEPI_RUNNING_ID: 0" >> $CONFIG_DEST
 
+echo "# Boot Fail Config" >> $CONFIG_DEST
+echo "NEPI_MAX_COUNT: 3" >> $CONFIG_DEST
+echo "NEPI_FAIL_COUNT: 0" >> $CONFIG_DEST
 
-echo "# FAIL COUNTER" >> $DOCKER_CONFIG_FILE
-echo "MAX_COUNT: 3" >> $DOCKER_CONFIG_FILE
-echo "FAIL_COUNT: 0" >> $DOCKER_CONFIG_FILE
+#######################
+# Copy the nepi_config.yaml file to the system_cfg folder
+sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
+echo "Updating NEPI System Config Files in ${sys_config}"
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo sudo mkdir $NEPI_CONFIG
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg
+fi
+if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
+    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
+fi
 
-
-sudo chown ${USER}:${USER} $DOCKER_CONFIG_FILE
+#if [ -f "$sys_config" ]; then
+#    sudo cp $sys_config ${sys_config}.bak
+#fi
+docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
+sudo cp ${docker_config} ${sys_config}
+sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 ##################################
 echo ""

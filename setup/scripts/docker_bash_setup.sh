@@ -13,11 +13,15 @@
 
 SETUP_SCRIPTS_PATH=${PWD}
 sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
+sudo chown -R ${USER}:${USER} ${SETUP_SCRIPTS_PATH}/*
 
+sudo cp -p ${SETUP_SCRIPTS_PATH}/docker* /home/${USER}/
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
+
+
 
 
 NEPI_CFG_SOURCE=${PWD}/NEPI_CONFIG.sh
@@ -25,7 +29,7 @@ NEPI_CFG_DEST=${HOME}/.nepi_config
 echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
 sudo rm $NEPI_CFG_DEST
 sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CFG_DEST
+sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils

@@ -33,13 +33,13 @@ HELPN="
 
 
 # Function to update aliases from config file call same function when changes are made to the onfig file
-function refresh_nepi(){
+function refresh_nepi_config(){
     . ${NEPI_DOCKER_CONFIG}/refresh_nepi_docker.sh
 }
 
-export -f refresh_nepi
+export -f refresh_nepi_config
 
-refresh_nepi
+refresh_nepi_config
 wait
 #############################
 # NEPI DOCKER FUNCTIONS
@@ -47,7 +47,7 @@ wait
 
 
 function create_tag(){
-    refresh_nepi
+    refresh_nepi_config
   wait
     SW_VERSION=$1
     HW_TYPE=$2
@@ -60,7 +60,14 @@ function create_tag(){
 }
 export -f create_tag
 
-
+######################
+# UPDATE NEPI DOCKER CONFIG
+######################
+function config_nepi(){
+    #Run NEPI Docker Config Script
+    . /home/${USER}/docker_config_setup.sh
+}
+export -f run_nepi
 
 ######################
 # RUN_NEPI
@@ -91,10 +98,10 @@ export -f run_nepi_dev
 ######################
 function commit_nepi(){
     # Commit the Running Container
-    if [[ ! -v RUNNING ]]; then
-        if [[ ( -v RUNNING && "$RUNNING" -eq 1 ) ]]; then
-            echo "Stopping Running NEPI Docker Process ${RUNNING_CONT}:${RUNNING_TAG} ID:${RUNNING_ID}"
-            dcommit $RUNNING_ID ${1}:${2}
+    if [[ ! -v NEPI_RUNNING ]]; then
+        if [[ ( -v NEPI_RUNNING && "$NEPI_RUNNING" -eq 1 ) ]]; then
+            echo "Stopping Running NEPI Docker Process ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
+            dcommit $NEPI_RUNNING_ID ${1}:${2}
         else
             echo "No Running NEPI Contatainer to Commit"
         fi
@@ -110,10 +117,10 @@ export -f commit_nepi
 ######################
 function login_nepi(){
     # Connect to the Running Container
-    if [[ ! -v RUNNING ]]; then
-        if [[ ( -v RUNNING && "$RUNNING" -eq 1 ) ]]; then
-            echo "Stopping Running NEPI Docker Process ${RUNNING_CONT}:${RUNNING_TAG} ID:${RUNNING_ID}"
-            dlogin $RUNNING_ID
+    if [[ ! -v NEPI_RUNNING ]]; then
+        if [[ ( -v NEPI_RUNNING && "$NEPI_RUNNING" -eq 1 ) ]]; then
+            echo "Stopping Running NEPI Docker Process ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
+            dlogin $NEPI_RUNNING_ID
         else
             echo "No Running NEPI Contatainer to Log Into"
         fi
@@ -139,7 +146,7 @@ export -f switch_nepi
 ######################
 
 function import_nepi(){
-  refresh_nepi
+  refresh_nepi_config
   wait
 
   IMPORT_PATH=$IMPORT_PATH
@@ -169,9 +176,9 @@ function import_nepi(){
   echo $ID
   NEW_DATE=$(date +%Y-%m-%d)
   echo $NEW_DATE
-  NEW_NAME=$INACTIVE_CONT
+  NEW_NAME=$NEPI_INACTIVE_NAME
   echo $NEW_NAME
-  NEW_TAG=$INACTIVE_TAG
+  NEW_TAG=$NEPI_INACTIVE_TAG
   printf 'Create a Custom Tag (y/n)? '
   read answer
   if [ "$answer" != "${answer#[Yy]}" ] ;then 
@@ -197,12 +204,12 @@ function import_nepi(){
 
   sudo docker tag $ID ${NEW_NAME}:${NEW_TAG}
   #6) Update inactive version,tags,ids in nepi_docker_config.yaml
-  update_yaml_value "INACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
-  update_yaml_value "INACTIVE_UPLOAD_DATE" "$NEW_DATE" "$NEPI_DOCKER_CONFIG_FILE"
-  update_yaml_value "INACTIVE_TAG" "$NEW_TAG" "$NEPI_DOCKER_CONFIG_FILE"
-  update_yaml_value "INACTIVE_ID" "$NEW_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  update_yaml_value "NEPI_INACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+  update_yaml_value "NEPI_INACTIVE_DATE" "$NEW_DATE" "$NEPI_DOCKER_CONFIG_FILE"
+  update_yaml_value "NEPI_INACTIVE_TAG" "$NEW_TAG" "$NEPI_DOCKER_CONFIG_FILE"
+  update_yaml_value "NEPI_INACTIVE_ID" "$NEW_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
   echo "  ADD SOME PRINT OUTS  "
-  refresh_nepi
+  refresh_nepi_config
   wait
 }
 export -f import_nepi
@@ -212,7 +219,7 @@ export -f import_nepi
 ######################
 
 function export_nepi(){
-  refresh_nepi
+  refresh_nepi_config
   wait
   #echo $RUNNING_CONT
   RUN_NAME=$1
