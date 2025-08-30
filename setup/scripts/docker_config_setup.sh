@@ -86,7 +86,7 @@ fi
 #fi
 docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
 echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
-sudo cp docker_config sys_config
+sudo cp ${docker_config} ${sys_config}
 sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 ##################################
