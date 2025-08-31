@@ -34,7 +34,7 @@ sudo apt install vim-gtk3 -y
 #sudo update-alternatives --config vim
 vim --version | grep clipboard
 
-
+sudo apt install nmap -y
 
 
 #Install yq
@@ -48,6 +48,7 @@ sudo apt install gitk -y
 
 # Visual Code?
 sudo snap install code --channel=edge --classic
+
 
 
 

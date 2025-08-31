@@ -1,74 +1,89 @@
-##
-## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
-##
-## This file is part of nepi-engine
-## (see https://github.com/nepi-engine).
-##
-## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
-##
+####################################################
+# NEPI USER AND DEVICE CONFIG
+export NEPI_USER=nepi
+export NEPI_DEVICE_ID=device1
+
+####################################################
+# NEPI MANAGED SERVICES Config
+# NEPI Managed Resources. Set to 0 to turn off NEPI management of this resource
+# Note, if enabled for a docker deployment, 
+# these system services will be disabled in the NEPI OS environment, 
+# and stopped in the Host OS environment if running in container at runtime
+
+# NEPI Network Management Config
+export NEPI_MANAGES_NETWORK=1
+NEPI_NETWORK_ID=192.168.179
+NEPI_HOST_ID=103
+export NEPI_IP=${NEPI_NETWORK_ID}:${NEPI_HOST_ID}
+export NEPI_DHCP_ON_START=0
 
 
-# This file sets up the setup variables for a NEPI file system
-CURRENT_FOLDER=$PWD
-SYSTEMD_SERVICE_PATH=/etc/systemd/system
-PYTHON_VERSION=3.8
-ROS_VERSION=NOETIC
-PYTORCH_VERSION=1.13.0
-JETPACK_VERSION=5.0.2 # Set to 0 if no nvidia jetpack
-SOURCE_CODE_FOLDER=/home/${USER}
 
+# NEPI Network Management Config
+export NEPI_MANAGES_TIME=1
+NEPI_NTP_NETWORK_ID=$NEPI_NETWORK_ID
+NEPI_NTP_HOST_ID=5
+export NEPI_NTP_IP=${NEPI_NTP_NETWORK_ID}:${NEPI_NTP_HOST_ID}
+
+####################################################
+# NEPI CONTAINER HOST Config
+# These settings are used to configure the host OS 
+# if NEPI is running in a container
+export NEPI_IN_CONTAINER=0
+export NEPI_USER="${NEPI_USER^^}"
+export NEPI_CT_DEVICE_ID="${NEPI_DEVICE_ID^^}"
+
+NEPI_CT_NETWORK_ID=$NEPI_NETWORK_ID
+NEPI_CT_HOST_ID=$((NEPI_HOST_ID - 1))
+export NEPI_CONTAINER_IP=${NEPI_CT_NETWORK_ID}:${NEPI_CT_HOST_ID}
+
+
+####################################################
+# NEPI HARDWERE CONFIG
 # NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
 export NEPI_HW_TYPE=JETSON
 # NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
 export NEPI_HW_MODEL=ORIN
 
-# PYTHON VERSION
+# NEPI FS Partition Info.  
+export NEPI_AB_FS=1 # Enables NEPI File System backup, update, and archiving if enabled
+# Set to "CONTAINER" if running in container 
+# Set to partition path if running directly on device's file system
+export NEPI_BOOT_DEVICE=CONTAINER # /dev/mmcblk0p1    
+export NEPI_FS_DEVICE=CONTAINER # /dev/mmcblk01           
+export NEPI_STORAGE_DEVICE=CONTAINER # /dev/nvme0n1p3  
+
+####################################################
+# NEPI SOFTWARE Config
+PYTHON_VERSION=3.8
+ROS_VERSION=NOETIC
+PYTORCH_VERSION=1.13.0
+JETPACK_VERSION=5.0.2 # Set to 0 if no nvidia jetpack
+
 export NEPI_PYTHON=$PYTHON_VERSION
 export NEPI_ROS=$ROS_VERSION
 
-# NEPI HOST SETTINGS
-export NEPI_IN_CONTAINER=0
-
 export NEPI_HAS_CUDA=1
 export NEPI_CUDA_VERSION=11.8
-# Find Compatable PyTorch Version https://github.com/pytorch/pytorch/blob/main/RELEASE.md
 export NEPI_HAS_XPU=0
 
+####################################################
+# NEPI FILE SYTEM CONFIG
 
-# System Setup Variables
-export NEPI_USER=nepi
-export NEPI_DEVICE_ID=device1
-export NEPI_BOOT_DEVICE=container # /dev/mmcblk0p1    
-export NEPI_FS_DEVICE=container # /dev/mmcblk01           
-export NEPI_STORAGE_DEVICE=container # /dev/nvme0n1p3  
-
-# NEPI Managed Resources. Set to 0 to turn off NEPI management of this resouce
-# Note, if enabled for a docker deployment, these system functions will be
-# disabled in the host OS environment
-export NEPI_MANAGES_SSH=1
-export NEPI_MANAGES_SHARE=1
-
-export NEPI_MANAGES_NETWORK=1
-export NEPI_IP=192.168.179.103
-export NEPI_TCP_PORTS=(8080 2222 5003 9091)
-export NEPI_UDP_PORTS=(123)
-export NEPI_DHCP_ON_START=0
-
-export NEPI_MANAGES_TIME=1
-export NEPI_NTP_SOURCES=(time1.google.com 192.168.179.5)
-
-# NEPI Folders
-export NEPI_SOURCE=$SOURCE_CODE_FOLDER
-
+# NEPI Storage and Config Folders
+# It is recommended that these be create as their own partitions
+# So that these files are not affected by any device file system changes
 export NEPI_DOCKER=/mnt/nepi_docker
 export NEPI_STORAGE=/mnt/nepi_storage
 export NEPI_CONFIG=/mnt/nepi_config
 
-DOCKER_MIN_GB=50
-STORAGE_MIN_GB=150
-CONFIG_MIN_GB=1
+export DOCKER_MIN_GB=50
+export STORAGE_MIN_GB=150
+export CONFIG_MIN_GB=1
 
-# NEPI File System 
+# NEPI Folders
+export NEPI_SOURCE=/home/${USER}
+
 export NEPI_ENV=nepi_env
 export NEPI_HOME=/home/${NEPI_USER}
 export NEPI_BASE=/opt/nepi
@@ -76,10 +91,6 @@ export NEPI_RUI=${NEPI_BASE}/nepi_rui
 export NEPI_ENGINE=${NEPI_BASE}/nepi_engine
 export NEPI_ETC=${NEPI_BASE}/etc
 export NEPI_SCRIPTS=${NEPI_BASE}/scripts
-
-# NEPI Dev Paths
-export NEPI_CODE=${NEPI_STORAGE}/code
-export NEPI_SRC=${NEPI_STORAGE}/nepi_src
 
 # NEPI Image Paths
 export NEPI_IMPORT_PATH=${NEPI_STORAGE}/nepi_images
@@ -90,11 +101,6 @@ export NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
 export NEPI_FACTORY_CONFIG=${NEPI_CONFIG}/factory_cfg
 export NEPI_SYSTEM_CONFIG=${NEPI_CONFIG}/system_cfg
 export NEPI_USR_CONFIG=${NEPI_STORAGE}/user_cfg
-
-export NEPI_CODE=${NEPI_STORAGE}/code
-export NEPI_ALIASES_FILE=.nepi_system_aliases
-
-export NEPI_AB_FS=1
 
 
 

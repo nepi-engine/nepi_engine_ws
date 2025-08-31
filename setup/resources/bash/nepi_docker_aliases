@@ -9,38 +9,33 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 
-
-
-NCFG=/home/${USER}/.nepi_config
-source $NCFG
-wait
-
-NUSH=/home/${USER}/.nepi_bash_utils
-source $NUSH
-wait
-UINFO="$(. ${NUSH} && utilsn)"
-
-
 # This file contains nepi docker host system aliases and sources nepi bash utils
-HELPN="
-#############################
-## NEPI Help Info ##
-#############################"
+
+NEPI_CONFIG_FILE=/mnt/nepi_config/docker_cfg/nepi_config.yaml
+if [[ -f "$NEPI_CONFIG_FILE" ]]; then
+    source ${NEPI_CONFIG_FILE}
+    wait
+else
+    echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
+    exit 1
+fi
+CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
+
+NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
+source $NEPI_UTILS_FILE
+wait
+UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
 
 ########################
-# Variable Initailization
+# Help Msg Initialization
 #########################
+HELPN="
 
+${CINFO}
+    
+${UINFO}
+"
 
-# Function to update aliases from config file call same function when changes are made to the onfig file
-function refresh_nepi_config(){
-    . ${NEPI_DOCKER_CONFIG}/refresh_nepi_docker.sh
-}
-
-export -f refresh_nepi_config
-
-refresh_nepi_config
-wait
 #############################
 # NEPI DOCKER FUNCTIONS
 #############################
@@ -253,11 +248,11 @@ CURRENT_DIR=$(pwd)
 
 export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
 
-export NEPI_REMOTE_SETUP=1
-export NEPI_TARGET_IP=192.168.179.103
-export NEPI_TARGET_USERNAME=nepi
+LOCALHOST_IP="127.0.0.1"
+export NEPI_TARGET_IP=$LOCALHOST_IP
+export NEPI_TARGET_USERNAME=$NEPI_USER
 export NEPI_SSH_KEY=~/ssh_keys/nepi_engine_default_private_ssh_key
-export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src # This is the default if unset
 
 # Setup Connection Shortcuts
 alias sshn="ssh -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
@@ -425,9 +420,7 @@ function ucfg(){
 	sftpnl $UCFG
 }	
 
-# Print out the nepi shortcuts
-function helpn(){
-    HELPN="${UINFO}
+HELPN="${HELPN}
 
 ################################
 ## NEPI sftp folder shortcuts ##
@@ -462,14 +455,11 @@ tmp = /mnt/nepi_storage/tmp
 fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/system_cfg
 ucfg = /mnt/nepi_storage/user_cfg"
-}
 
 export SETUPN="${NEPI_SOURCE}/nepi_engine_ws/setup"
 alias setupn="cd ${SETUPN}"
 
-# Print out the nepi shortcuts
-function helpn(){
-    HELPN="${UINFO}
+HELPN="${HELPN}
 
 ################################
 ## NEPI folder shortcuts ##
@@ -477,8 +467,11 @@ function helpn(){
 
 setupn = ${NEPI_SOURCE}/nepi_engine_ws/setup"
     echo "$HELPN"
-}
 
+
+function helpn(){
+    echo "$HELPN"
+}
 
 export NEPI_REMOTE_SETUP=0
 

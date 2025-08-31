@@ -24,73 +24,28 @@ echo "Copying nepi config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
 
 
+###################
+# Initialize Docker Config ETC Folder
+NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
+echo ""
+echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
+sudo cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_DOCKER_CONFIG}
+sudo cp nepi_etc_update.sh ${NEPI_DOCKER_CONFIG}/
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_DOCKER_CONFIG
 
-#####################################
-#Update Docker Config File
-#####################################
+# Rsync etc folder from factory folder
+rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg
 
-###############
+# Rsync etc folder from system folder
+rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg
 
-
-export CONFIG_DEST=${NEPI_DOCKER_CONFIG}/nepi_config.yaml
-echo "Creating nepi config file ${CONFIG_DEST}"
-source nepi_config_setup.sh
-wait
-
-<<<<<<< HEAD
-echo "Adding NEPI Docker variables to nepi config file ${CONFIG_DEST}"
-
-echo "# NEPI Docker Docker System Variables" >> $CONFIG_DEST
-echo "NEPI_ACTIVE_NAME: nepi_fs_a" >> $CONFIG_DEST
-echo "NEPI_ACTIVE_VERSION: 3p2p0" >> $CONFIG_DEST
-echo "NEPI_ACTIVE_TAG: ${NEPI_HW_TYPE}-${ACTIVE_VERSION}}" >> $CONFIG_DEST
-echo "NEPI_ACTIVE_ID: 0" >> $CONFIG_DEST
-echo "NEPI_ACTIVE_LABEL: uknown" >> $CONFIG_DEST
-
-
-echo "NEPI_INACTIVE_NAME: nepi_fs_b" >> $CONFIG_DEST
-echo "NEPI_INACTIVE_VERSION: uknown" >> $CONFIG_DEST
-echo "NEPI_INACTIVE_TAG: ${NEPI_HW_TYPE}-${INACTIVE_VERSION}" >> $CONFIG_DEST
-echo "NEPI_INACTIVE_ID: 0" >> $CONFIG_DEST
-echo "NEPI_INACTIVE_LABEL: uknown" >> $CONFIG_DEST
-
-echo "NEPI_STAGING_NAME: nepi_fs_staging" >> $CONFIG_DEST
-
-echo "# Running NEPI Container Info" >> $CONFIG_DEST
-echo "NEPI_RUNNING: 0" >> $CONFIG_DEST
-echo "NEPI_RUNNING_NAME: None" >> $CONFIG_DEST
-echo "NEPI_RUNNING_VERSION: uknown" >> $CONFIG_DEST
-echo "NEPI_RUNNING_TAG: uknown" >> $CONFIG_DEST
-echo "NEPI_RUNNING_ID: 0" >> $CONFIG_DEST
-echo "NEPI_RUNNING_LABEL: uknown" >> $CONFIG_DEST
-
-echo "# Boot Fail Config" >> $CONFIG_DEST
-echo "NEPI_MAX_COUNT: 3" >> $CONFIG_DEST
-echo "NEPI_FAIL_COUNT: 0" >> $CONFIG_DEST
-
-#######################
-# Copy the nepi_config.yaml file to the system_cfg folder
-sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
-echo "Updating NEPI System Config Files in ${sys_config}"
-if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
-    sudo sudo mkdir $NEPI_CONFIG
-fi
-if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
-    sudo mkdir ${NEPI_CONFIG}/system_cfg
-fi
-if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
-    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
-fi
-
-#if [ -f "$sys_config" ]; then
-#    sudo cp $sys_config ${sys_config}.bak
-#fi
 docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
-echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
-sudo cp ${docker_config} ${sys_config}
+echo "Copying NEPI System Config File ${docker_config} to ${NEPI_DOCKER_CONFIG}"
+sudo cp ${docker_config} ${NEPI_DOCKER_CONFIG}/
 sudo chown -R ${USER}:${USER} $NEPI_CONFIG
-=======
->>>>>>> 81a36dc49041eadf58349090423c03cb4f80f995
+
+# Rsync etc folder to system folder
+rsync -arh  ${NEPI_CONFIG}/docker_cfg/etc ${NEPI_CONFIG}/system_cfg
 
 ##################################
 echo ""

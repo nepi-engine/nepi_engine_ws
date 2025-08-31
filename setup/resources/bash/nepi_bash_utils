@@ -22,7 +22,14 @@ UTILSN="
 # System Util Functions
 ###################################
 
-# to ping internet
+# echo variable value
+function echovar(){
+    local var_name="$1"
+    echo "$var_name: ${!var_name}"
+}
+export -f echovar
+
+# ping internet
 function pingi(){
     if ! ping -c 2 google.com; then
         echo "No Internet Connection"
@@ -34,7 +41,7 @@ function pingi(){
 }
 export -f pingi
 
-# to ping nepi
+# ping nepi
 function pingn(){
   ping $NEPI_IP
 }
@@ -73,12 +80,63 @@ find ./* -iname  "*$@*"
 }
 export -f ffile
 
+function update_text_value(){
+  KEY=$2
+  UPDATE=$3
+  FILE=$1
+  if [ -f "$FILE" ]; then
+    if grep -q "$KEY" "$FILE"; then
+      sed -i "/^$KEY/c\\$UPDATE" "$FILE"
+    else
+      echo "$UPDATE" | sudo tee -a $FILE
+    fi
+  else
+    echo "File not found ${FILE}"
+  fi
+}
+export -f update_text_value
+
+
+function update_yaml_value(){
+    KEY=$1
+    #echo $KEY
+    VAL=$2
+    #echo $VAL
+    FILE=$3
+    #echo $FILE
+    yq e -i '.'"$KEY"' = env(VAL)' $FILE
+}
+export -f update_yaml_value
+
+function export_yaml_value(){
+    KEY=$1
+    #echo $KEY
+    VARIABLE=$2
+    #echo=$VARIABLE
+    FILE=$3
+    #echo=$FILE
+    export ${VARIABLE}=$(yq e '.'"$KEY"'' $FILE)
+    #yq e '.NEPI_HW' nepi_docker_config.yaml
+    #echo $VARIABLE
+}
+export -f export_yaml_value
+
+
+
+#### Update Help Test
+UTILSN="${UTILSN}
+
+### NEPI FILE UTIL FUNCTIONS
+
+write_to_yaml - Udates yaml key value given KEY VAL FILE"
+
 UTILSN="${UTILSN}
 
 ### FILE UTIL FUNCTIONS
 
 ftext = Find text in files recursively
-ffile = Find filenames with text match recursively"
+ffile = Find filenames with text match recursively
+uvfile = Adds or Replaces value in text file given FILE KEY UPDATE strings"
 
 ###################################
 # Git Util Functions
@@ -125,62 +183,6 @@ UTILSN="${UTILSN}
 pushn = Add,commit,push repo changes with provided comment"
 
 fi
-
-######################
-# FILE Functions
-######################
-function update_yaml_value(){
-    KEY=$1
-    #echo $KEY
-    #export VAL=$2
-    #echo $VAL
-    FILE=$3
-    #echo $FILE
-    yq e -i '.'"$KEY"' = env(VAL)' $FILE
-}
-export -f update_yaml_value
-
-function read_yaml_value(){
-    VARIABLE=$1
-    #echo=$VARIABLE
-    KEY=$2
-    #echo $KEY
-    FILE=$3
-    #echo=$FILE
-    export ${VARIABLE}=$(yq e '.'"$KEY"'' $FILE)
-    #yq e '.NEPI_HW' nepi_docker_config.yaml
-    #echo $VARIABLE
-}
-export -f read_yaml_value
-
-function read_yaml_array_value(){
-    local -n VARIABLE="$1"
-    KEY=$2
-    echo $KEY
-    FILE=$3
-    echo $FILE
-    mapfile -t array_list < <(yq e '.'"$KEY[]" $FILE)
-    echo "Array elements:"
-    for item in "${array_list[@]}"; do
-        echo "- $item"
-
-    done
-    local declare -a ${VARIABLE}=()
-    for item in "$VARIABLE"; do
-        echo "- $item"
-    done
-    export $VARIABLE=$(yq e '.'"$KEY[]" $FILE)
-    echo $VARIABLE
-}
-export -f read_yaml_array_value
-
-
-#### Update Help Test
-UTILSN="${UTILSN}
-
-### NEPI FILE UTIL FUNCTIONS
-
-write_to_yaml - Udates yaml key value given KEY VAL FILE"
 
 
 ###################################
@@ -445,6 +447,18 @@ if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
   }
 
 
+# Function to updates system environment variables from nepi_config.yaml
+function refresh_nepi_config(){
+      if [[ $# -eq 0 ]]; then
+        export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
+      else
+        export NEPI_CONFIG_FILE=${1}
+      fi
+      source /home/${USER}/nepi_config.sh
+}
+
+export -f refresh_nepi_config
+
 
 
   BUILD=${NEPI_STORAGE}/nepi_src/nepi_engine_ws
@@ -489,5 +503,7 @@ function utilsn(){
     echo "$UTILSN"
 }
 export -f utilsn
+
+export NEPI_UTILS_SOURCED=1
 
 

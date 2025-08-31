@@ -10,7 +10,7 @@
 ##
 
 
-# This file installs the updates a value in an etc file
+# This file installs the NEPI Engine File System installation
 
 
 KEY=$2
@@ -30,4 +30,3 @@ fi
 ##############################################
 echo "NEPI ETC Update Complete"
 ##############################################
-

@@ -1,38 +1,70 @@
+#!/bin/bash
+
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
 export NEPI_USER=$NEPI_USER
 export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
 
 export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
 export NEPI_TCP_PORTS=$NEPI_TCP_PORTS
+echo $NEPI_TCP_PORTS
 export NEPI_UDP_PORTS=$NEPI_UDP_PORTS
-export NEPI_IP_ALIASES=(192.168.0.103 192.168.1.103)
-export NEPI_IP_ADDRESSES=("STATIC_IP" "${IP_ALIASES[@]}")
+export NEPI_IP_ALIASES=($192.168.0.103 192.168.1.103)
+export NEPI_IP_ADDRESSES=("NEPI_IP" "${IP_ALIASES[@]}")
 
 # Configure NEPI Docker Network Settings
-nepi_net="\"
+nepi_net='\'
 if [[ "$NEPI_MANAGES_NETWORK" -eq 0 ]]; then
     # Use Host Network Stack
     nepi_net="${nepi_net}
-        --net=host \"
+        --net=host '\'"
 else
-    for ip in "${NEPI_IP[@]}"; do
+    NEPI_IP_ALIASES=(${NEPI_IP} "${NEPI_IP_ALIASES[@]}")
+    for ip in "${NEPI_IP_ALIASES[@]}"; do
         # Add IP Address to docker host
-        sudo ip addr add ${ip}/24 dev eth0
+        #sudo ip addr add ${ip}/24 dev eth0
         for tport in "${NEPI_TCP_PORTS[@]}"; do
             nepi_net="${nepi_net}
-                -p ${ip}:${tport}:"${tport: -2} \"
+                -p ${ip}:${tport}:${tport: -2} '\'"
         done
         for uport in "${NEPI_UPD_PORTS[@]}"; do
             nepi_net="${nepi_net}
-                -p ${ip}:${uport}:"${uport: -2}/udp \"
+                -p ${ip}:${uport}:${uport: -2}/udp '\'"
         done
     done
 fi
 
+echo $nepi_net
 
 export NEPI_ACTIVE_NAME=nepi
 export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-3
-export NEPI_ACTIVE_ID=docker images --filter "reference=${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG}" --format "{{.ID}}"
+#export NEPI_ACTIVE_ID=docker images --filter "reference=${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG}" --format "{{.ID}}"
+
+rtext="sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
+    --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
+    --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
+    --mount type=bind,source=/dev,target=/dev \
+    --cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \
+    --hostname ${NEPI_DEVICE_ID} \
+    -p ${NEPI_IP}:8080:80 \
+    -p ${NEPI_IP}:2222:22 \
+    -p ${NEPI_IP}:123:123/udp \
+    -p ${NEPI_IP}:5003:3 \
+    -p ${NEPI_IP}:9091:91 \
+    --runtime nvidia \
+    -v /tmp/.X11-unix/:/tmp/.X11-unix \
+    ${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash"
+
+echo $rtext
+
 
 sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
     --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
@@ -40,7 +72,11 @@ sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
     --mount type=bind,source=/dev,target=/dev \
     --cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \
     --hostname ${NEPI_DEVICE_ID} \
-    ${nepi_net}
+    -p ${NEPI_IP}:8080:80 \
+    -p ${NEPI_IP}:2222:22 \
+    -p ${NEPI_IP}:123:123/udp \
+    -p ${NEPI_IP}:5003:3 \
+    -p ${NEPI_IP}:9091:91 \
     --runtime nvidia \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
     ${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash
@@ -67,11 +103,11 @@ sudo docker exec -it $NEPI_RUNNING_ID /bin/bash
 
     #network options
     --hostname nepi-device1 \
-    -p ${STATIC_IP}:8080:80 \ 
-    -p ${STATIC_IP}:2222:22 \ 
-    -p ${STATIC_IP}:123:123/udp \
-    -p ${STATIC_IP}:5003:3 \
-    -p ${STATIC_IP}:9091:91 \
+    -p ${NEPI_IP}:8080:80 \ 
+    -p ${NEPI_IP}:2222:22 \ 
+    -p ${NEPI_IP}:123:123/udp \
+    -p ${NEPI_IP}:5003:3 \
+    -p ${NEPI_IP}:9091:91 \
 or
     --net=host \
 
@@ -86,7 +122,7 @@ sudo docker run -it --privileged -e UDEV=1 --user nepi --gpus all \
     ${NAME}:${TAG} /bin/bash
 
     --hostname nepi-device1 \
-    --publish ${STATIC_IP}:80:8080 \
+    --publish ${NEPI_IP}:80:8080 \
 
 
 
@@ -126,7 +162,7 @@ sudo docker run -it --privileged -e UDEV=1 --user nepi --gpus all \
     
     # Update Network Settings
     echo "Setting Static IP"
-    echo "STATIC_IP"
+    echo "NEPI_IP"
     DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
     --net=host '\'
     --hostname ${NEPI_DEVICE_ID} '\'
@@ -164,5 +200,6 @@ sudo docker run -it --privileged -e UDEV=1 --user nepi --gpus all \
     DOCKER_RUN_COMMAND="${NEPI_DOCKER_RUN_COMMAND}
     ${NEPI_ACTIVE_NAME}:${ACTIVE_TAG} /bin/bash '\'
     -c '/opt/nepi/scripts/nepi_start_all.sh'"   
+'
 
 

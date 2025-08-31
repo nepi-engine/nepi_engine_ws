@@ -16,15 +16,27 @@ sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
 sudo chown -R ${USER}:${USER} ${SETUP_SCRIPTS_PATH}/*
 
 sudo cp -p ${SETUP_SCRIPTS_PATH}/docker* /home/${USER}/
+
+#######################
+# Creating nepi_config.yaml file in docker config folder
+export CONFIG_DEST=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+echo "Initializing nepi_config.yaml in ${CONFIG_DEST}"
+if [ ! -d "${NEPI_CONFIG}" ]; then
+    sudo sudo mkdir $NEPI_CONFIG
+fi
+if [ ! -d "${NEPI_CONFIG}/docker_cfg" ]; then
+    sudo mkdir ${NEPI_CONFIG}/docker_cfg
+fi
+source $(pwd)/nepi_config_setup.sh
+wait
+
+
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
 
-
-
-
-NEPI_CFG_SOURCE=${PWD}/NEPI_CONFIG.sh
+NEPI_CFG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_config.sh
 NEPI_CFG_DEST=${HOME}/.nepi_config
 echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
 sudo rm $NEPI_CFG_DEST

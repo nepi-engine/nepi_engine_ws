@@ -63,7 +63,7 @@ sudo apt install gitk -y
 # Visual Code?
 sudo snap install code --channel=edge --classic
 
-
+sudo apt install nmap -y
 
 
 

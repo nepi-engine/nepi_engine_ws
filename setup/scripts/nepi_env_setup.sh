@@ -103,7 +103,7 @@ sudo add-apt-repository ppa:rmescandon/yq
 sudo apt install yq -y
 
 sudo apt install vim-gtk3 -y
-
+sudo apt install nmap -y
 ### Install ccache
 #https://askubuntu.com/questions/470545/how-do-i-set-up-ccache
 cd $TMP
