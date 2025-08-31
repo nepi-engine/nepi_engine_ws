@@ -1,0 +1,12 @@
+[Unit]
+Description=The NEPI RUI Webserver
+After=nepi_engine.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/nepi/nepi_rui/etc/start_rui.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

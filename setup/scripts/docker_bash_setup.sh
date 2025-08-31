@@ -11,6 +11,12 @@
 
 # This file sets up a pc side nepi develoment environment
 
+echo "########################"
+echo "NEPI Docker Bash Setup"
+echo "########################"
+
+source /home/${USER}/NEPI_CONFIG.sh
+
 SETUP_SCRIPTS_PATH=${PWD}
 sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
 sudo chown -R ${USER}:${USER} ${SETUP_SCRIPTS_PATH}/*
@@ -18,6 +24,7 @@ sudo chown -R ${USER}:${USER} ${SETUP_SCRIPTS_PATH}/*
 sudo cp -p ${SETUP_SCRIPTS_PATH}/docker* /home/${USER}/
 
 #######################
+NEPI_CONFIG=/mnt/nepi_config
 # Creating nepi_config.yaml file in docker config folder
 export CONFIG_DEST=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
 echo "Initializing nepi_config.yaml in ${CONFIG_DEST}"

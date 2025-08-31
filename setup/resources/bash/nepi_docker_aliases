@@ -11,15 +11,15 @@
 
 # This file contains nepi docker host system aliases and sources nepi bash utils
 
-NEPI_CONFIG_FILE=/mnt/nepi_config/docker_cfg/nepi_config.yaml
+export NEPI_CONFIG_FILE=/mnt/nepi_config/docker_cfg/nepi_config.yaml
 if [[ -f "$NEPI_CONFIG_FILE" ]]; then
-    source ${NEPI_CONFIG_FILE}
+    source /home/${USER}/.nepi_config
     wait
 else
     echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
     exit 1
 fi
-CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
+#CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
@@ -30,9 +30,7 @@ UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
 # Help Msg Initialization
 #########################
 HELPN="
-
-${CINFO}
-    
+   
 ${UINFO}
 "
 

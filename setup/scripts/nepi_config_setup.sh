@@ -12,11 +12,14 @@
 
 # This file installs the NEPI Engine File System installation
 
-echo ""
-echo "Updating NEPI Config file nepi_config.yaml"
+echo "########################"
+echo "NEPI CONFIG SETUP"
+echo "########################"
+
+
 
 CONFIG_SOURCE=$(pwd)/NEPI_CONFIG.sh
-echo "Looking for NEPI_CONFIG.sh file in ${CONFIG_SETUP}"
+echo "Looking for NEPI_CONFIG.sh file in ${CONFIG_SOURCE}"
 if [[ ! -f "$CONFIG_SOURCE" ]]; then
     echo "NO NEPI CONFIG FILE FOUND"
     exit 1
@@ -30,7 +33,8 @@ if [[ ! -v CONFIG_DEST ]]; then
 fi
 
 ###############
-echo "Updating nepi config file ${CONFIG_DEST}"
+echo ""
+echo "Updating NEPI Config file ${CONFIG_DEST}"
 cat /dev/null > $CONFIG_DEST
 
 while IFS= read -r line || [[ -n "$line" ]]; do

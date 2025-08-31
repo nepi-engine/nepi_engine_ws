@@ -30,7 +30,7 @@ export NEPI_NTP_IP=${NEPI_NTP_NETWORK_ID}:${NEPI_NTP_HOST_ID}
 # These settings are used to configure the host OS 
 # if NEPI is running in a container
 export NEPI_IN_CONTAINER=0
-export NEPI_USER="${NEPI_USER^^}"
+export NEPI_CT_USER="${NEPI_USER^^}"
 export NEPI_CT_DEVICE_ID="${NEPI_DEVICE_ID^^}"
 
 NEPI_CT_NETWORK_ID=$NEPI_NETWORK_ID

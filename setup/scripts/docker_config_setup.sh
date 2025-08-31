@@ -12,9 +12,11 @@
 
 # This file initializes the nepi_docker_config.yaml file
 
-echo ""
+echo "########################"
 echo "NEPI Docker Config Setup"
+echo "########################"
 
+source /home/${USER}/NEPI_CONFIG.sh
 
 #####################################
 # Copy Files to NEPI Docker Config Folder
@@ -23,6 +25,8 @@ sudo mkdir $NEPI_DOCKER_CONFIG
 echo "Copying nepi config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
 
+source $(pwd)/docker_bash_config.sh
+wait
 
 ###################
 # Initialize Docker Config ETC Folder

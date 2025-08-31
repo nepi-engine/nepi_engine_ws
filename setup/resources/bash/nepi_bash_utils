@@ -109,6 +109,8 @@ function update_yaml_value(){
 export -f update_yaml_value
 
 function export_yaml_value(){
+    echo ""
+    echo "Exporting yaml key ${1}"
     KEY=$1
     #echo $KEY
     VARIABLE=$2
@@ -117,7 +119,8 @@ function export_yaml_value(){
     #echo=$FILE
     export ${VARIABLE}=$(yq e '.'"$KEY"'' $FILE)
     #yq e '.NEPI_HW' nepi_docker_config.yaml
-    #echo $VARIABLE
+    echo $VARIABLE
+    echo "Export complete"
 }
 export -f export_yaml_value
 
