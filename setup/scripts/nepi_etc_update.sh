@@ -11,10 +11,16 @@
 
 #######################
 # Creating nepi_config.yaml file in docker config folder
-sbrc
+if [[ ! -v NEPI_CONFIG_FILE ]]; then
+    export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
+fi
+refresh_nepi_config
 wait
 
-export ETC_FOLDER=$(dirname "$(pwd)")/resources/etc
+if [ -v ETC_FOLDER ]; then
+    export ETC_FOLDER=$(dirname "$(pwd)")/resources/etc
+fi
+
 echo "Updating NEPI etc folder ${ETC_FOLDER}"
 if [ ! -d "${ETC_FOLDER}" ]; then
     echo "ETC folder ${ETC_FOLDER} not found"

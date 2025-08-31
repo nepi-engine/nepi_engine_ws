@@ -11,14 +11,20 @@
 
 # This file contains nepi system aliases and sources nepi bash utils
 
-NCFG=/home/nepi/.nepi_config
-source $NCFG
-wait
+export NEPI_CONFIG_FILE=/opt/nepi/etc/nepi_config.yaml
+if [[ -f "$NEPI_CONFIG_FILE" ]]; then
+    source /home/${USER}/.nepi_config
+    wait
+else
+    echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
+    exit 1
+fi
+#CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
 
-NUSH=/home/${NEPI_USER}/.nepi_bash_utils
-source $NUSH
+NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
+source $NEPI_UTILS_FILE
 wait
-UINFO="$(. ${NUSH} && utilsn)"
+UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
 
 
 

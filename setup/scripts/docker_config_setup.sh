@@ -24,6 +24,7 @@ source /home/${USER}/NEPI_CONFIG.sh
 sudo mkdir $NEPI_DOCKER_CONFIG
 echo "Copying nepi config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
+sudo cp $(pwd)/nepi_etc_update.sh ${NEPI_DOCKER_CONFIG}/
 
 source $(pwd)/docker_bash_config.sh
 wait

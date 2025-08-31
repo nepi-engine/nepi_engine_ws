@@ -16,37 +16,41 @@ wait
 
 ########################
 # Update NEPI Config Settings from nepi_config.yaml
-refresh_nepi_config
+NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
+refresh_nepi_config $NEPI_CONFIG_FILE
 wait
-
-#######################
-# Copy the nepi_config.yaml file to the system_cfg folder
-sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
-echo "Updating NEPI System Config Files in ${sys_config}"
-if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
-    sudo sudo mkdir $NEPI_CONFIG
-fi
-if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
-    sudo mkdir ${NEPI_CONFIG}/system_cfg
-fi
-if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
-    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
-fi
-
-#if [ -f "$sys_config" ]; then
-#    sudo cp $sys_config ${sys_config}.bak
-#fi
-docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
-echo "Copying NEPI System Config File ${docker_config} to ${sys_config}"
-sudo cp ${docker_config} ${sys_config}
-sudo chown -R ${USER}:${USER} $NEPI_CONFIG
-
 
 ########################
 # Stop Any Running NEPI Containers
 ########################
 . ./stop_nepi_docker.sh
 wait
+
+#######################
+# Update Etc
+export ETC_FOLDER=$(pwd)/etc
+refresh_nepi_config $NEPI_CONFIG_FILE
+wait
+source $(pwd)/nepi_etc_update
+wait
+
+
+#######################
+# Rsync etc folder from factory folder
+rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg
+
+# Rsync etc folder from system folder
+rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg
+
+docker_config=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+echo "Copying NEPI System Config File ${docker_config} to ${NEPI_DOCKER_CONFIG}"
+sudo cp ${docker_config} ${NEPI_DOCKER_CONFIG}/
+sudo chown -R ${USER}:${USER} $NEPI_CONFIG
+
+# Rsync etc folder to system folder
+rsync -arh  ${NEPI_CONFIG}/docker_cfg/etc ${NEPI_CONFIG}/system_cfg
+
+
 
 ########################
 # Build Run Command
@@ -84,19 +88,11 @@ if [[ "$NEPI_MANAGES_CLOCK" -eq 1 ]]; then
 
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
 --cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf '\'"
-
 fi 
 
 
 
 
-
-if [[ LENGTH OF $NEPI_IP_ALIASES > 0 ]]; then
-    echo "Adding IP Aliases"
-    echo $NEPI_IP_ALIASES
-
-
-fi 
 
 
 # Set cuda support if needed
