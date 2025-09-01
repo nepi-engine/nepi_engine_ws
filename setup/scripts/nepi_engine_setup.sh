@@ -85,26 +85,15 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
     sudo cp nepi_etc_update.sh ${NEPI_ETC}/
     sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
 
-
-
-    # Set up the NEPI sys env bash file
-    echo "Updating system env bash file"
-    sudo chmod +x ${NEPI_ETC}/sys_env.bash
-    sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
-    if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
-        sudo rm ${NEPI_BASE}/sys_env.bash
-    fi
-    sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
-    if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
-        sudo rm ${NEPI_BASE}/sys_env.bash.bak
-    fi
-    sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
+    CONFIG_DEST_FILE=${NEPI_ETC}/nepi_config.yaml
+    source $(pwd)/nepi_config_setup.sh
+    wait
 
 
     ###################
     # Set up the default hostname
     # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
-    if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+    if [ "$NEPI_MANAGES_NETWORK" -eq 1 -a "$NEPI_IN_CONTAINER" -eq 0 ]; then
         echo " "
         echo "Updating system hostname"
 
@@ -120,20 +109,42 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
             sudo rm /etc/hostname
         fi
         sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
+
+
+        # Set up static IP addr.
+        echo "Updating Network interfaces.d"
+        if [ ! -f "/etc/network/interfaces.d" ]; then
+            sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
+            sudo rm -r /etc/network/interfaces.d
+        fi
+        sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
+
+        echo "Updating Network interfaces"
+        if [ ! -f "/etc/network/interfaces" ]; then
+            sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
+            sudo rm /etc/network/interfaces
+        fi
+        sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
+
+        # Set up DHCP
+        echo "Updating Network dhclient.conf"
+        if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
+            sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
+            sudo rm /etc/dhcp/dhclient.conf
+        fi
+        sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+
+
+        # Set up WIFI
+        echo "Updating Network wpa_supplicant.conf"
+        if [ ! -d "etc/wpa_supplicant" ]; then
+            sudo mkdir /etc/wpa_supplicant
+        fi
+        if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
+            sudo cp -p -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
+        fi
+        sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
-
-    ##############################################
-    # Update the Desktop background image
-    echo ""
-    echo "Updating Desktop background image"
-    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
-
-    # Update the login screen background image - handled by a sys. config file
-    # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
-    #echo "Updating login screen background image"
-    #sudo cp ${NEPI_CONFIG}/usr/share/gnome-shell/theme/ubuntu.css ${NEPI_ETC}/ubuntu.css
-    #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
-
 
     #########################################
     # Setup system services
@@ -148,13 +159,6 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
 
     echo "NEPI Engine Service Setup Complete"
 
-
-    ###########################################
-    # Set up Chrony
-    echo " "
-    echo "Configuring Chrony"
-    sudo cp -p /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
-    sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
 
     ###########################################
     # Set up SSH
@@ -183,6 +187,27 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
     sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
 
 
+
+    #############################################
+    # Set up some udev rules for plug-and-play hardware
+    echo " "
+    echo "Setting up udev rules"
+        # IQR Pan/Tilt
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
+        # USB Power Saving on Cameras Disabled
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+
+    ##############################################
+    # Update the Desktop background image
+    echo ""
+    echo "Updating Desktop background image"
+    # Update the login screen background image - handled by a sys. config file
+    # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
+    #echo "Updating login screen background image"
+    #sudo cp ${NEPI_CONFIG}/usr/share/gnome-shell/theme/ubuntu.css ${NEPI_ETC}/ubuntu.css
+    #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
+    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
+
     ###########################################
     # Set up Samba
     echo "Configuring nepi storage Samba share drive"
@@ -201,73 +226,27 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
     #sudo chown nepi:sambashare ${NEPI_STORAGE}
     #sudo chmod -R 0775 ${NEPI_STORAGE}
 
-
-    #############################################
-    # Set up some udev rules for plug-and-play hardware
+    ###########################################
+    # Set up Chrony
     echo " "
-    echo "Setting up udev rules"
-        # IQR Pan/Tilt
-    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
-        # USB Power Saving on Cameras Disabled
-    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+    echo "Configuring Chrony"
+    sudo cp -p /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+    sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
 
 
-
-
-    #############################################
-    # Setting up Baumer GenTL Producers (Genicam support)
-    echo " "
-    echo "Setting up Baumer GAPI SDK GenTL Producers"
-    # Set up the shared object links in case they weren't copied properly when this repo was moved to target
-    NEPI_BAUMER_PATH=${NEPI_ETC}/opt/baumer/gentl_producers
-    ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14
-    ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_usb.cti
-    ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14
-    ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
-
-
-    if [ ! -f "/opt/baumer" ]; then
-        sudo rm -r /opt/baumer
+    ##################################################
+    # Set up the NEPI sys env bash file
+    echo "Updating system env bash file"
+    sudo chmod +x ${NEPI_ETC}/sys_env.bash
+    sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
+    if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
+        sudo rm ${NEPI_BASE}/sys_env.bash
     fi
-    sudo ln -sf ${NEPI_ETC}/opt/baumer /opt/baumer
-    sudo chown ${NEPI_USER}:${NEPI_USER} /opt/baumer
-
-    # Disable apport to avoid crash reports on a display
-    echo "Disabling apport service"
-    sudo systemctl disable apport
-
-
-    # Set up static IP addr.
-    echo "Updating Network interfaces.d"
-    if [ ! -f "/etc/network/interfaces.d" ]; then
-        sudo cp -p -r /etc/samba//etc/network/interfaces.d /etc/network/interfaces.d.bak
-        sudo rm -r /etc/network/interfaces.d
+    sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
+    if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
+        sudo rm ${NEPI_BASE}/sys_env.bash.bak
     fi
-    sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
-
-    echo "Updating Network interfaces"
-    if [ ! -f "/etc/network/interfaces" ]; then
-        sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
-        sudo rm /etc/network/interfaces
-    fi
-    sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
-
-    # Set up DHCP
-    echo "Updating Network dhclient.conf"
-    if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
-        sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
-        sudo rm /etc/dhcp/dhclient.conf
-    fi
-    sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
-
-
-    # Set up WIFI
-    echo "Updating Network wpa_supplicant.conf"
-    if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
-        sudo cp -p -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
-        sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
-    fi
-
+    sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
 
     ################################
     # Update fstab
@@ -291,6 +270,30 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
     fi
     sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
 
+
+
+
+#############################################
+# Setting up Baumer GenTL Producers (Genicam support)
+echo " "
+echo "Setting up Baumer GAPI SDK GenTL Producers"
+
+if [ ! -f "/opt/baumer" ]; then
+    sudo rm -r /opt/baumer
+fi
+sudo cp ${NEPI_ETC}/opt/baumer /opt/baumer
+sudo chown ${NEPI_USER}:${NEPI_USER} /opt/baumer
+
+# Disable apport to avoid crash reports on a display
+echo "Disabling apport service"
+sudo systemctl disable apport
+
+# Set up the shared object links in case they weren't copied properly when this repo was moved to target
+NEPI_BAUMER_PATH=${NEPI_ETC}/opt/baumer/gentl_producers
+ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14
+ln -sf $NEPI_BAUMER_PATH/libbgapi2_usb.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_usb.cti
+ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14
+ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
 
 
    ##############
@@ -373,6 +376,24 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
     sudo cp -R -p /opt/nepi/etc ${NEPI_FACTORY_CONFIG}/
 
 
+
+##################################
+# Setting Up NEPI Docker Host Services Links
+
+echo "Setting up NEPI Docker Host services"
+
+etc_dest=/etc
+sudo cp -r ${NEPI_ETC}/lsyncd ${etc_dest}
+
+echo "" | sudo tee -a $lsyncd_file
+echo "sync {" | sudo tee -a $lsyncd_file
+echo "    default.rsync," | sudo tee -a $lsyncd_file
+echo '    source = "'${NEPI_ETC}'/",' | sudo tee -a $lsyncd_file
+echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+echo "}" | sudo tee -a $lsyncd_file
+
+
+sudo systemctl enable lsyncd
 
     # Update NEPI_FOLDER owners
     sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}

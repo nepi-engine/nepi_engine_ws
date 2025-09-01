@@ -79,9 +79,9 @@ if [ "$INTERNET_REQ" -eq 1 ]; then
             check=1
         fi
         if [ "$check" -eq 0]; then
-            echo "Connect to internet and Try Again or Quit Setup"
-            select yn in "Yes" "No"; do
-                case $yn in
+            echo "Connect to Internet and Try Again or Quit Setup"
+            select option in "Try Again" "Quit Setup"; do
+                case $option in
                     Try Again ) break;;
                     Quit Setup ) exit 1;;
                 esac

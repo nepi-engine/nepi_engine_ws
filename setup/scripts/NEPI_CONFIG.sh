@@ -33,9 +33,9 @@ export NEPI_IN_CONTAINER=0
 export NEPI_CT_USER="${NEPI_USER^^}"
 export NEPI_CT_DEVICE_ID="${NEPI_DEVICE_ID^^}"
 
-NEPI_CT_NETWORK_ID=$NEPI_NETWORK_ID
-NEPI_CT_HOST_ID=$((NEPI_HOST_ID - 1))
-export NEPI_CONTAINER_IP=${NEPI_CT_NETWORK_ID}:${NEPI_CT_HOST_ID}
+#NEPI_CT_NETWORK_ID=$NEPI_NETWORK_ID
+#NEPI_CT_HOST_ID=$((NEPI_HOST_ID - 1))
+#export NEPI_CONTAINER_IP=${NEPI_CT_NETWORK_ID}:${NEPI_CT_HOST_ID}
 
 
 ####################################################
@@ -68,18 +68,25 @@ export NEPI_CUDA_VERSION=11.8
 export NEPI_HAS_XPU=0
 
 ####################################################
-# NEPI FILE SYTEM CONFIG
+# NEPI PARTITION CONFIG
+# It is recommended that these folders be create as their own partitions
+# so that these files are not affected by any device file system changes
+
+# NEPI Docker Folder
+# Set to DOCKER to use dockers native docker image storage location
+# Set to custom path to configure a custom docker image storage loacation
+export NEPI_DOCKER=/mnt/nepi_docker
 
 # NEPI Storage and Config Folders
-# It is recommended that these be create as their own partitions
-# So that these files are not affected by any device file system changes
-export NEPI_DOCKER=/mnt/nepi_docker
 export NEPI_STORAGE=/mnt/nepi_storage
 export NEPI_CONFIG=/mnt/nepi_config
 
-export DOCKER_MIN_GB=50
-export STORAGE_MIN_GB=150
+export DOCKER_MIN_GB=100
+export STORAGE_MIN_GB=250
 export CONFIG_MIN_GB=1
+
+####################################################
+# NEPI FOLDERS CONFIG
 
 # NEPI Folders
 export NEPI_SOURCE=/home/${USER}
@@ -92,15 +99,12 @@ export NEPI_ENGINE=${NEPI_BASE}/nepi_engine
 export NEPI_ETC=${NEPI_BASE}/etc
 export NEPI_SCRIPTS=${NEPI_BASE}/scripts
 
-# NEPI Image Paths
-export NEPI_IMPORT_PATH=${NEPI_STORAGE}/nepi_images
-export NEPI_EXPORT_PATH=${NEPI_STORAGE}/nepi_images
-
 # NEPI Config Paths
 export NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
 export NEPI_FACTORY_CONFIG=${NEPI_CONFIG}/factory_cfg
 export NEPI_SYSTEM_CONFIG=${NEPI_CONFIG}/system_cfg
 export NEPI_USR_CONFIG=${NEPI_STORAGE}/user_cfg
 
-
-
+# NEPI Image Paths
+export NEPI_IMPORT_PATH=${NEPI_STORAGE}/nepi_images
+export NEPI_EXPORT_PATH=${NEPI_STORAGE}/nepi_images

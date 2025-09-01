@@ -26,7 +26,7 @@ source $NEPI_UTILS_FILE
 wait
 UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
 
-
+HELPN=${UINFO}
 
 
 
@@ -106,11 +106,7 @@ alias fcfg="cd $FCFG"
 alias scfg="cd $SCFG"
 alias ucfg="cd $UCFG"
 
-
-# Print out the nepi shortcuts
-function helpn(){
-    HELPN="${UINFO}
-
+HELPN="${HELPN}
 ################################
 ## NEPI folder shortcuts ##
 ################################
@@ -144,11 +140,15 @@ drive = /mnt/nepi_storage
 
 fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/factory_cfg
-ucfg = /mnt/nepi_storage/user_cfg
-"
+ucfg = /mnt/nepi_storage/user_cfg"
+
+# Print out the nepi shortcuts
+function helpn(){
     echo "$HELPN"
 }
 
 ##### NEPI SETUP #####
 export NEPI_REMOTE_SETUP=0
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src
+
 export PATH=${PATH}:${NEPI_SCRIPTS}

@@ -21,35 +21,35 @@ echo "Checking for rerquired NEPI Folders"
 check=0
 while [ $check -eq 0 ]
 do
-    check = 0
-    if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER -eq 1]; then
-        check = 
-        echo "Missing required folder: ${NEPI_DOCKER} with min size ${DOCKER_MIN_GB} GB"
-        check=0
-    else
-        check=1
+    check=1 
+    needs_docker=0
+    if [[ "$NEPI_DOCKER" != "DOCKER" ]]; then
+        if [! -d ${NEPI_DOCKER} -a $NEPI_IN_CONTAINER -eq 1]; then
+            check = 
+            echo "Missing required folder: ${NEPI_DOCKER} with min size ${DOCKER_MIN_GB} GB"
+            check=0
+            needs_docker=1
+        fi
     fi
 
     if [! -d ${NEPI_STORAGE} ]; then
         check = 
         echo "Missing required folder: ${NEPI_STORAGE} with min size ${STORAGE_MIN_GB} GB"
         check=0
-    else
-        check=1
     fi
 
     if [! -d ${NEPI_CONFIG} ]; then
         check = 
         echo "Missing required folder: ${NEPI_CONFIG} with min size ${STORAGE_MIN_GB} GB"
         check=0
-    else
-        check=1
     fi
 
-    if [ "$check" -eq 0]; then
-        select yn in "Yes" "No"; do
-            case $yn in
-                Create NEPI Folders ) CREATE_FOLDERS=1;;
+    if [[ "$check" -eq 0 ]]; then
+        select option in "Auto Create Folders" "Manually Create and Try Again" "Quit Setup"; do
+            echo "Choose an option to proceed"
+            case $option in
+                Auto Create Folders  ) CREATE_FOLDERS=1;; 
+                Manually Create and Try Again ) ;;
                 Quit Setup ) exit 1;;
             esac
         done
@@ -59,9 +59,11 @@ done
 
 if [[ "$CREATE_FOLDERS" -eq 1]]; then
     echo "Creating NEPI Folders at"
-    sudo mkdir $NEPI_DOCKER
-    ls -l $(dirname "$NEPI_DOCKER")
-    sudo mkdir $NEPI_STORAGE
+    if [[ "$needs_docker" -eq 1 ]]; then
+        sudo mkdir $NEPI_DOCKER
+        ls -l $(dirname "$NEPI_DOCKER")
+        sudo mkdir $NEPI_STORAGE
+    fi
     sudo chown -R ${USER}:${USER} $NEPI_STORAGE
     ls -l $(dirname "$NEPI_STORAGE")
     sudo mkdir $NEPI_CONFIG

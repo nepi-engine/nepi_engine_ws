@@ -121,9 +121,6 @@ ccache --version
 # First uninstall older version
 sudo apt-get -y install libboost-all-dev libboost-doc libboost-dev
 
-
-
-
 ####FROM THE NEPI BUILD PACKAGE
 # Install Boost
 cd $TMP
@@ -143,7 +140,7 @@ sudo ./b2
 sudo ./b2 install
 '
 
-
+'
 ### Install MSCL
 # https://github.com/LORD-MicroStrain/MSCL/blob/master/BuildScripts/buildReadme_Linux.md
 cd $TMP
@@ -153,10 +150,12 @@ mkdir build
 cd build
 cmake .. -DMSCL_BUILD_PYTHON3=ON -DBOOST_ROOT=/usr/local/include/boost
 cmake --build . -j$(nproc)
+'
 
+sudo apt-get install -y lsyncd rsync
 
 ###################################
-# Config System Services
+# Config System Services 
 sudo apt-get install openssh-server -y
 if [ $NEPI_MANAGES_SSH == 1 ]; then
     sudo systemctl enable --now sshd.service
@@ -378,6 +377,7 @@ export NVM_DIR="${NEPI_HOME}/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 nvm install 8.11.1 # RUI-required Node version as of this script creation
+
 
 
 

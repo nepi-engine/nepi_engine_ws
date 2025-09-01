@@ -9,7 +9,11 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 
-#######################
+echo "########################"
+echo "UPDATING ETC FILES FROM NEPI CONFIG"
+echo "########################"
+
+
 # Creating nepi_config.yaml file in docker config folder
 if [[ ! -v NEPI_CONFIG_FILE ]]; then
     export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
@@ -17,9 +21,11 @@ fi
 refresh_nepi_config
 wait
 
-if [ -v ETC_FOLDER ]; then
+#echo "Got ETC Folder: ${ETC_FOLDER}"
+if [ !-v ETC_FOLDER ]; then
     export ETC_FOLDER=$(dirname "$(pwd)")/resources/etc
 fi
+#echo "Using ETC Folder: ${ETC_FOLDER}"
 
 echo "Updating NEPI etc folder ${ETC_FOLDER}"
 if [ ! -d "${ETC_FOLDER}" ]; then

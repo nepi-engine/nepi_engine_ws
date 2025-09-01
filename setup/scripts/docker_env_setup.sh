@@ -29,12 +29,13 @@ cd $TMP
 # Install Software Requirments
 
 echo ""
-echo "Installing vim full package"
+echo "Installing NEPI Docker Host required software packages"
 sudo apt install vim-gtk3 -y
 #sudo update-alternatives --config vim
 vim --version | grep clipboard
 
 sudo apt install nmap -y
+sudo apt-get install -y lsyncd rsync
 
 
 #Install yq
@@ -65,7 +66,7 @@ if [ $NEPI_ARCH -eq arm64 -o $NEPI_ARCH -eq amd ]; then
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=${NEPI_ARCH}] https://download.docker.com/linux/ubuntu focal stable"
     sudo apt update
-    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo docker info
     docker compose version
 elif [ $NEPI_ARCH -eq rpi ]; then
@@ -85,27 +86,28 @@ fi
     sudo systemctl stop docker.socket
 
 ###########
-# Set docker service root location
-#https://stackoverflow.com/questions/44010124/where-does-docker-store-its-temp-files-during-extraction
-# https://forums.docker.com/t/how-do-i-change-the-docker-image-installation-directory/1169
-echo ""
-echo "Setting Docker File Path to ${NEPI_DOCKER}"
+if [[ "$NEPI_DOCKER" != "DOCKER" ]]; then
+    # Set docker service root location
+    #https://stackoverflow.com/questions/44010124/where-does-docker-store-its-temp-files-during-extraction
+    # https://forums.docker.com/t/how-do-i-change-the-docker-image-installation-directory/1169
+    echo ""
+    echo "Setting Docker File Path to ${NEPI_DOCKER}"
 
-## Update docker file
-echo "Updating docker file /etc/default/docker"
-FILE=/etc/default/docker
-KEY=DOCKER_OPTS
-UPDATE=DOCKER_OPTS="'""--dns 8.8.8.8 --dns 8.8.4.4  -g ${NEPI_DOCKER}""'"
-sed -i "/^$KEY/c\\$UPDATE" "$FILE"
+    ## Update docker file
+    echo "Updating docker file /etc/default/docker"
+    FILE=/etc/default/docker
+    KEY=DOCKER_OPTS
+    UPDATE=DOCKER_OPTS="'""--dns 8.8.8.8 --dns 8.8.4.4  -g ${NEPI_DOCKER}""'"
+    sed -i "/^$KEY/c\\$UPDATE" "$FILE"
 
 
-## Update docker service file
-echo "Updating docker file /usr/lib/systemd/system/docker.service"
-FILE=/etc/default/docker
-KEY=ExecStart
-UPDATE="ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root=${NEPI_DOCKER}"
-sed -i "/^$KEY/c\\$UPDATE" "$FILE"
-
+    ## Update docker service file
+    echo "Updating docker file /usr/lib/systemd/system/docker.service"
+    FILE=/etc/default/docker
+    KEY=ExecStart
+    UPDATE="ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root=${NEPI_DOCKER}"
+    sed -i "/^$KEY/c\\$UPDATE" "$FILE"
+fi
 
 #######
 # Edit Docker Config
@@ -170,10 +172,32 @@ sudo systemctl start docker
 sudo systemctl status docker
 sudo docker info
 '
+###################################
+# Config System Services 
+#sudo apt-get install openssh-server -y
+#sudo systemctl enable --now sshd.service
+
+
+#sudo apt-get install chrony -y
+#sudo systemctl enable --now chrony.service
+
+
+#sudo apt-get install samba -y
+#sudo systemctl enable --now samba.service
+
+
+# Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
+
+if [ $NEPI_MANAGES_NETWORK == 1 ]; then
+    sudo systemctl disable NetworkManager
+fi
+echo "Installing static IP dependencies"
+sudo apt-get install ifupdown -y 
+sudo apt-get install net-tools -y 
 
 
 ####### Add NEPI IP Addr to eth0
-sudo ip addr add ${NEPI_IP}/24 dev eth0
+#sudo ip addr add ${NEPI_IP}/24 dev eth0
 
 
 

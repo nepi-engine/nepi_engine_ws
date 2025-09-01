@@ -12,8 +12,7 @@
 
 # This file contains nepi bash utility functions
 
-UTILSN="
-#############################
+UTILSN="#############################
 ## NEPI Util Functions ##
 #############################"
 
@@ -55,9 +54,7 @@ export -f sbrc
 
 
 UTILSN="${UTILSN}
-
 ### SYSTEM UTIL FUNCTIONS
-
 pingi = Check for internet
 sbrc = Source the current users bashrc file"
 
@@ -109,18 +106,15 @@ function update_yaml_value(){
 export -f update_yaml_value
 
 function export_yaml_value(){
-    echo ""
-    echo "Exporting yaml key ${1}"
     KEY=$1
     #echo $KEY
     VARIABLE=$2
     #echo=$VARIABLE
     FILE=$3
     #echo=$FILE
-    export ${VARIABLE}=$(yq e '.'"$KEY"'' $FILE)
-    #yq e '.NEPI_HW' nepi_docker_config.yaml
-    echo $VARIABLE
-    echo "Export complete"
+    verbose=0
+    value=$(yq e '.'"$KEY"'' $FILE)
+    export ${VARIABLE}=$value
 }
 export -f export_yaml_value
 
@@ -128,18 +122,14 @@ export -f export_yaml_value
 
 #### Update Help Test
 UTILSN="${UTILSN}
-
 ### NEPI FILE UTIL FUNCTIONS
-
-write_to_yaml - Udates yaml key value given KEY VAL FILE"
-
-UTILSN="${UTILSN}
-
-### FILE UTIL FUNCTIONS
-
 ftext = Find text in files recursively
 ffile = Find filenames with text match recursively
-uvfile = Adds or Replaces value in text file given FILE KEY UPDATE strings"
+update_text_value = Adds or Replaces value in text file given FILE KEY UPDATE_STRING FILE
+update_yaml_value = Update entry in yaml file given KEY VAL FILE
+export_yaml_value = Exports the value of yaml entry to system variable given KEY VARIBLE FILE"
+
+
 
 ###################################
 # Git Util Functions
@@ -180,9 +170,7 @@ if [ 1 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
 
 
 UTILSN="${UTILSN}
-
 ### Git UTIL FUNCTIONS
-
 pushn = Add,commit,push repo changes with provided comment"
 
 fi
@@ -222,9 +210,7 @@ if which docker &> /dev/null; then
   }
   
 UTILSN="${UTILSN}
-
 ### Docker UTIL FUNCTIONS
-
 dimg = sudo docker images
 dps = sudo docker ps -a
 dstart = sudo docker start -ai <provided cont name>
@@ -319,9 +305,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     }
 
 UTILSN="${UTILSN}
-
 ### ROS UTIL FUNCTIONS
-
 sros = source ros bash setup
 ltopics = List all active topics
 ftopic = Find topics containing provided string
@@ -406,12 +390,9 @@ fi
   ./deploy_nepi_repos.sh"
 
 UTILSN="${UTILSN}
-
 ### NEPI DEV UTIL FUNCTIONS
-
 nepiclone = clone nepi main repo
 nepiclonedev = clone nepi dev repo
-
 nepidpl = deploy nepi complete
 repodpl = deploy specific repos"
 
@@ -452,12 +433,8 @@ if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
 
 # Function to updates system environment variables from nepi_config.yaml
 function refresh_nepi_config(){
-      if [[ $# -eq 0 ]]; then
-        export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
-      else
-        export NEPI_CONFIG_FILE=${1}
-      fi
-      source /home/${USER}/nepi_config.sh
+      echo "refresh_nepi_config called with config file ${NEPI_CONFIG_FILE}"
+      source /home/${USER}/.nepi_config
 }
 
 export -f refresh_nepi_config
@@ -485,14 +462,10 @@ export -f refresh_nepi_config
 
 
 UTILSN="${UTILSN}
-
 ### NEPI SYSTEM UTIL FUNCTIONS
-
 nepistart = start the nepi processes
 nepistop = stop the nepi processe
-
 mimg = Move archived nepi images to nepi image install folder
-
 nepibld = build/deploy all nepi repos and RUI
 codebld = build/deploy all nepi repos
 ruibld = build/deploy rui system"

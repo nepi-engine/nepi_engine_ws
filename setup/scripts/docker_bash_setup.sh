@@ -15,7 +15,7 @@ echo "########################"
 echo "NEPI Docker Bash Setup"
 echo "########################"
 
-source /home/${USER}/NEPI_CONFIG.sh
+source $(pwd)/NEPI_CONFIG.sh
 
 SETUP_SCRIPTS_PATH=${PWD}
 sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
@@ -25,15 +25,18 @@ sudo cp -p ${SETUP_SCRIPTS_PATH}/docker* /home/${USER}/
 
 #######################
 NEPI_CONFIG=/mnt/nepi_config
-# Creating nepi_config.yaml file in docker config folder
-export CONFIG_DEST=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
-echo "Initializing nepi_config.yaml in ${CONFIG_DEST}"
+
 if [ ! -d "${NEPI_CONFIG}" ]; then
     sudo sudo mkdir $NEPI_CONFIG
 fi
 if [ ! -d "${NEPI_CONFIG}/docker_cfg" ]; then
     sudo mkdir ${NEPI_CONFIG}/docker_cfg
 fi
+
+# Creating nepi_config.yaml file in docker config folder
+export CONFIG_DEST_FILE=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+echo "Initializing nepi_config.yaml in ${CONFIG_DEST_FILE}"
+
 source $(pwd)/nepi_config_setup.sh
 wait
 

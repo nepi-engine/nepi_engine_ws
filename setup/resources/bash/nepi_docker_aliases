@@ -29,10 +29,8 @@ UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
 ########################
 # Help Msg Initialization
 #########################
-HELPN="
-   
-${UINFO}
-"
+HELPN=${UINFO}
+
 
 #############################
 # NEPI DOCKER FUNCTIONS
@@ -40,8 +38,8 @@ ${UINFO}
 
 
 function create_tag(){
-    refresh_nepi_config
-  wait
+    refresh_nepi_config 
+    wait
     SW_VERSION=$1
     HW_TYPE=$2
     HW_MODEL=$3
@@ -419,12 +417,10 @@ function ucfg(){
 }	
 
 HELPN="${HELPN}
-
 ################################
 ## NEPI sftp folder shortcuts ##
 ################################
 drive = /mnt/nepi_storage
-
 ai = /mnt/nepi_storage/ai_models
 aifs = /opt/nepi/nepi_engine/share/nepi_aifs
 api = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
@@ -449,22 +445,18 @@ share = /opt/nepi/nepi_engine/share
 src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
 srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src
 tmp = /mnt/nepi_storage/tmp
-
 fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/system_cfg
 ucfg = /mnt/nepi_storage/user_cfg"
 
-export SETUPN="${NEPI_SOURCE}/nepi_engine_ws/setup"
+export SETUPN="${USER}/nepi_engine_ws/setup"
 alias setupn="cd ${SETUPN}"
 
 HELPN="${HELPN}
-
 ################################
 ## NEPI folder shortcuts ##
 ################################
-
-setupn = ${NEPI_SOURCE}/nepi_engine_ws/setup"
-    echo "$HELPN"
+setupn = ${USER}/nepi_engine_ws/setup"
 
 
 function helpn(){
@@ -472,5 +464,6 @@ function helpn(){
 }
 
 export NEPI_REMOTE_SETUP=0
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src
 
 

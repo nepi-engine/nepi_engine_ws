@@ -28,7 +28,7 @@ source $NUSH
 wait
 UINFO="$(. ${NUSH} && utilsn)"
 
-
+HELPN=${UINFO}
 
 
 ###################################
@@ -213,18 +213,11 @@ function ucfg(){
 
 
 
-export SETUPN="${NEPI_SOURCE}/nepi_engine_ws/setup"
-alias setupn="cd ${SETUPN}"
-
-# Print out the nepi shortcuts
-function helpn(){
-    HELPN="${UINFO}
-
+HELPN="${HELPN}
 ################################
 ## NEPI sftp folder shortcuts ##
 ################################
 drive = /mnt/nepi_storage
-
 ai = /mnt/nepi_storage/ai_models
 aifs = /opt/nepi/nepi_engine/share/nepi_aifs
 api = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
@@ -249,25 +242,26 @@ share = /opt/nepi/nepi_engine/share
 src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
 srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src
 tmp = /mnt/nepi_storage/tmp
-
 fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/system_cfg
 ucfg = /mnt/nepi_storage/user_cfg"
-}
 
-export SETUPN="${NEPI_SOURCE}/nepi_engine_ws/setup"
+export SETUPN="${USER}/nepi_engine_ws/setup"
 alias setupn="cd ${SETUPN}"
 
-# Print out the nepi shortcuts
-function helpn(){
-    HELPN="${UINFO}
-
+HELPN="${HELPN}
 ################################
 ## NEPI folder shortcuts ##
 ################################
+setupn = ${USER}/nepi_engine_ws/setup
+"
 
-setupn = ${NEPI_SOURCE}/nepi_engine_ws/setup"
+# Print out the nepi shortcuts
+function helpn(){
     echo "$HELPN"
 }
 
+export -f helpn
+
 export NEPI_REMOTE_SETUP=1
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src

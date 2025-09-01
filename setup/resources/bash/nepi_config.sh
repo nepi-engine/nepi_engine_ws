@@ -11,41 +11,40 @@
 
 
 # This File Loads and Exports NEPI Config Variables from a 
-
-echo "STARTING NEPI CONFIG UPDATE"
+#echo "#################################"
+#echo "STARTING NEPI CONFIG UPDATE"
+#echo "#################################"
 
 if [[ -v NEPI_UTILS_SOURCED ]]; then
     source /home/${USER}/.nepi_bash_utils
     wait
 fi
 
+#echo "Got NEPI Config Source File: ${NEPI_CONFIG_FILE}"
 if [[ ! -v NEPI_CONFIG_FILE ]]; then
     export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
 fi
+#echo "Using NEPI Config Source File: ${NEPI_CONFIG_FILE}"
 export SYSTEMD_SERVICE_PATH=/etc/systemd/system
 
 ########################
 # Help Msg Initialization
 #########################
 
-CONFIGN="
-#############################
+CONFIGN="#############################
 ## NEPI Config Settings ##
 #############################"
 
 
-
 function update_config_val(){
-    echo "Will try to export ${1}"
     export_yaml_value "${1}" "${1}" "$NEPI_CONFIG_FILE"
-    #v="${CONFIGN}
-    #1: $1"
-    echo "Exported ${1}"
 }
 
-keys=$(yq e 'keys | .[]' ${NEPI_CONFIG_FILE})
+keys=($(yq e 'keys | .[]' ${NEPI_CONFIG_FILE}))
 for key in "${keys[@]}"; do
     update_config_val $key
+    CONFIGN="${CONFIGN}
+    ${key}=${!key}"
 done
 
 function confign(){
@@ -53,5 +52,5 @@ function confign(){
 }
 export -f confign
 
-echo "NEPI Config Updated"
+#echo "NEPI Config Updated"
 ########################

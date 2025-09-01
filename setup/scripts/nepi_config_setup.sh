@@ -18,36 +18,41 @@ echo "########################"
 
 
 
-CONFIG_SOURCE=$(pwd)/NEPI_CONFIG.sh
-echo "Looking for NEPI_CONFIG.sh file in ${CONFIG_SOURCE}"
-if [[ ! -f "$CONFIG_SOURCE" ]]; then
+CONFIG_SOURCE_FILE=$(pwd)/NEPI_CONFIG.sh
+echo "Looking for NEPI_CONFIG.sh file in ${CONFIG_SOURCE_FILE}"
+if [[ ! -f "$CONFIG_SOURCE_FILE" ]]; then
     echo "NO NEPI CONFIG FILE FOUND"
     exit 1
 fi
-source $CONFIG_SOURCE 
+echo "Got NEPI Config Source File: ${CONFIG_SOURCE_FILE}"
+source $CONFIG_SOURCE_FILE 
 wait
 
 
-if [[ ! -v CONFIG_DEST ]]; then
-    CONFIG_DEST=${NEPI_ETC}/nepi_config.yaml
+echo "Got NEPI Config Dest File: ${CONFIG_DEST_FILE}"
+if [[ ! -v CONFIG_DEST_FILE ]]; then
+    CONFIG_DEST_FILE=${pwd}/nepi_config.yaml
 fi
+echo "Got NEPI Config Dest File: ${CONFIG_DEST_FILE}"
 
 ###############
 echo ""
-echo "Updating NEPI Config file ${CONFIG_DEST}"
-cat /dev/null > $CONFIG_DEST
+echo "Updating NEPI Config file ${CONFIG_DEST_FILE}"
+cat /dev/null > $CONFIG_DEST_FILE
 
 while IFS= read -r line || [[ -n "$line" ]]; do
   if [[ "$line" == "#"* ]]; then
-    #echo "" >> $CONFIG_DEST
-    echo "${line}" >> $CONFIG_DEST
+    #echo "" >> $CONFIG_DEST_FILE
+    echo "${line}" >> $CONFIG_DEST_FILE
   elif [[ "$line" == *"export"* ]]; then
     second_part="${line:7}"
     var_name=$(echo "$second_part" | cut -d "=" -f 1)
     var_value=$(eval "echo \$${var_name}")
-    echo "${var_name}: ${var_value}" >> $CONFIG_DEST
+    echo "${var_name}: ${var_value}" >> $CONFIG_DEST_FILE
   fi
-done < "$CONFIG_SOURCE"
+done < "$CONFIG_SOURCE_FILE"
+
+echo "Updated NEPI Config file ${CONFIG_DEST_FILE}"
 
 
 #######################
@@ -67,8 +72,8 @@ fi
 #if [ -f "$factory_config" ]; then
 #    sudo cp $factory_config ${factory_config}.bak
 #fi
-echo "Copying NEPI System Config File ${CONFIG_DEST} to ${factory_config}"
-sudo cp ${CONFIG_DEST} ${factory_config}
+echo "Copying NEPI System Config File ${CONFIG_DEST_FILE} to ${factory_config}"
+sudo cp ${CONFIG_DEST_FILE} ${factory_config}
 sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 # Copy the nepi_config.yaml file to the system_cfg folder
@@ -87,13 +92,13 @@ fi
 #if [ -f "$sys_config" ]; then
 #    sudo cp $sys_config ${sys_config}.bak
 #fi
-echo "Copying NEPI System Config File ${CONFIG_DEST} to ${sys_config}"
-sudo cp ${CONFIG_DEST} ${sys_config}
+echo "Copying NEPI System Config File ${CONFIG_DEST_FILE} to ${sys_config}"
+sudo cp ${CONFIG_DEST_FILE} ${sys_config}
 sudo chown -R ${USER}:${USER} $NEPI_CONFIG
 
 
 # Update NEPI_FOLDER owners
-sudo chown -R ${NEPI_USER}:${NEPI_USER} ${CONFIG_DEST}
+sudo chown -R ${USER}:${USER} ${CONFIG_DEST_FILE}
 
 
 ##############################################
