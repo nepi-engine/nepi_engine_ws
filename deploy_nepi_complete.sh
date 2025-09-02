@@ -106,7 +106,7 @@ elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='.git/' --exclude='.git/' --exclude '.catkin_tools/profiles/*/packages' --exclude 'nepi_3rd_party/' $(pwd)/../nepi_engine_ws ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}
 fi
 
-#echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
   echo "Deploying nepi 3rd party repos"
