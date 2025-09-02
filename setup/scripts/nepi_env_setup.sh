@@ -120,12 +120,6 @@ ccache --version
 # First uninstall older version
 sudo apt-get -y install libboost-all-dev libboost-doc libboost-dev
 
-####FROM THE NEPI BUILD PACKAGE
-# Install Boost
-cd $TMP
-sudo unzip Boost.XXX
-sudo ./b2 install
-
 sudo apt-get install -y lsyncd rsync
 
 

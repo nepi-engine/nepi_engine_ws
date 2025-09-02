@@ -108,7 +108,7 @@ if [[ "$ros_version" == 'noetic' ]]; then
     sudo bash ./install_geographiclib_datasets.sh
 
 
-    # Install ROS Microstrain
+    # Install Driver Support Libs
     cd $TMP
     sudo apt-get install -y ros-${ros_version}-nmea-navsat-driver
     sudo apt-get install -y ros-${ros_version}-microstrain-inertial-driver

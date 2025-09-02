@@ -39,7 +39,7 @@ NEPI_CFG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
 echo "Installing NEPI CONFIG ${NEPI_CFG_DEST} "
 sudo rm $NEPI_CFG_DEST
 # Create a symlink in the home folder
-ln -s ${NEPI_CFG_DEST} ${NEPI_CFG_DEST}
+sudo cp ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
 
 ###############

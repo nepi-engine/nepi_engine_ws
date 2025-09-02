@@ -19,20 +19,7 @@ export NEPI_ACTIVE_NAME=nepi
 export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-3-4
 #export NEPI_ACTIVE_ID=docker images --filter "reference=${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG}" --format "{{.ID}}"
 
-rtext="sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
-    --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
-    --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
-    --mount type=bind,source=/dev,target=/dev \
-    --cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \
-    --net=host \
-    --runtime nvidia \
-    -v /tmp/.X11-unix/:/tmp/.X11-unix \
-    ${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash"
-
-echo $rtext
-
-
-sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
+sudo docker run  -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
     --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
     --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
     --mount type=bind,source=/dev,target=/dev \
@@ -46,18 +33,21 @@ export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
 export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
 #export NEPI_RUNNING_ID=$(sudo docker inspect --format "{{.Id}}" ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} | sed 's/^sha256://')
 #echo $NEPI_RUNNING_ID
-export NEPI_RUNNING_ID=docker ps -q --filter "${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}"
+export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
 echo $NEPI_RUNNING_ID
 
-#NEPI_RUNNING_ID=78f8f95ed5b4
+sudo docker exec -it -u nepi $NEPI_RUNNING_ID /bin/bash
 
-sudo docker exec -it $NEPI_RUNNING_ID /bin/bash
+#######################################
 
+sudo docker commit $NEPI_RUNNING_ID ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}-5
+
+#################################
 sudo docker start -ai $NEPI_RUNNING_ID
 
 sudo docker stop $NEPI_RUNNING_ID
 
-sudo docker commit $NEPI_RUNNING_ID ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}-5
+
 
 
 
