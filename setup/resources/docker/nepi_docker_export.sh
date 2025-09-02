@@ -11,10 +11,17 @@
 
 # This File Exports the Running Container
 
+# This file Switches a Running Containers
 source /home/${USER}/.nepi_bash_utils
 wait
-./refresh_nepi_docker.sh
+
+NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+
+########################
+# Update NEPI Docker Variables from nepi_docker_config.yaml
+refresh_nepi_config
 wait
+########################
 
 NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
 
@@ -26,5 +33,5 @@ if [[ $RUNNING_ID != 0 ]]; then
     #echo $TAR_EXPORT_PATH
     sudo docker export $RUNNING_ID > $TAR_EXPORT_PATH
 else
-    echo "No Running Container"
+    echo "No Running NEPI Container to Export"
 fi

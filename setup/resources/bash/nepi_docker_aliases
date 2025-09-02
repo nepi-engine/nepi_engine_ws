@@ -93,22 +93,7 @@ export -f commit_nepi
 # LOGIN_NEPI
 ######################
 function login_nepi(){
-    # Connect to the Running Container
-    if [[ ! -v NEPI_RUNNING ]]; then
-        if [[ ( -v NEPI_RUNNING && "$NEPI_RUNNING" -eq 1 ) ]]; then
-            NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
-            NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
-            NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
-            echo "Logging into Running NEPI Container ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
-            sudo docker exec -it -u ${NEPI_USER} $NEPI_RUNNING_ID /bin/bash
-        else
-            echo "No Running NEPI Contatainer to Log Into"
-        fi
-    else
-        echo "Failed to Read NEPI Docker Config File"
-        exit 1
-    fi 
-    
+  . ${NEPI_DOCKER_CONFIG}/docker_cfg/nepi_docker_login.sh   
 }
 export -f login_nepi
 
@@ -116,8 +101,7 @@ export -f login_nepi
 # SWITCH_NEPI
 ######################
 function switch_nepi(){
-  . ${NEPI_DOCKER_CONFIG}/swtich_nepi_docker.sh
-
+  . ${NEPI_DOCKER_CONFIG}/nepi_docker_switch.sh
 }
 export -f switch_nepi
 
@@ -126,71 +110,7 @@ export -f switch_nepi
 ######################
 
 function import_nepi(){
-  refresh_nepi_config
-  wait
-
-  IMPORT_PATH=$IMPORT_PATH
-  echo $IMPORT_PATH
-  ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
-  #IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
-  IMAGE_FILE=$1
-  echo $IMAGE_FILE
-  ######  NEED TO: Update from IMPORT_PATH tar file
-  IMAGE_VERSION=3p2p0
-  echo $IMAGE_VERSION
-  ######
-  #INSTALL_IMAGE=${IMPORT_PATH}/${IMAGE_FILE}
-  INSTALL_IMAGE=${EXPORT_PATH}/''${IMAGE_FILE}
-  echo $INSTALL_IMAGE
-  #1) Stop any processes for INACTIVE_CONT
-  #docker stop ${RUNNING_CONT}
-  #2) Import INSTALL_IMAGE to STAGING_CONT
-  res=$(sudo docker import $INSTALL_IMAGE)
-  echo $res
-  #3) Remove INACTIVE_CONT
-  #docker stop ${ACTIVE_CONT}
-  #4) Rename STAGING_CONT to INACTIVE_CONT
-  hash=${res##*sha256:}
-  echo $hash
-  ID=${hash:0:12}
-  echo $ID
-  NEW_DATE=$(date +%Y-%m-%d)
-  echo $NEW_DATE
-  NEW_NAME=$NEPI_INACTIVE_NAME
-  echo $NEW_NAME
-  NEW_TAG=$NEPI_INACTIVE_TAG
-  printf 'Create a Custom Tag (y/n)? '
-  read answer
-  if [ "$answer" != "${answer#[Yy]}" ] ;then 
-      echo 'Enter Custom Tag: ' 
-      read CUSTOM_TAG
-      NEW_TAG=$CUSTOM_TAG
-      echo ''
-  else
-      echo ''
-  fi
-  NEW_VERSION=$IMAGE_VERSION
-  printf 'Create a Custom Version (y/n)? '
-  read answer
-  if [ "$answer" != "${answer#[Yy]}" ] ;then 
-      echo 'Enter Custom Version: ' 
-      read CUSTOM_TAG
-      NEW_TAG=$CUSTOM_TAG
-      echo ''
-  else
-      echo ''
-  fi
-
-
-  sudo docker tag $ID ${NEW_NAME}:${NEW_TAG}
-  #6) Update inactive version,tags,ids in nepi_docker_config.yaml
-  update_yaml_value "NEPI_INACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
-  update_yaml_value "NEPI_INACTIVE_DATE" "$NEW_DATE" "$NEPI_DOCKER_CONFIG_FILE"
-  update_yaml_value "NEPI_INACTIVE_TAG" "$NEW_TAG" "$NEPI_DOCKER_CONFIG_FILE"
-  update_yaml_value "NEPI_INACTIVE_ID" "$NEW_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
-  echo "  ADD SOME PRINT OUTS  "
-  refresh_nepi_config
-  wait
+  . ${NEPI_DOCKER_CONFIG}/nepi_docker_import.sh
 }
 export -f import_nepi
 
@@ -199,26 +119,7 @@ export -f import_nepi
 ######################
 
 function export_nepi(){
-  refresh_nepi_config
-  wait
-  #echo $RUNNING_CONT
-  RUN_NAME=$1
-  echo $RUN_NAME
-  RUN_ID=$2
-  echo $RUN_ID
-  if [[ "$RUN_NAME" != "None" ]]; then
-    TAR_EXPORT_PATH=${EXPORT_PATH}/''${RUN_NAME}.tar
-    #echo $TAR_EXPORT_PATH
-    sudo docker export $RUN_ID > $TAR_EXPORT_PATH
-  else
-    echo "No Running Container"
-  fi
-}
-export -f export_nepi
-
-
-function ffile(){
-    yq e -i '.' nepi_docker_config.yaml 
+  . ${NEPI_DOCKER_CONFIG}/nepi_docker_export.sh
 }
 export -f ffile
 
