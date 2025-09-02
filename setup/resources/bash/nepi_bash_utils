@@ -173,7 +173,7 @@ if which docker &> /dev/null; then
 UTILSN="${UTILSN}
 ### Docker UTIL FUNCTIONS
 dimg = sudo docker images
-dps = sudo docker ps -a
+dps = sudo docker ps -a"
 
 fi
 
@@ -361,9 +361,7 @@ repodpl = deploy specific repos"
 # NEPI SYSTEM Util Functions
 ###################################
 
-if pip show "nepi_sdk" > /dev/null 2>&1; then
-
-
+if [ 1 ]; then
 
   # NEPI stop and start shortcuts
   function nepistop(){

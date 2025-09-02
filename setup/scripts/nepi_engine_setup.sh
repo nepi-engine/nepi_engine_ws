@@ -40,7 +40,7 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
 
     # Fix USB Vidoe Rate Issue
     sudo rmmod uvcvideo
-    sudo sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
+    sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
 
 
     # Create System Folders
@@ -80,71 +80,62 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     ###################
     # Set up the default hostname
     # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
-    if [ "$NEPI_MANAGES_NETWORK" -eq 1 -a "$NEPI_IN_CONTAINER" -eq 0 ]; then
-        echo " "
-        echo "Updating system hostname"
+    if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
+        if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+            echo " "
+            echo "Updating system hostname"
 
-        #sudo chmod 744 /etc/host*
-        sudo cp -p /etc/hosts /etc/hosts.bak
-        if [ ! -f /etc/hosts ]; then
-            sudo rm /etc/hosts
+            #sudo chmod 744 /etc/host*
+            sudo cp -p /etc/hosts /etc/hosts.bak
+            if [ ! -f /etc/hosts ]; then
+                sudo rm /etc/hosts
+            fi
+            sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
+
+            sudo cp -p /etc/hostname /etc/hostname.bak
+            if [ ! -f "/etc/hostname" ]; then
+                sudo rm /etc/hostname
+            fi
+            sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
+
+
+            # Set up static IP addr.
+            echo "Updating Network interfaces.d"
+            if [ ! -f "/etc/network/interfaces.d" ]; then
+                sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
+                sudo rm -r /etc/network/interfaces.d
+            fi
+            sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
+
+            echo "Updating Network interfaces"
+            if [ ! -f "/etc/network/interfaces" ]; then
+                sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
+                sudo rm /etc/network/interfaces
+            fi
+            sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
+
+            # Set up DHCP
+            echo "Updating Network dhclient.conf"
+            if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
+                sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
+                sudo rm /etc/dhcp/dhclient.conf
+            fi
+            sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+
+
+            # Set up WIFI
+            echo "Updating Network wpa_supplicant.conf"
+            if [ ! -d "etc/wpa_supplicant" ]; then
+                sudo mkdir /etc/wpa_supplicant
+            fi
+            if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
+                sudo cp -p -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
+            fi
+            sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
         fi
-        sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
-
-        sudo cp -p /etc/hostname /etc/hostname.bak
-        if [ ! -f "/etc/hostname" ]; then
-            sudo rm /etc/hostname
-        fi
-        sudo ln -sf ${NEPI_ETC}/hostname /etc/hostname
-
-
-        # Set up static IP addr.
-        echo "Updating Network interfaces.d"
-        if [ ! -f "/etc/network/interfaces.d" ]; then
-            sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
-            sudo rm -r /etc/network/interfaces.d
-        fi
-        sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
-
-        echo "Updating Network interfaces"
-        if [ ! -f "/etc/network/interfaces" ]; then
-            sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
-            sudo rm /etc/network/interfaces
-        fi
-        sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
-
-        # Set up DHCP
-        echo "Updating Network dhclient.conf"
-        if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
-            sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
-            sudo rm /etc/dhcp/dhclient.conf
-        fi
-        sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
-
-
-        # Set up WIFI
-        echo "Updating Network wpa_supplicant.conf"
-        if [ ! -d "etc/wpa_supplicant" ]; then
-            sudo mkdir /etc/wpa_supplicant
-        fi
-        if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
-            sudo cp -p -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
-        fi
-        sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
 
-    #########################################
-    # Setup system services
-    echo ""
-    echo "Setting up NEPI Engine Service"
-
-    sudo chmod +x ${NEPI_ETC}/services/*
-
-    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
-    sudo systemctl enable nepi_engine
-
-
-    echo "NEPI Engine Service Setup Complete"
+    
 
 
     ###########################################
@@ -165,7 +156,6 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     sudo chmod 0700 ${NEPI_HOME}.ssh
     sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}.ssh
 
-    sudo cp -p 
 
     if [ ! -f "/etc/ssh/sshd_config" ]; then
         sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
@@ -174,26 +164,6 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
 
 
-
-    #############################################
-    # Set up some udev rules for plug-and-play hardware
-    echo " "
-    echo "Setting up udev rules"
-        # IQR Pan/Tilt
-    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
-        # USB Power Saving on Cameras Disabled
-    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
-
-    ##############################################
-    # Update the Desktop background image
-    echo ""
-    echo "Updating Desktop background image"
-    # Update the login screen background image - handled by a sys. config file
-    # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
-    #echo "Updating login screen background image"
-    #sudo cp ${NEPI_CONFIG}/usr/share/gnome-shell/theme/ubuntu.css ${NEPI_ETC}/ubuntu.css
-    #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
-    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
 
     ###########################################
     # Set up Samba
@@ -219,6 +189,19 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     echo "Configuring Chrony"
     sudo cp -p /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
     sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
+
+
+    ###########################################
+    # Install Modeprobe Conf
+    echo " "
+    echo "Configuring nepi_modprobe.conf"
+    etc_path = modeprobe.d/nepi_modprobe.conf
+    if [ ! -f "/etc/${etc_path}" ]; then
+        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}
+        sudo rm -r /etc/ssh/sshd_config
+    fi
+    sudo ln -sf ${NEPI_ETC}/${etc_path} /etc/${etc_path}
+
 
 
     ##################################################
@@ -258,7 +241,39 @@ if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
 
 
+    #############################################
+    # Set up some udev rules for plug-and-play hardware
+    echo " "
+    echo "Setting up udev rules"
+        # IQR Pan/Tilt
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
+        # USB Power Saving on Cameras Disabled
+    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
 
+
+    ##############################################
+    # Update the Desktop background image
+    echo ""
+    echo "Updating Desktop background image"
+    # Update the login screen background image - handled by a sys. config file
+    # No longer works as of Ubuntu 20.04 -- there are some Github scripts that could replace this -- change-gdb-background
+    #echo "Updating login screen background image"
+    #sudo cp ${NEPI_CONFIG}/usr/share/gnome-shell/theme/ubuntu.css ${NEPI_ETC}/ubuntu.css
+    #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
+    gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
+
+    #########################################
+    # Setup system services
+    echo ""
+    echo "Setting up NEPI Engine Service"
+
+    sudo chmod +x ${NEPI_ETC}/services/*
+
+    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
+    sudo systemctl enable nepi_engine
+
+
+    echo "NEPI Engine Service Setup Complete"
 
 #############################################
 # Setting up Baumer GenTL Producers (Genicam support)
@@ -283,84 +298,84 @@ ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14.1 $NEPI_BAUMER_PATH/libbgapi2_g
 ln -sf $NEPI_BAUMER_PATH/libbgapi2_gige.cti.2.14 $NEPI_BAUMER_PATH/libbgapi2_gige.cti
 
 
-   ##############
-    # Install License Manager File
-    echo "Setting Up Lic Mgr"
-    sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
-    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
-    sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
-    sudo ln -sf ${NEPI_ETC}/license/nepi_check_license.service /etc/systemd/system/
-    sudo gpg --import ${NEPI_ETC}/license/nepi_license_management_public_key.gpg
-    sudo systemctl enable nepi_check_license
-    #gpg --import /opt/nepi/config/etc/nepi/nepi_license_management_public_key.gpg
+##############
+# Install License Manager File
+echo "Setting Up Lic Mgr"
+sudo dos2unix ${NEPI_ETC}/license/nepi_check_license.py
+sudo chmod +x ${NEPI_ETC}/license/nepi_check_license_start.py
+sudo chmod +x ${NEPI_ETC}/license/nepi_check_license.py
+sudo ln -sf ${NEPI_ETC}/license/nepi_check_license.service /etc/systemd/system/
+sudo gpg --import ${NEPI_ETC}/license/nepi_license_management_public_key.gpg
+sudo systemctl enable nepi_check_license
+#gpg --import /opt/nepi/config/etc/nepi/nepi_license_management_public_key.gpg
 
 
-    #########################################
-    # Setup system scripts
-    NEPI_SCRIPTS_SOURCE=$(dirname "$(pwd)")/resources/scripts
-    echo ""
-    echo "Populating System Scripts from ${NEPI_SCRIPTS_SOURCE}"
+#########################################
+# Setup system scripts
+NEPI_SCRIPTS_SOURCE=$(dirname "$(pwd)")/resources/scripts
+echo ""
+echo "Populating System Scripts from ${NEPI_SCRIPTS_SOURCE}"
 
-    sudo cp -R ${NEPI_SCRIPTS_SOURCE} $NEPI_BASE/
-    sudo chmod +x ${NEPI_SCRIPTS}/*
+sudo cp -R ${NEPI_SCRIPTS_SOURCE} $NEPI_BASE/
+sudo chmod +x ${NEPI_SCRIPTS}/*
 
-    echo "NEPI Script Setup Complete"
+echo "NEPI Script Setup Complete"
 
-    #########
-    #- add Gieode databases to FileSystem
+#########
+#- add Gieode databases to FileSystem
 
-    #egm2008-2_5.pgm  egm2008-2_5.pgm.aux.xml  egm2008-2_5.wld  egm96-15.pgm  egm96-15.pgm.aux.xml  egm96-15.wld
-    #from
-    #https://www.3dflow.net/geoids/
-    #to
-    #/opt/nepi/databases/geoids
-    #:'
+#egm2008-2_5.pgm  egm2008-2_5.pgm.aux.xml  egm2008-2_5.wld  egm96-15.pgm  egm96-15.pgm.aux.xml  egm96-15.wld
+#from
+#https://www.3dflow.net/geoids/
+#to
+#/opt/nepi/databases/geoids
+#:'
 
-    #######################
-    # Install some premade python packages
-    #######################
-    USER_SITE_PACKAGES_PATH=$(python -m site --user-site)
-    NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
-
-
-    sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
+#######################
+# Install some premade python packages
+#######################
+USER_SITE_PACKAGES_PATH=$(python -m site --user-site)
+NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
 
 
-    # Update NEPI_BASE owner
-    # Update NEPI_FOLDER owners
-    echo "All done.  Updating folder owners"
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
-
-    ###########################################
-    # Fix some NEPI package issues
-    ###########################################
-
-    '
-    FILE=/usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
-    KEY=
-    LINE=69
-    UPDATE=
-    echo "Updating docker file ${FILE} line: ${Line}"
-    sed -i "/^$KEY/c\\$UPDATE" "$FILE"
-    '
+sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/
 
 
-    '
-    DO THIS MAYBE
-    sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
-    ## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
-    sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
-    ## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
-    '
+# Update NEPI_BASE owner
+# Update NEPI_FOLDER owners
+echo "All done.  Updating folder owners"
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_BASE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG}
+
+###########################################
+# Fix some NEPI package issues
+###########################################
+
+'
+FILE=/usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+KEY=
+LINE=69
+UPDATE=
+echo "Updating docker file ${FILE} line: ${Line}"
+sed -i "/^$KEY/c\\$UPDATE" "$FILE"
+'
 
 
-    ##############################################
-    # Populate factory config folder
-    ##############################################
-    echo "Populating NEPI Factory Config Folder ${NEPI_FACTORY_CONFIG}"
-    sudo cp -R -p /opt/nepi/etc ${NEPI_FACTORY_CONFIG}/
+'
+DO THIS MAYBE
+sudo vi /usr/lib/python3/dist-packages/Cryptodome/Util/_raw_api.py
+## Comment out line 258 "#raise OSError("Cannot load native module '%s': %s" % (name, ", ".join(attempts)))"
+sudo vi /usr/lib/python3/dist-packages/Cryptodome/Cipher/AES.py
+## Line 69 Add "if _raw_cpuid_lib is not None:" before try, then indent try and except section
+'
+
+
+##############################################
+# Populate factory config folder
+##############################################
+echo "Populating NEPI Factory Config Folder ${NEPI_FACTORY_CONFIG}"
+sudo cp -R -p /opt/nepi/etc ${NEPI_FACTORY_CONFIG}/
 
 
 
