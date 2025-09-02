@@ -13,7 +13,8 @@
 # This file sets up the OS software requirements for a NEPI File System installation
 
 
-source $(dirname "$(pwd)")/NEPI_CONFIG.sh
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
 

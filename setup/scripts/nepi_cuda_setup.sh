@@ -13,7 +13,8 @@
 # This file configigues an installed NEPI File System
 
 
-source ./NEPI_CONFIG.sh
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
 

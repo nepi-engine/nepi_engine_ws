@@ -17,8 +17,8 @@ echo "STARTING NEPI CONFIG SETUP"
 echo "########################"
 
 
-SOURCE_FILE=$(pwd)/NEPI_CONFIG.sh
-source ${SOURCE_FILE}
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
  ###################

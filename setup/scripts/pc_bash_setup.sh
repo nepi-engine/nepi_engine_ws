@@ -12,19 +12,24 @@
 
 # This file sets up nepi bash aliases and util functions
 
-source $(dirname "$(pwd)")/NEPI_CONFIG.sh
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
-###################################
-# Variables
-NEPI_SSH_DIR=~/ssh_keys
-NEPI_SSH_FILE=nepi_engine_default_private_ssh_key
+
 
 
 #############
 # Install Required Software
 
-
+NEPI_CFG_SOURCE=${CONFIG_SOURCE}
+NEPI_CFG_DEST=${HOME}/.NEPI_CONFIG
+echo "Installing NEPI Config ${NEPI_CFG_DEST} "
+if [ -f "$NEPI_CFG_DEST" ]; then
+    sudo rm $NEPI_CFG_DEST
+fi
+sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
+sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
 
 
 
@@ -75,7 +80,13 @@ wait
 . ${NEPI_ALIASES_DEST} && helpn
 
 
-#############
+
+###################################
+# SSH Setup
+
+NEPI_SSH_DIR=~/ssh_keys
+NEPI_SSH_FILE=nepi_engine_default_private_ssh_key
+
 # Add nepi ip to /etc/hosts if not there
 HOST_FILE=/etc/hosts
 NEPI_HOST="${NEPI_IP} ${NEPI_USER}"
@@ -89,7 +100,6 @@ else
 fi
 
 
-#############
 # Add nepi ssh key if not there
 echo "Checking nepi ssh key file"
 NEPI_SSH_PATH=${NEPI_SSH_DIR}/${NEPI_SSH_FILE}

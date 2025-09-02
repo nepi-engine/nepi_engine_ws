@@ -11,7 +11,8 @@
 
 # This file sets up a pc side nepi develoment environment
 
-source $(dirname "$(pwd)")/NEPI_CONFIG.sh
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
 echo "########################"
@@ -39,7 +40,7 @@ fi
 echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
 
-NEPI_CFG_SOURCE=$(pwd)/NEPI_CONFIG.sh
+NEPI_CFG_SOURCE=${CONFIG_SOURCE}
 NEPI_CFG_DEST=${HOME}/.NEPI_CONFIG
 echo "Installing NEPI Config ${NEPI_CFG_DEST} "
 if [ -f "$NEPI_CFG_DEST" ]; then

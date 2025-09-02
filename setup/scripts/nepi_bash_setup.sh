@@ -12,7 +12,8 @@
 
 # This file sets up nepi bash aliases and util functions
 
-source $(dirname "$(pwd)")/NEPI_CONFIG.sh
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
 export USER=$NEPI_USER
@@ -28,7 +29,7 @@ sudo python${PYTHON_VERSION} -m pip --version
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 
-NEPI_CFG_SOURCE=$(pwd)/NEPI_CONFIG.sh
+NEPI_CFG_SOURCE=${CONFIG_SOURCE}
 NEPI_CFG_DEST=/home/${NEPI_USER}/.NEPI_CONFIG
 echo "Installing NEPI Config ${NEPI_CFG_DEST} "
 if [ -f "$NEPI_CFG_DEST" ]; then
