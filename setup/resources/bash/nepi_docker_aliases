@@ -69,17 +69,6 @@ function run_nepi(){
 export -f run_nepi
 
 
-######################
-# RUN_DEV
-######################
-function run_nepi_dev(){
-    #Run NEPI in Dev Mode
-    export IT_MODE=1
-    export REMOVE_MODE=0
-    . ${NEPI_DOCKER_CONFIG}/start_nepi_docker.sh
-}
-export -f run_nepi_dev
-
 
 ######################
 # COMMIT_NEPI
@@ -107,8 +96,11 @@ function login_nepi(){
     # Connect to the Running Container
     if [[ ! -v NEPI_RUNNING ]]; then
         if [[ ( -v NEPI_RUNNING && "$NEPI_RUNNING" -eq 1 ) ]]; then
-            echo "Stopping Running NEPI Docker Process ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
-            dlogin $NEPI_RUNNING_ID
+            NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
+            NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
+            NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
+            echo "Logging into Running NEPI Container ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
+            sudo docker exec -it -u ${NEPI_USER} $NEPI_RUNNING_ID /bin/bash
         else
             echo "No Running NEPI Contatainer to Log Into"
         fi
