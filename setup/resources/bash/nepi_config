@@ -14,45 +14,48 @@
 #echo "#################################"
 #echo "STARTING NEPI CONFIG UPDATE"
 #echo "#################################"
+if [ ! -f "${HOME}/.NEPI_CONFIG" ]; then
+    export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
+    source ${NEPI_CONFIG}
+
+    if [[ -v NEPI_UTILS_SOURCED ]]; then
+        source /home/${USER}/.nepi_bash_utils
+        wait
+    fi
+
+    #echo "Got NEPI Config Source File: ${NEPI_CONFIG_FILE}"
+    if [[ ! -v NEPI_CONFIG_FILE ]]; then
+        export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
+    fi
+    if [[ -f "$NEPI_CONFIG_FILE" ]]; then
+        echo "Updating NEPI Config Yaml file from: ${NEPI_CONFIG_FILE}"
+        export SYSTEMD_SERVICE_PATH=/etc/systemd/system
+
+        ########################
+        # Help Msg Initialization
+        #########################
+
+        CONFIGN="#############################
+        ## NEPI Config Settings ##
+        #############################"
 
 
-if [[ -v NEPI_UTILS_SOURCED ]]; then
-    source /home/${USER}/.nepi_bash_utils
-    wait
-fi
+        function update_config_val(){
+            export_yaml_value "${1}" "${1}" "$NEPI_CONFIG_FILE"
+        }
 
-#echo "Got NEPI Config Source File: ${NEPI_CONFIG_FILE}"
-if [[ ! -v NEPI_CONFIG_FILE ]]; then
-    export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
-fi
-if [[ -f "$NEPI_CONFIG_FILE" ]]; then
-    echo "Updating NEPI Config Yaml file from: ${NEPI_CONFIG_FILE}"
-    export SYSTEMD_SERVICE_PATH=/etc/systemd/system
+        keys=($(yq e 'keys | .[]' ${NEPI_CONFIG_FILE}))
+        for key in "${keys[@]}"; do
+            update_config_val $key
+            CONFIGN="${CONFIGN}
+            ${key}=${!key}"
+        done
 
-    ########################
-    # Help Msg Initialization
-    #########################
-
-    CONFIGN="#############################
-    ## NEPI Config Settings ##
-    #############################"
-
-
-    function update_config_val(){
-        export_yaml_value "${1}" "${1}" "$NEPI_CONFIG_FILE"
-    }
-
-    keys=($(yq e 'keys | .[]' ${NEPI_CONFIG_FILE}))
-    for key in "${keys[@]}"; do
-        update_config_val $key
-        CONFIGN="${CONFIGN}
-        ${key}=${!key}"
-    done
-
-    function confign(){
-        echo "$CONFIGN"
-    }
-    export -f confign
+        function confign(){
+            echo "$CONFIGN"
+        }
+        export -f confign
+    fi
 fi
 
 #echo "NEPI Config Updated"

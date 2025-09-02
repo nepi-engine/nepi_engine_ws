@@ -101,9 +101,9 @@ echo $(pwd)
 
 
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
-  rsync -avrh  --exclude='.git/' $(pwd) ${NEPI_TARGET_SRC_DIR}/
+  rsync -avrh  --exclude='.git/' --exclude='.git/' --exclude '.catkin_tools/profiles/*/packages' --exclude 'nepi_3rd_party/' $(pwd) ${NEPI_TARGET_SRC_DIR}/
 elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='.git/' --exclude 'nepi_3rd_party/' $(pwd) ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  --exclude='.git/' --exclude='.git/' --exclude '.catkin_tools/profiles/*/packages' --exclude 'nepi_3rd_party/' $(pwd)/../nepi_engine_ws ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}
 fi
 
 #echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt

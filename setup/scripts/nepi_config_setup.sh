@@ -21,7 +21,7 @@ CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
 source ${CONFIG_SOURCE}
 wait
 
- ###################
+###################
 # Copy Config Files
 SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
 DEST_PATH=${NEPI_ETC}
@@ -34,19 +34,37 @@ sudo cp -R ${SOURCE_PATH}/* ${DEST_PATH}/
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 
 
-NEPI_CFG_SOURCE=${CONFIG_SOURCE}
-NEPI_CFG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
-echo "Installing NEPI CONFIG ${NEPI_CFG_DEST} "
-sudo rm ${NEPI_CFG_DEST}
-# Create a symlink in the home folder
-sudo cp ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
+NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
+NEPI_CONFIG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
+
+## Check Selection
+echo ""
+echo ""
+echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
+select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
+    case $ovw in
+        View_Original ) cat ${NEPI_CONFIG_DEST};;
+        View_New )  cat ${NEPI_CONFIG_SOURCE};;
+        Yes ) OVERWRITE=1; break;;
+        No ) OVERWRITE=0; break;;
+        Quit ) exit 1
+    esac
+done
+
+
+if [ "$OVERWRITE" -eq 1 ]; then
+  echo "Installing NEPI CONFIG ${NEPI_CONFIG_DEST} "
+  sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
+  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST
+else
+  source ${NEPI_CONFIG_DEST}
+fi
 
 ###############
 # Update etc config files
 NEPI_CFG_DEST=${DEST_PATH}/nepi_config.yaml
 echo ""
-echo "Updating NEPI Config file ${NEPI_CFG_DEST}"
+echo "Updating NEPI Config file ${NEPI_CFG_DEST} from ${NEPI_CONFIG_DEST}"
 cat /dev/null > ${NEPI_CFG_DEST}
 
 while IFS= read -r line || [[ -n "$line" ]]; do
@@ -58,9 +76,10 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     second_part="${line:7}"
     var_name=$(echo "$second_part" | cut -d "=" -f 1)
     var_value=$(eval "echo \$${var_name}")
+    echo "${var_name}: ${var_value}"
     echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
   fi
-done < "$CONFIG_SOURCE"
+done < "$NEPI_CONFIG_DEST"
 
 echo "Updating NEPI Config files in ${DEST_PATH}"
 source ${DEST_PATH}/update_etc_files.sh

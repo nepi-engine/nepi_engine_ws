@@ -53,33 +53,46 @@ rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg
 
 NEPI_CFG_SOURCE=${CONFIG_SOURCE}
 NEPI_CFG_DEST=${NEPI_CONFIG}/docker_cfg/.NEPI_CONFIG
-sudo cp ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
-NEPI_CFG_SOURCE=$NEPI_CFG_DEST
-NEPI_CFG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
-echo "Installing NEPI CONFIG ${NEPI_CFG_SOURCE} to ${NEPI_CFG_DEST} "
-# Create a symlink in the home folder
-sudo rm $NEPI_CFG_DEST
-ln -s ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST} 
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
+###################
+# Copy Config Files
+SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+DEST_PATH=${NEPI_ETC}
+CONFIG_USER=${NEPI_USER}
 
-###############
-# Update etc config files
-NEPI_CFG_DEST=${DEST_PATH}/etc/nepi_config.yaml
+
 echo ""
-echo "Updating NEPI Config file ${NEPI_CFG_DEST}"
-cat /dev/null > $NEPI_CFG_DEST
+echo "Populating System Folders from ${SOURCE_PATH}"
+sudo cp -R ${SOURCE_PATH}/* ${DEST_PATH}/
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 
-while IFS= read -r line || [[ -n "$line" ]]; do
-  if [[ "$line" == "#"* ]]; then
-    #echo "" >> $NEPI_CFG_DEST
-    echo "${line}" >> $NEPI_CFG_DEST
-  elif [[ "$line" == *"export"* ]]; then
-    second_part="${line:7}"
-    var_name=$(echo "$second_part" | cut -d "=" -f 1)
-    var_value=$(eval "echo \$${var_name}")
-    echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
-  fi
-done < "$CONFIG_SOURCE"
+
+NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
+NEPI_CONFIG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
+
+## Check Selection
+echo ""
+echo ""
+echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
+select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
+    case $ovw in
+        View_Original ) cat ${NEPI_CONFIG_DEST};;
+        View_New )  cat ${NEPI_CONFIG_SOURCE};;
+        Yes ) OVERWRITE=1; break;;
+        No ) OVERWRITE=0; break;;
+        Quit ) exit 1
+    esac
+done
+
+
+if [ "$OVERWRITE" -eq 1 ]; then
+  echo "Installing NEPI CONFIG ${NEPI_CONFIG_DEST} "
+  sudo rm ${NEPI_CONFIG_SOURCE}
+  # Create a symlink in the home folder
+  sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
+  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST
+else
+  source ${NEPI_CONFIG_DEST}
+fi
 
 # Create a symlink in the config folder
 NEPI_CFG_SOURCE=$NEPI_CFG_DEST
@@ -215,7 +228,16 @@ sudo chmod 0600 /home/${USER}/.ssh/authorized_keys
 sudo chmod 0700 /home/${USER}/.ssh
 sudo chown -R ${USER}:${USER} /home/${USER}/.ssh
 
-
+###########################################
+# Install Modeprobe Conf
+echo " "
+echo "Configuring nepi_modprobe.conf"
+etc_path = modeprobe.d/nepi_modprobe.conf
+if [ ! -f "/etc/${etc_path}" ]; then
+    sudo cp -p -r /etc/${etc_path} /etc/${etc_path}
+    sudo rm -r /etc/ssh/sshd_config
+fi
+sudo cp ${NEPI_ETC}/${etc_path} /etc/${etc_path}
 
 
 
