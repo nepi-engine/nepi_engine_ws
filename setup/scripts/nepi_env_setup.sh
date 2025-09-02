@@ -100,11 +100,18 @@ sudo apt-get install supervisor -y
 sudo apt-get install snapd -y
 sudo apt-get install xz-utils
 
-sudo add-apt-repository ppa:rmescandon/yq
+sudo apt install vim-gtk3 -y
+#sudo update-alternatives --config vim
+vim --version | grep clipboard
+
+sudo apt install nmap -y
+
+sudo apt-get install -y lsyncd rsync
+
+sudo add-apt-repository ppa:rmescandon/yq -y
+sudo apt update 
 sudo apt install yq -y
 
-sudo apt install vim-gtk3 -y
-sudo apt install nmap -y
 ### Install ccache
 #https://askubuntu.com/questions/470545/how-do-i-set-up-ccache
 cd $TMP

@@ -30,7 +30,7 @@ cd $TMP
 # Install Software Requirments
 
 echo ""
-echo "Installing NEPI Docker Host required software packages"
+echo "Installing NEPI required software packages"
 sudo apt install vim-gtk3 -y
 #sudo update-alternatives --config vim
 vim --version | grep clipboard
@@ -38,9 +38,6 @@ vim --version | grep clipboard
 sudo apt install nmap -y
 sudo apt-get install -y lsyncd rsync
 
-
-#Install yq
-#https://mikefarah.gitbook.io/yq/v3.x
 sudo add-apt-repository ppa:rmescandon/yq
 sudo apt update
 sudo apt install yq -y

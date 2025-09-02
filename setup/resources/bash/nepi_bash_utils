@@ -382,7 +382,7 @@ repodpl = deploy specific repos"
 # NEPI SYSTEM Util Functions
 ###################################
 
-if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
+if pip show "nepi_sdk" > /dev/null 2>&1; then
 
 
 
@@ -404,11 +404,19 @@ if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
   }
 
   # copy arvhived images to install folder
-  function mimg(){
+  function mvimg(){
       nimg=$NEPI_IMPORT_PATH
       narch=$NEPI_EXPORT_PATH
       if [[ "$nimg" != "$narch" ]]; then
         mv ${narch}/* $nimg/
+      fi
+  }
+
+  # copy arvhived images to install folder
+  function ndhcp(){
+      if [[ -f "/opt/nepi/scripts/nepi_dhcp_start" ]]; then
+        export ENABLE_NEPI_DHCP=1
+        source /opt/nepi/scripts/nepi_dhcp_start
       fi
   }
 
@@ -447,7 +455,7 @@ UTILSN="${UTILSN}
 ### NEPI SYSTEM UTIL FUNCTIONS
 nepistart = start the nepi processes
 nepistop = stop the nepi processe
-mimg = Move archived nepi images to nepi image install folder
+mvimg = Move archived nepi images to nepi image install folder
 nepibld = build/deploy all nepi repos and RUI
 codebld = build/deploy all nepi repos
 ruibld = build/deploy rui system"

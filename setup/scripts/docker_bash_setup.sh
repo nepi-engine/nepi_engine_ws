@@ -42,7 +42,7 @@ BASHRC=~/.bashrc
 
 NEPI_CFG_SOURCE=${CONFIG_SOURCE}
 NEPI_CFG_DEST=${HOME}/.NEPI_CONFIG
-echo "Installing NEPI Config ${NEPI_CFG_DEST} "
+echo "Installing NEPI Config ${NEPI_CFG_DEST}"
 if [ -f "$NEPI_CFG_DEST" ]; then
     sudo rm $NEPI_CFG_DEST
 fi

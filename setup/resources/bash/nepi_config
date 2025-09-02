@@ -25,33 +25,35 @@ fi
 if [[ ! -v NEPI_CONFIG_FILE ]]; then
     export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
 fi
-echo "Using NEPI Config Source File: ${NEPI_CONFIG_FILE}"
-export SYSTEMD_SERVICE_PATH=/etc/systemd/system
+if [[ -f "$NEPI_CONFIG_FILE" ]]; then
+    echo "Updating NEPI Config Yaml file from: ${NEPI_CONFIG_FILE}"
+    export SYSTEMD_SERVICE_PATH=/etc/systemd/system
 
-########################
-# Help Msg Initialization
-#########################
+    ########################
+    # Help Msg Initialization
+    #########################
 
-CONFIGN="#############################
-## NEPI Config Settings ##
-#############################"
+    CONFIGN="#############################
+    ## NEPI Config Settings ##
+    #############################"
 
 
-function update_config_val(){
-    export_yaml_value "${1}" "${1}" "$NEPI_CONFIG_FILE"
-}
+    function update_config_val(){
+        export_yaml_value "${1}" "${1}" "$NEPI_CONFIG_FILE"
+    }
 
-keys=($(yq e 'keys | .[]' ${NEPI_CONFIG_FILE}))
-for key in "${keys[@]}"; do
-    update_config_val $key
-    CONFIGN="${CONFIGN}
-    ${key}=${!key}"
-done
+    keys=($(yq e 'keys | .[]' ${NEPI_CONFIG_FILE}))
+    for key in "${keys[@]}"; do
+        update_config_val $key
+        CONFIGN="${CONFIGN}
+        ${key}=${!key}"
+    done
 
-function confign(){
-    echo "$CONFIGN"
-}
-export -f confign
+    function confign(){
+        echo "$CONFIGN"
+    }
+    export -f confign
+fi
 
 #echo "NEPI Config Updated"
 ########################

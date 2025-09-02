@@ -34,10 +34,10 @@ sudo cp -R ${SOURCE_PATH}/* ${DEST_PATH}/
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 
 
-NEPI_CFG_SOURCE=$SOURCE_FILE
+NEPI_CFG_SOURCE=${CONFIG_SOURCE}
 NEPI_CFG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
 echo "Installing NEPI CONFIG ${NEPI_CFG_DEST} "
-sudo rm $NEPI_CFG_DEST
+sudo rm ${NEPI_CFG_DEST}
 # Create a symlink in the home folder
 sudo cp ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
@@ -60,7 +60,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     var_value=$(eval "echo \$${var_name}")
     echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
   fi
-done < "$SOURCE_FILE"
+done < "$CONFIG_SOURCE"
 
 echo "Updating NEPI Config files in ${DEST_PATH}"
 source ${DEST_PATH}/update_etc_files.sh

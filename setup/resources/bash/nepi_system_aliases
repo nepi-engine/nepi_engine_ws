@@ -11,9 +11,9 @@
 
 # This file contains nepi system aliases and sources nepi bash utils
 
-echo "########################"
-echo "NEPI System Aliases"
-echo "########################"
+#echo "########################"
+#echo "NEPI System Aliases"
+#echo "########################"
 
 # Initialize the NEPI Configuratione
 export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
@@ -21,14 +21,14 @@ source ${NEPI_CONFIG}
 
 export USER=${NEPI_USER}
 
-export NEPI_CONFIG_FILE=/opt/nepi/etc/nepi_config.yaml
-if [[ -f "$NEPI_CONFIG_FILE" ]]; then
-    source /home/${USER}/.nepi_config
-    wait
-else
-    echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
-    exit 1
-fi
+#export NEPI_CONFIG_FILE=/opt/nepi/etc/nepi_config.yaml
+#if [[ -f "$NEPI_CONFIG_FILE" ]]; then
+#    source /home/${USER}/.nepi_config
+#    wait
+#else
+#    echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
+#    exit 1
+#fi
 #CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
@@ -67,6 +67,7 @@ export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
 export ENGINE="/opt/nepi/nepi_engine"
 export RUI="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
 export RUI_ENV="/opt/nepi/nepi_rui"
+export SCRIPTS="/opt/nepi/scripts"
 export SETUPN="/mnt/nepi_storage/nepi_src/nepi_engine_ws/setup"
 export SDK="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk"
 export SHARE="/opt/nepi/nepi_engine/share"
@@ -103,6 +104,7 @@ alias nfia="cd $NFIA"
 alias engine="cd $ENGINE"
 alias rui="cd $RUI"
 alias rui_env="cd $RUI_ENV"
+alias scripts="cd $SCRIPTS"
 alias setupn="cd $SETUPN"
 alias sdk="cd $SDK"
 alias share="cd $SHARE"
@@ -140,6 +142,7 @@ nfia = /mnt/nepi_storage/nepi_full_img_archive
 rui = /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
 rui_env = /opt/nepi/nepi_rui
 setupn = /mnt/nepi_storage/nepi_src/nepi_engine_ws/setup
+scripts = /opt/nepi/scripts
 sdk = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk
 share = /opt/nepi/nepi_engine/share
 src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
@@ -161,4 +164,4 @@ function helpn(){
 export NEPI_REMOTE_SETUP=0
 export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src
 
-export PATH=${PATH}:${NEPI_SCRIPTS}
+export PATH=${PATH}:${SCRIPTS}
