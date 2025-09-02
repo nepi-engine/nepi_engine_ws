@@ -114,7 +114,6 @@ source ~/.bashrc && echo $PATH
 ccache --version
 
 
-### Install Boost 1.6.1
 
 
 # https://stackoverflow.com/questions/8430332/uninstall-boost-and-install-another-version
@@ -127,32 +126,8 @@ cd $TMP
 sudo unzip Boost.XXX
 sudo ./b2 install
 
-# OR BUILD FROM SOURCE
-'
-sudo apt-get -y install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev
-cd $TMP
-wget http://downloads.sourceforge.net/project/boost/boost/1.68.0/boost_1_68_0.tar.gz
-tar -zxf boost_1_68_0.tar.gz
-cd boost_1_68_0
-# get the no of cpucores to make faster
-./bootstrap.sh  # this will generate ./b2
-sudo ./b2
-sudo ./b2 install
-'
-
-'
-### Install MSCL
-# https://github.com/LORD-MicroStrain/MSCL/blob/master/BuildScripts/buildReadme_Linux.md
-cd $TMP
-git clone https://github.com/LORD-MicroStrain/MSCL.git
-cd MSCL
-mkdir build
-cd build
-cmake .. -DMSCL_BUILD_PYTHON3=ON -DBOOST_ROOT=/usr/local/include/boost
-cmake --build . -j$(nproc)
-'
-
 sudo apt-get install -y lsyncd rsync
+
 
 ###################################
 # Config System Services 

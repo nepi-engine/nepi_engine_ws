@@ -398,6 +398,18 @@ sudo systemctl enable lsyncd
     # Mavros requires some additional setup for geographiclib
     sudo /opt/ros/${ROS_VERSION}/lib/mavros/install_geographiclib_datasets.sh
 
+
+
+    #########
+    # Install Driver Support Libs
+    cd $TMP
+
+    #https://www.stereolabs.com/developers/release/4.1
+    wget https://download.stereolabs.com/zedsdk/4.1/l4t35.1/jetsons
+    sudo sudo apt install zstd -y
+
+
+
     ##############################################
     echo "NEPI Engine Setup Complete"
     ##############################################

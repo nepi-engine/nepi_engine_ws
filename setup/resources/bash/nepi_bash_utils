@@ -420,9 +420,9 @@ if [ 1 ]; then #pip show "nepi_sdk" > /dev/null 2>&1; then
 
   function nepistart(){
     if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
-      sudo ${NEPI_ETC}/nepi_env/nepi_launch.sh
+      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
     else
-      sudo ${NEPI_ETC}/nepi_env/nepi_launch.sh
+      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
     fi
   }
 
