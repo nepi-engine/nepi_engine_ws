@@ -147,7 +147,7 @@ echo "Building NEPI Docker Run Command"
 
 ########
 # Initialize Run Command
-DOCKER_RUN_COMMAND=" sudo docker run --privileged -e UDEV=1 --user ${NEPI_USER} '\'
+DOCKER_RUN_COMMAND=" sudo docker run --privileged --rm -e UDEV=1 --user ${NEPI_USER} '\'
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} '\'
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} '\'
 --mount type=bind,source=/dev,target=/dev '\'
@@ -155,19 +155,6 @@ DOCKER_RUN_COMMAND=" sudo docker run --privileged -e UDEV=1 --user ${NEPI_USER} 
 -v /tmp/.X11-unix/:/tmp/.X11-unix '\'
 --net=host '\'"
 
-# Set Remove Mode
-if [[ ! -v REMOVE_MODE || ( -v REMOVE_MODE && "$REMOVE_MODE" -eq 1 ) ]]; then
-    echo "Setting Remove Mode TRUE"
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
---rm '\'"
-fi 
-
-# Set Interactive Mode
-if [[ ! -v IT_MODE || ( -v IT_MODE && "$IT_MODE" -eq 1 ) ]]; then
-    echo "Setting Interactive Mode TRUE"
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
--it '\'"
-fi 
 
 # Set Clock Settings
 if [[ "$NEPI_MANAGES_CLOCK" -eq 1 ]]; then
