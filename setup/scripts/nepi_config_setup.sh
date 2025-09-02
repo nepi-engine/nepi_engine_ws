@@ -13,92 +13,78 @@
 # This file installs the NEPI Engine File System installation
 
 echo "########################"
-echo "NEPI CONFIG SETUP"
+echo "STARTING NEPI CONFIG SETUP"
 echo "########################"
 
 
-
-CONFIG_SOURCE_FILE=$(pwd)/NEPI_CONFIG.sh
-echo "Looking for NEPI_CONFIG.sh file in ${CONFIG_SOURCE_FILE}"
-if [[ ! -f "$CONFIG_SOURCE_FILE" ]]; then
-    echo "NO NEPI CONFIG FILE FOUND"
-    exit 1
-fi
-echo "Got NEPI Config Source File: ${CONFIG_SOURCE_FILE}"
-source $CONFIG_SOURCE_FILE 
+SOURCE_FILE=$(pwd)/NEPI_CONFIG.sh
+source ${SOURCE_FILE}
 wait
 
+ ###################
+# Copy Config Files
+SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+DEST_PATH=${NEPI_ETC}
+CONFIG_USER=${NEPI_USER}
 
-echo "Got NEPI Config Dest File: ${CONFIG_DEST_FILE}"
-if [[ ! -v CONFIG_DEST_FILE ]]; then
-    CONFIG_DEST_FILE=${pwd}/nepi_config.yaml
-fi
-echo "Got NEPI Config Dest File: ${CONFIG_DEST_FILE}"
+
+echo ""
+echo "Populating System Folders from ${SOURCE_PATH}"
+sudo cp -R ${SOURCE_PATH}/* ${DEST_PATH}/
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
+
+
+NEPI_CFG_SOURCE=$SOURCE_FILE
+NEPI_CFG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
+echo "Installing NEPI CONFIG ${NEPI_CFG_DEST} "
+sudo rm $NEPI_CFG_DEST
+# Create a symlink in the home folder
+ln -s ${NEPI_CFG_DEST} ${NEPI_CFG_DEST}
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
 
 ###############
+# Update etc config files
+NEPI_CFG_DEST=${DEST_PATH}/nepi_config.yaml
 echo ""
-echo "Updating NEPI Config file ${CONFIG_DEST_FILE}"
-cat /dev/null > $CONFIG_DEST_FILE
+echo "Updating NEPI Config file ${NEPI_CFG_DEST}"
+cat /dev/null > ${NEPI_CFG_DEST}
 
 while IFS= read -r line || [[ -n "$line" ]]; do
+  #echo ${line}
   if [[ "$line" == "#"* ]]; then
-    #echo "" >> $CONFIG_DEST_FILE
-    echo "${line}" >> $CONFIG_DEST_FILE
+    #echo "" >> $NEPI_CFG_DEST
+    echo "${line}" >> $NEPI_CFG_DEST
   elif [[ "$line" == *"export"* ]]; then
     second_part="${line:7}"
     var_name=$(echo "$second_part" | cut -d "=" -f 1)
     var_value=$(eval "echo \$${var_name}")
-    echo "${var_name}: ${var_value}" >> $CONFIG_DEST_FILE
+    echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
   fi
-done < "$CONFIG_SOURCE_FILE"
+done < "$SOURCE_FILE"
 
-echo "Updated NEPI Config file ${CONFIG_DEST_FILE}"
+echo "Updating NEPI Config files in ${DEST_PATH}"
+source ${DEST_PATH}/update_etc_files.sh
+wait
 
 
 #######################
 # Copy the nepi_config.yaml file to the factory_cfg folder
-factory_config=${NEPI_CONFIG}/factory_cfg/etc/nepi_config.yaml
-echo "Updating NEPI System Config Files in ${factory_config}"
-if [ ! -d "${NEPI_CONFIG}" ]; then
-    sudo sudo mkdir $NEPI_CONFIG
-fi
-if [ ! -d "${NEPI_CONFIG}/factory_cfg" ]; then
-    sudo mkdir ${NEPI_CONFIG}/factory_cfg
-fi
-if [ ! -d "${NEPI_CONFIG}/factory_cfg/etc" ]; then
-    sudo mkdir ${NEPI_CONFIG}/factory_cfg/etc
-fi
-
-#if [ -f "$factory_config" ]; then
-#    sudo cp $factory_config ${factory_config}.bak
-#fi
-echo "Copying NEPI System Config File ${CONFIG_DEST_FILE} to ${factory_config}"
-sudo cp ${CONFIG_DEST_FILE} ${factory_config}
-sudo chown -R ${USER}:${USER} $NEPI_CONFIG
+source_config=${DEST_PATH}/nepi_config.yaml
+dest_etc=${NEPI_CONFIG}/factory_cfg/etc
+dest_config=${dest_etc}/nepi_config.yaml
+echo "Updating NEPI System Files in ${dest_config}"
+sudo mkdir -p ${dest_etc}
+sudo cp $source_config $dest_config
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_etc
 
 # Copy the nepi_config.yaml file to the system_cfg folder
-sys_config=${NEPI_CONFIG}/system_cfg/etc/nepi_config.yaml
-echo "Updating NEPI System Config Files in ${sys_config}"
-if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
-    sudo sudo mkdir $NEPI_CONFIG
-fi
-if [ ! -d "${NEPI_CONFIG}/system_cfg" ]; then
-    sudo mkdir ${NEPI_CONFIG}/system_cfg
-fi
-if [ ! -d "${NEPI_CONFIG}/system_cfg/etc" ]; then
-    sudo mkdir ${NEPI_CONFIG}/system_cfg/etc
-fi
-
-#if [ -f "$sys_config" ]; then
-#    sudo cp $sys_config ${sys_config}.bak
-#fi
-echo "Copying NEPI System Config File ${CONFIG_DEST_FILE} to ${sys_config}"
-sudo cp ${CONFIG_DEST_FILE} ${sys_config}
-sudo chown -R ${USER}:${USER} $NEPI_CONFIG
-
-
-# Update NEPI_FOLDER owners
-sudo chown -R ${USER}:${USER} ${CONFIG_DEST_FILE}
+source_config=${DEST_PATH}/nepi_config.yaml
+dest_etc=${NEPI_CONFIG}/system_cfg/etc
+dest_config=${dest_etc}/nepi_config.yaml
+echo "Updating NEPI System Files in ${dest_config}"
+sudo mkdir -p ${dest_etc}
+sudo cp $source_config $dest_config
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_etc
 
 
 ##############################################

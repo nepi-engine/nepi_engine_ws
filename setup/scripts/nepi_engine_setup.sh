@@ -15,13 +15,14 @@
 source ./NEPI_CONFIG.sh
 wait
 
-if [[ "$USER" == "$NEPI_USER" ]]; then
+if [ 1 ]; then #[[ "$USER" == "$NEPI_USER" ]]; then
     echo ""
     echo "Setting up NEPI Engine"
 
 
     #####################################
     # Add nepi aliases to bashrc
+
     source nepi_etc_update.sh
 
 
@@ -73,21 +74,6 @@ if [[ "$USER" == "$NEPI_USER" ]]; then
 
     # Clear any old nepi engine files/folders
     #source ./nepi_engine_clear.sh
-
-
-
-    ###################
-    # Copy Config Files
-    NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
-    echo ""
-    echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
-    sudo cp -R ${NEPI_ETC_SOURCE}/* ${NEPI_ETC}
-    sudo cp nepi_etc_update.sh ${NEPI_ETC}/
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ETC
-
-    CONFIG_DEST_FILE=${NEPI_ETC}/nepi_config.yaml
-    source $(pwd)/nepi_config_setup.sh
-    wait
 
 
     ###################

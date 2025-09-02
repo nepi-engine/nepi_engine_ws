@@ -12,28 +12,38 @@
 
 # This file sets up nepi bash aliases and util functions
 
-source ./NEPI_CONFIG.sh
+source $(pwd)/NEPI_CONFIG.sh
 wait
 
-mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
+export USER=$NEPI_USER
+
+mkdir -p /home/${NEPI_USER}/.local/lib/python${NEPI_PYTHON}/site-packages
 
 sudo ln -sfn /usr/bin/python${PYTHON_VERSION} /usr/bin/python3
 sudo ln -sfn /usr/bin/python3 /usr/bin/python
 sudo python${PYTHON_VERSION} -m pip --version
 
+
 #####################################
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 
-NEPI_CFG_SOURCE=${PWD}/NEPI_CONFIG.sh
-NEPI_CFG_DEST=${HOME}/.nepi_config
-echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
+NEPI_CFG_SOURCE=$(pwd)/NEPI_CONFIG.sh
+NEPI_CFG_DEST=/home/${NEPI_USER}/.NEPI_CONFIG
+echo "Installing NEPI Config ${NEPI_CFG_DEST} "
 sudo rm $NEPI_CFG_DEST
 sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
-sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CFG_DEST
+sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
+
+NEPI_CONFIG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_config
+NEPI_CONFIG_DEST=/home/${NEPI_USER}/.nepi_config
+echo "Installing NEPI config file ${NEPI_CONFIG_DEST} "
+sudo rm $NEPI_CONFIG_DEST
+sudo cp $NEPI_CONFIG_SOURCE $NEPI_CONFIG_DEST
+sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
-NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
+NEPI_UTILS_DEST=/home/${NEPI_USER}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
 sudo rm $NEPI_UTILS_DEST
 sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
@@ -69,7 +79,7 @@ if grep -qnw $BASHRC -e "##### NVM Config #####" ; then
 else
     echo ' ' | sudo tee -a $BASHRC
     echo '##### NVM Config #####' | sudo tee -a $BASHRC
-    echo 'export NVM_DIR='${HOME}'/.nvm' | sudo tee -a $BASHRC
+    echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
     echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
     echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
 fi
@@ -94,7 +104,7 @@ else
     echo 'export PYTHONPATH=${PYTHONPATH}:'${NEPI_ENGINE}'/etc' | sudo tee -a $BASHRC
     echo 'export PYTHONPATH=${PYTHONPATH}:'${NEPI_ENGINE}'/lib/nepi_drivers' | sudo tee -a $BASHRC
     echo 'export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python'${NEPI_PYTHON}'/site-packages' | sudo tee -a $BASHRC
-    echo 'export PYTHONPATH=${PYTHONPATH}:${HOME}/.local/lib/python'${NEPI_PYTHON}'/site-packages' | sudo tee -a $BASHRC
+    echo 'export PYTHONPATH=${PYTHONPATH}:/home/${NEPI_USER}/.local/lib/python'${NEPI_PYTHON}'/site-packages' | sudo tee -a $BASHRC
 fi
 
 if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
@@ -111,7 +121,7 @@ if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
     fi
 fi
 
-sudo chmod 755 ${HOME}/.*
+sudo chmod 755 /home/${NEPI_USER}/.*
 
 ROOTRC=/root/.bashrc
 sudo cp $BASHRC /root/.bashrc

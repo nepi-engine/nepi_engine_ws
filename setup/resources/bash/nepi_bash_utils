@@ -12,6 +12,11 @@
 
 # This file contains nepi bash utility functions
 
+#echo "########################"
+#echo "STARTING NEPI Bash Utils"
+#echo "########################"
+
+
 UTILSN="#############################
 ## NEPI Util Functions ##
 #############################"

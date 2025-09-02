@@ -8,7 +8,7 @@
 ##
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
-
+sbrc
 export NEPI_USER=$NEPI_USER
 export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
 
@@ -16,7 +16,7 @@ export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
 
 export NEPI_ACTIVE_NAME=nepi
-export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-3
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-3-4
 #export NEPI_ACTIVE_ID=docker images --filter "reference=${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG}" --format "{{.ID}}"
 
 rtext="sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
@@ -42,34 +42,22 @@ sudo docker run --rm -it --privileged -e UDEV=1 --user $NEPI_USER --gpus all \
     -v /tmp/.X11-unix/:/tmp/.X11-unix \
     ${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash
 
-
-
-
 export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
 export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
-#export NEPI_RUNNING_ID=docker ps -q --filter "${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}"
-
-export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
-export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
-export NEPI_RUNNING_ID=$(sudo docker inspect --format "{{.Id}}" ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} | sed 's/^sha256://')
+#export NEPI_RUNNING_ID=$(sudo docker inspect --format "{{.Id}}" ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} | sed 's/^sha256://')
+#echo $NEPI_RUNNING_ID
+export NEPI_RUNNING_ID=docker ps -q --filter "${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}"
 echo $NEPI_RUNNING_ID
-NEPI_RUNNING_ID=78f8f95ed5b4
+
+#NEPI_RUNNING_ID=78f8f95ed5b4
+
 sudo docker exec -it $NEPI_RUNNING_ID /bin/bash
 
-export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
-export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
-export NEPI_RUNNING_ID=$(sudo docker inspect --format "{{.Id}}" ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} | sed 's/^sha256://')
-echo $NEPI_RUNNING_ID
-NEPI_RUNNING_ID=78f8f95ed5b4
-udo docker start -ai $NEPI_RUNNING_ID
+sudo docker start -ai $NEPI_RUNNING_ID
 
-export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
-export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
-export NEPI_RUNNING_ID=$(sudo docker inspect --format "{{.Id}}" ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG} | sed 's/^sha256://')
-echo $NEPI_RUNNING_ID
-NEPI_RUNNING_ID=78f8f95ed5b4
-sudo docker exec -it $NEPI_RUNNING_ID /bin/bash
+sudo docker stop $NEPI_RUNNING_ID
 
+sudo docker commit $NEPI_RUNNING_ID ${NEPI_RUNNING_NAME}:${NEPI_RUNNING_TAG}-5
 
 
 

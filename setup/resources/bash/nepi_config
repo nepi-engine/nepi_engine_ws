@@ -15,6 +15,7 @@
 #echo "STARTING NEPI CONFIG UPDATE"
 #echo "#################################"
 
+
 if [[ -v NEPI_UTILS_SOURCED ]]; then
     source /home/${USER}/.nepi_bash_utils
     wait
@@ -24,7 +25,7 @@ fi
 if [[ ! -v NEPI_CONFIG_FILE ]]; then
     export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
 fi
-#echo "Using NEPI Config Source File: ${NEPI_CONFIG_FILE}"
+echo "Using NEPI Config Source File: ${NEPI_CONFIG_FILE}"
 export SYSTEMD_SERVICE_PATH=/etc/systemd/system
 
 ########################

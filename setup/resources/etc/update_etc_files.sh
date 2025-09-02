@@ -13,30 +13,6 @@ echo "########################"
 echo "UPDATING ETC FILES FROM NEPI CONFIG"
 echo "########################"
 
-
-# Creating nepi_config.yaml file in docker config folder
-if [[ ! -v NEPI_CONFIG_FILE ]]; then
-    export NEPI_CONFIG_FILE=$(pwd)/nepi_config.yaml
-fi
-refresh_nepi_config
-wait
-
-#echo "Got ETC Folder: ${ETC_FOLDER}"
-if [ !-v ETC_FOLDER ]; then
-    export ETC_FOLDER=$(dirname "$(pwd)")/resources/etc
-fi
-#echo "Using ETC Folder: ${ETC_FOLDER}"
-
-echo "Updating NEPI etc folder ${ETC_FOLDER}"
-if [ ! -d "${ETC_FOLDER}" ]; then
-    echo "ETC folder ${ETC_FOLDER} not found"
-    exit 1
-fi
-
-
-# This file installs the updates a value in an etc file
-
-
 function update_text_value(){
   KEY=$2
   UPDATE=$3

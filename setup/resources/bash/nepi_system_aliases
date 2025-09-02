@@ -11,6 +11,16 @@
 
 # This file contains nepi system aliases and sources nepi bash utils
 
+echo "########################"
+echo "NEPI System Aliases"
+echo "########################"
+
+# Initialize the NEPI Configuratione
+source /home/${USER}/.NEPI_CONFIG
+wait
+
+export USER=${NEPI_USER}
+
 export NEPI_CONFIG_FILE=/opt/nepi/etc/nepi_config.yaml
 if [[ -f "$NEPI_CONFIG_FILE" ]]; then
     source /home/${USER}/.nepi_config

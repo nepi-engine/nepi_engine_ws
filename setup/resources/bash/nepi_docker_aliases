@@ -11,15 +11,13 @@
 
 # This file contains nepi docker host system aliases and sources nepi bash utils
 
-export NEPI_CONFIG_FILE=/mnt/nepi_config/docker_cfg/nepi_config.yaml
-if [[ -f "$NEPI_CONFIG_FILE" ]]; then
-    source /home/${USER}/.nepi_config
-    wait
-else
-    echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
-    exit 1
-fi
-#CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
+#echo "########################"
+#echo "NEPI Docker Aliases"
+#echo "########################"
+
+source ${HOME}/.NEPI_CONFIG
+wait
+
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
@@ -58,7 +56,7 @@ function config_nepi(){
     #Run NEPI Docker Config Script
     . /home/${USER}/docker_config_setup.sh
 }
-export -f run_nepi
+export -f config_nepi
 
 ######################
 # RUN_NEPI

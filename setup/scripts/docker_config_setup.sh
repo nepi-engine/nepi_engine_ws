@@ -16,9 +16,10 @@ echo "########################"
 echo "NEPI Docker Config Setup"
 echo "########################"
 
-source $(pwd)/NEPI_CONFIG.sh
-wait
 
+SOURCE_FILE=$(pwd)/NEPI_CONFIG.sh
+source ${SOURCE_FILE}
+wait
 
 
 #####################################
@@ -32,23 +33,16 @@ sudo cp -R -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
 
 sudo chown -R ${USER}:${USER} ${NEPI_DOCKER_CONFIG}
 
-CONFIG_DEST_FILE=${NEPI_DOCKER_CONFIG}/nepi_config.yaml
-source $(pwd)/nepi_config_setup.sh
-wait
-
-sudo chown -R ${USER}:${USER} ${CONFIG_DEST_FILE}
-
-#source $(pwd)/docker_bash_config.sh
-#wait
-
 ###################
-# Initialize Docker Config ETC Folder
-NEPI_ETC_SOURCE=$(dirname "$(pwd)")/resources/etc
+# Copy Config Files
+SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+DEST_PATH=${NEPI_CONFIG}/docker_cfg
+CONFIG_USER=${USER}
+
 echo ""
-echo "Populating System Folders from ${NEPI_ETC_SOURCE}"
-sudo cp -R ${NEPI_ETC_SOURCE} ${NEPI_DOCKER_CONFIG}
-sudo cp nepi_etc_update.sh ${NEPI_DOCKER_CONFIG}/
-sudo chown -R ${USER}:${USER} $NEPI_DOCKER_CONFIG
+echo "Populating System Folders from ${SOURCE_PATH}"
+sudo cp -R ${SOURCE_PATH} ${DEST_PATH}/etc
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 
 # Rsync etc folder from factory folder
 rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg
@@ -56,11 +50,70 @@ rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg
 # Rsync etc folder from system folder
 rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg
 
-docker_config=${NEPI_DOCKER_CONFIG}/nepi_config.yaml
-etc_config=${NEPI_DOCKER_CONFIG}/etc/nepi_config.yaml
-echo "Copying NEPI System Config File ${docker_config} to ${etc_config}"
-sudo cp ${docker_config} ${etc_config}
-sudo chown -R ${USER}:${USER} $NEPI_CONFIG
+
+NEPI_CFG_SOURCE=${SOURCE_FILE}
+NEPI_CFG_DEST=${NEPI_CONFIG}/docker_cfg/.NEPI_CONFIG
+sudo cp ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
+NEPI_CFG_SOURCE=$NEPI_CFG_DEST
+NEPI_CFG_DEST=/home/${CONFIG_USER}/.NEPI_CONFIG
+echo "Installing NEPI CONFIG ${NEPI_CFG_SOURCE} to ${NEPI_CFG_DEST} "
+# Create a symlink in the home folder
+sudo rm $NEPI_CFG_DEST
+ln -s ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST} 
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
+
+###############
+# Update etc config files
+NEPI_CFG_DEST=${DEST_PATH}/etc/nepi_config.yaml
+echo ""
+echo "Updating NEPI Config file ${NEPI_CFG_DEST}"
+cat /dev/null > $NEPI_CFG_DEST
+
+while IFS= read -r line || [[ -n "$line" ]]; do
+  if [[ "$line" == "#"* ]]; then
+    #echo "" >> $NEPI_CFG_DEST
+    echo "${line}" >> $NEPI_CFG_DEST
+  elif [[ "$line" == *"export"* ]]; then
+    second_part="${line:7}"
+    var_name=$(echo "$second_part" | cut -d "=" -f 1)
+    var_value=$(eval "echo \$${var_name}")
+    echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
+  fi
+done < "$SOURCE_FILE"
+
+# Create a symlink in the config folder
+NEPI_CFG_SOURCE=$NEPI_CFG_DEST
+NEPI_CFG_DEST=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+sudo rm $NEPI_CFG_DEST
+ln -s ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST} 
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
+
+source ${DEST_PATH}/etc/update_etc_files.sh
+wait
+
+echo "Updated NEPI Config file ${NEPI_CONFIG_FILE}"
+
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${DEST_PATH}
+
+#######################
+# Copy the nepi_config.yaml file to the factory_cfg folder
+source_config=${DEST_PATH}/etc/nepi_config.yaml
+dest_etc=${NEPI_CONFIG}/factory_cfg/etc
+dest_config=${dest_etc}/nepi_config.yaml
+echo "Updating NEPI System Files in ${dest_config}"
+sudo mkdir -p ${dest_etc}
+sudo cp $source_config $dest_config
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_etc
+
+# Copy the nepi_config.yaml file to the system_cfg folder
+source_config=${DEST_PATH}/etc/nepi_config.yaml
+dest_etc=${NEPI_CONFIG}/system_cfg/etc
+dest_config=${dest_etc}/nepi_config.yaml
+echo "Updating NEPI System Files in ${dest_config}"
+sudo mkdir -p ${dest_etc}
+sudo cp $source_config $dest_config
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_etc
+
 
 
 ##################################
@@ -126,13 +179,7 @@ fi
 #fi
 
 
-# Rsync etc folder to system folder
-export NEPI_CONFIG_FILE=$CONFIG_DEST_FILE
-export ETC_FOLDER=${NEPI_DOCKER_CONFIG}/etc
-#source $(pwd)/nepi_etc_update.sh
-#wait
 
-rsync -arh  ${NEPI_CONFIG}/docker_cfg/etc ${NEPI_CONFIG}/system_cfg
 
 sudo cp -r ${etc_source}/lsyncd ${etc_dest}
 if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
