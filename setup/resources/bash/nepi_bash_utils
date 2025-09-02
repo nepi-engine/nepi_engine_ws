@@ -304,18 +304,17 @@ fi
 # NEPI DEV Util Functions
 ###################################
 
-  SOURCE_FOLDER=${NEPI_SOURCE}/nepi_engine_ws
 
   function nepiclone(){
-  if [ ! -d "${NEPI_SOURCE}" ]; then
+  if [ ! -d "${HOME}/nepi_engine_ws" ]; then
     sudo mkdir $NEPI_SOURCE
     sudo chmod -R ${USER}:${USER} $NEPI_SOURCE
   fi
-  if [ -d "${NEPI_SOURCE}" ]; then
+  if [ -d "${HOME}/nepi_engine_ws" ]; then
     if [ -d "${SOURCE_FOLDER}" ]; then
       echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
     else
-      cd ${NEPI_SOURCE}
+      cd ${HOME}/nepi_engine_ws
       BRANCH=main
       if [[ "$NEPI_ROS" == "NOETIC" ]]; then
         SUBBRANCH=ros1_main
@@ -334,15 +333,15 @@ fi
   }
 
   function nepiclonedev(){
-  if [ ! -d "${NEPI_SOURCE}" ]; then
+  if [ ! -d "${HOME}/nepi_engine_ws" ]; then
     sudo mkdir $NEPI_SOURCE
     sudo chmod -R ${USER}:${USER} $NEPI_SOURCE
   fi
-  if [ -d "${NEPI_SOURCE}" ]; then
+  if [ -d "${HOME}/nepi_engine_ws" ]; then
     if [ -d "${SOURCE_FOLDER}" ]; then
       echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
     else
-      cd ${NEPI_SOURCE}
+      cd ${HOME}/nepi_engine_ws
       if [[ "$NEPI_ROS" == "NOETIC" ]]; then
         BRANCH=ros1_develop
         SUBBRANCH=ros1_main

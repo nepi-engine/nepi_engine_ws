@@ -15,8 +15,8 @@
 #echo "NEPI Docker Aliases"
 #echo "########################"
 
-source ${HOME}/.NEPI_CONFIG
-wait
+export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
+source ${NEPI_CONFIG}
 
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils

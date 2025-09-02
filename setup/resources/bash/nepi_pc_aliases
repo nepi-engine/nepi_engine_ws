@@ -11,7 +11,8 @@
 
 
 # This file contains nepi pc dev aliases and sources nepi bash utils
-source ${HOME}/.NEPI_CONFIG
+export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
+source ${NEPI_CONFIG}
 
 
 ### SOURCE NEPI UTIL FUNCTIONS

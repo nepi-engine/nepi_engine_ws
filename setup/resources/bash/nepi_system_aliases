@@ -16,8 +16,8 @@ echo "NEPI System Aliases"
 echo "########################"
 
 # Initialize the NEPI Configuratione
-source /home/${USER}/.NEPI_CONFIG
-wait
+export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
+source ${NEPI_CONFIG}
 
 export USER=${NEPI_USER}
 
