@@ -10,17 +10,17 @@
 
 refresh_nepi_config
 
-# Start NEPI Time Management Processes
-ENABLE_DHCP=0
-if [[ -v ENABLE_NEPI_DHCP ]]; then
+# Start NEPI DHCP process
+ENABLE_DHCP=1
+if [ -v ENABLE_NEPI_DHCP ]; then
   ENABLE_DHCP=$ENABLE_NEPI_DHCP
-elif [[ -v NEPI_DHCP_ON_START ]]; then
+elif [ -v NEPI_DHCP_ON_START ]; then
    ENABLE_DHCP=$NEPI_DHCP_ON_START
 fi
 
-if [[ "$ENABLE_DHCP" -eq 1]]; then
-  if [[ -v NEPI_MANAGES_NETWORK ]]; then
-    if [[ "$NEPI_MANAGES_NETWORK" -eq 1] ]; then
+if [ "$ENABLE_DHCP" -eq 1 ]; then
+  if [ -v NEPI_MANAGES_NETWORK ]; then
+    if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
       echo "Enabling NEPI DHCP."
       sudo dhclient -nw
     else
@@ -31,4 +31,5 @@ if [[ "$ENABLE_DHCP" -eq 1]]; then
     echo "NEPI Network Management Disabled."
   fi
 fi
+
 

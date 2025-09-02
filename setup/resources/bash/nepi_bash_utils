@@ -120,6 +120,7 @@ function export_yaml_value(){
     verbose=0
     value=$(yq e '.'"$KEY"'' $FILE)
     export ${VARIABLE}=$value
+    #echo "${VARIABLE}=${value}"
 }
 export -f export_yaml_value
 
@@ -139,7 +140,10 @@ export_yaml_value = Exports the value of yaml entry to system variable given KEY
 ###################################
 # Git Util Functions
 ###################################
-PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\033[0;32m$(__git_ps1 " (%s)")\033[0m\$ '
+
+function gitn(){
+  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\033[0;32m$(__git_ps1 " (%s)")\033[0m\$ '
+}
 
 function pushn(){
 git add --all
@@ -151,6 +155,7 @@ git push
 
 UTILSN="${UTILSN}
 ### Git UTIL FUNCTIONS
+gitn = adds git repo info to terminal prompt
 pushn = Add,commit,push repo changes with provided comment"
 
 
@@ -173,7 +178,7 @@ if which docker &> /dev/null; then
 UTILSN="${UTILSN}
 ### Docker UTIL FUNCTIONS
 dimg = sudo docker images
-dps = sudo docker ps -a
+dps = sudo docker ps -a"
 
 fi
 
@@ -361,9 +366,7 @@ repodpl = deploy specific repos"
 # NEPI SYSTEM Util Functions
 ###################################
 
-if pip show "nepi_sdk" > /dev/null 2>&1; then
-
-
+if [ 1 ]; then
 
   # NEPI stop and start shortcuts
   function nepistop(){

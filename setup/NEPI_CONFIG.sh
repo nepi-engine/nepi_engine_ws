@@ -1,6 +1,9 @@
 ####################################################
 # NEPI USER AND DEVICE CONFIG
 export NEPI_USER=nepi
+export NEPI_USER_PW=nepi
+export NEPI_ADMIN=nepiadmin
+export NEPI_ADMIN_PW=nepiadmin
 export NEPI_DEVICE_ID=device1
 
 ####################################################

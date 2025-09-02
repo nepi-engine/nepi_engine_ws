@@ -118,6 +118,8 @@ alias fcfg="cd $FCFG"
 alias scfg="cd $SCFG"
 alias ucfg="cd $UCFG"
 
+alias nfw="cat /opt/nepi/nepi_engine/etc/fw_version.txt"
+
 HELPN="${HELPN}
 ################################
 ## NEPI folder shortcuts ##
@@ -153,7 +155,9 @@ drive = /mnt/nepi_storage
 
 fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/factory_cfg
-ucfg = /mnt/nepi_storage/user_cfg"
+ucfg = /mnt/nepi_storage/user_cfg
+
+nfw = Show Installed NEPI FW Version"
 
 # Print out the nepi shortcuts
 function helpn(){
