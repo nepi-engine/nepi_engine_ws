@@ -12,7 +12,7 @@
 
 # This file sets up nepi bash aliases and util functions
 
-source $(pwd)/NEPI_CONFIG.sh
+source $(dirname "$(pwd)")/NEPI_CONFIG.sh
 wait
 
 export USER=$NEPI_USER
@@ -31,13 +31,18 @@ echo "Updating NEPI aliases file"
 NEPI_CFG_SOURCE=$(pwd)/NEPI_CONFIG.sh
 NEPI_CFG_DEST=/home/${NEPI_USER}/.NEPI_CONFIG
 echo "Installing NEPI Config ${NEPI_CFG_DEST} "
-sudo rm $NEPI_CFG_DEST
+if [ -f "$NEPI_CFG_DEST" ]; then
+    sudo rm $NEPI_CFG_DEST
+fi
 sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
 sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
 
 NEPI_CONFIG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_config
 NEPI_CONFIG_DEST=/home/${NEPI_USER}/.nepi_config
 echo "Installing NEPI config file ${NEPI_CONFIG_DEST} "
+if [ -f "$NEPI_CONFIG_DEST" ]; then
+    sudo rm $NEPI_CONFIG_DEST
+fi
 sudo rm $NEPI_CONFIG_DEST
 sudo cp $NEPI_CONFIG_SOURCE $NEPI_CONFIG_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
@@ -45,7 +50,9 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_CONFIG_DEST
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=/home/${NEPI_USER}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
-sudo rm $NEPI_UTILS_DEST
+if [ -f "$NEPI_UTILS_DEST" ]; then
+    sudo rm $NEPI_UTILS_DEST
+fi
 sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_UTILS_DEST
 
@@ -55,8 +62,9 @@ echo ""
 echo "Populating System Folders from ${NEPI_ALIASES_SOURCE}"
 echo ""
 echo "Installing NEPI aliases file to ${NEPI_ALIASES_DEST} "
-sudo rm ${NEPI_ALIASES_DEST}
-
+if [ -f "$NEPI_ALIASES_DEST" ]; then
+    sudo rm ${NEPI_ALIASES_DEST}
+fi
 sudo cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
 

@@ -12,10 +12,7 @@
 
 # This file installs the NEPI Engine File System installation
 
-SETUP_SCRIPTS_PATH=${PWD}/scripts
-sudo chmod +x ${SETUP_SCRIPTS_PATH}/*
-
-source ./NEPI_CONFIG.sh
+source $(dirname "$(pwd)")/NEPI_CONFIG.sh
 wait
 
 

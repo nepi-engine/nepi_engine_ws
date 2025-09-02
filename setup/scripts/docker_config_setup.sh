@@ -17,8 +17,8 @@ echo "NEPI Docker Config Setup"
 echo "########################"
 
 
-SOURCE_FILE=$(pwd)/NEPI_CONFIG.sh
-source ${SOURCE_FILE}
+CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
 wait
 
 
@@ -51,7 +51,7 @@ rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg
 rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg
 
 
-NEPI_CFG_SOURCE=${SOURCE_FILE}
+NEPI_CFG_SOURCE=${CONFIG_SOURCE}
 NEPI_CFG_DEST=${NEPI_CONFIG}/docker_cfg/.NEPI_CONFIG
 sudo cp ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
 NEPI_CFG_SOURCE=$NEPI_CFG_DEST
@@ -79,7 +79,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     var_value=$(eval "echo \$${var_name}")
     echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
   fi
-done < "$SOURCE_FILE"
+done < "$CONFIG_SOURCE"
 
 # Create a symlink in the config folder
 NEPI_CFG_SOURCE=$NEPI_CFG_DEST

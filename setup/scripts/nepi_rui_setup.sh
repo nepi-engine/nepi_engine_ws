@@ -12,7 +12,7 @@
 
 # This file installs the NEPI RUI File System installation
 
-source ./NEPI_CONFIG.sh
+source $(dirname "$(pwd)")/NEPI_CONFIG.sh
 wait
 
 

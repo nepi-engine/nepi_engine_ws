@@ -9,7 +9,7 @@
 ##
 
 # This file installs nepi engine workspace repo
-source ./NEPI_CONFIG.sh
+source $(dirname "$(pwd)")/NEPI_CONFIG.sh
 wait
 
 echo ""
