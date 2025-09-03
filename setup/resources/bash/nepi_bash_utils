@@ -47,7 +47,7 @@ export -f pingi
 
 # ping nepi
 function pingn(){
-  ping $NEPI_IP
+  ping ${NEPI_IP}
 }
 export -f pingn
 
