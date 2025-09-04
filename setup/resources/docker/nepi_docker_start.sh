@@ -80,7 +80,20 @@ fi
 
 # Finish Run Command
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
+<<<<<<< HEAD
 ${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash"
+=======
+${NEPI_ACTIVE_NAME}:${NEPI_ACTIVE_TAG} /bin/bash '\'
+-c 'nepi_rui_start'"
+
+#-c 'nepi_start_all'"
+
+export NEPI_RUNNING_NAME=$NEPI_ACTIVE_NAME
+export NEPI_RUNNING_TAG=$NEPI_ACTIVE_TAG
+export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | awk '{print $1}')
+echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
+
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 
 ########################
 # Run NEPI Docker

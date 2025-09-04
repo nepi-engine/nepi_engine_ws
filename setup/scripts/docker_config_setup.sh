@@ -48,9 +48,14 @@ DEST_PATH=${NEPI_CONFIG}/docker_cfg
 CONFIG_USER=${USER}
 
 echo ""
+<<<<<<< HEAD
 echo "Populating System Folders from ${SOURCE_PATH} to ${DEST_PATH}"
 sudo cp -R ${SOURCE_PATH} ${DEST_PATH}/
 
+=======
+echo "Populating System Folders from ${SOURCE_PATH}"
+sudo cp -R ${SOURCE_PATH} ${DEST_PATH}/
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 
 # Rsync etc folder from factory folder
@@ -58,8 +63,11 @@ sudo rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg/
 
 # Rsync etc folder from system folder
 # sudo rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg/
+<<<<<<< HEAD
 
 # Update Deployed Config
+=======
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 
 NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
 echo $NEPI_CONFIG_SOURCE
@@ -90,10 +98,15 @@ done
 
 
 if [ "$OVERWRITE" -eq 1 ]; then
+<<<<<<< HEAD
   echo "Updating NEPI CONFIG ${NEPI_CONFIG_DEST} "
+=======
+  echo "Installing NEPI CONFIG ${NEPI_CONFIG_DEST} "
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
   sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
 fi
 
+<<<<<<< HEAD
 echo $NEPI_CONFIG_DEST_PATH
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
@@ -102,6 +115,12 @@ export_config_file ${NEPI_CONFIG_DEST}
 ###############
 # Update etc config files
 NEPI_CFG_DEST=${DEST_PATH}/etc/nepi_system_config.yaml
+=======
+
+###############
+# Update etc config files
+NEPI_CFG_DEST=${DEST_PATH}/etc/nepi_config.yaml
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 echo ""
 echo "Updating NEPI Config file ${NEPI_CFG_DEST} from ${NEPI_CONFIG_DEST}"
 cat /dev/null > ${NEPI_CFG_DEST}
@@ -125,6 +144,7 @@ echo "Updating NEPI Config files in ${NEPI_CFG_DEST}"
 source ${DEST_PATH}/etc/update_etc_files.sh
 wait
 
+<<<<<<< HEAD
 
 
 # Create simlinks
@@ -156,6 +176,18 @@ echo "Creating NEPI symlink from ${NEPI_CFG_SOURCE} to ${NEPI_CFG_DEST}"
 sudo ln -sf ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST} 
 
 ###
+=======
+# Create a simlink 
+NEPI_CFG_SOURCE=${NEPI_CONFIG}/docker_cfg/etc/nepi_config.yaml
+NEPI_CFG_DEST=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
+
+if [ -f "$NEPI_CFG_DEST" ]; then
+    sudo rm ${NEPI_CFG_DEST}
+fi
+echo "Creating NEPI Config link from ${NEPI_CFG_SOURCE} to ${NEPI_CFG_DEST}"
+sudo ln -sf ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST} 
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CFG_DEST
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${DEST_PATH}
 
 echo "Updated NEPI Config file ${NEPI_CFG_DEST}"
@@ -167,19 +199,33 @@ echo "Updated NEPI Config file ${NEPI_CFG_DEST}"
 # Rsync etc folder from factory folder
 sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc  ${NEPI_CONFIG}/factory_cfg/
 
+<<<<<<< HEAD
 # Copy the nepi_system_config.yaml file to the factory_cfg folder
 #source_config=${DEST_PATH}/etc/nepi_system_config.yaml
 #dest_etc=${NEPI_CONFIG}/factory_cfg/etc
 #dest_config=${dest_etc}/nepi_system_config.yaml
+=======
+# Copy the nepi_config.yaml file to the factory_cfg folder
+#source_config=${DEST_PATH}/etc/nepi_config.yaml
+#dest_etc=${NEPI_CONFIG}/factory_cfg/etc
+#dest_config=${dest_etc}/nepi_config.yaml
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 #echo "Updating NEPI System Files in ${dest_config}"
 #sudo mkdir -p ${dest_etc}
 #sudo cp $source_config $dest_config
 #sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_etc
 
+<<<<<<< HEAD
 # Copy the nepi_system_config.yaml file to the system_cfg folder
 #source_config=${DEST_PATH}/etc/nepi_system_config.yaml
 #dest_etc=${NEPI_CONFIG}/system_cfg/etc
 #dest_config=${dest_etc}/nepi_system_config.yaml
+=======
+# Copy the nepi_config.yaml file to the system_cfg folder
+#source_config=${DEST_PATH}/etc/nepi_config.yaml
+#dest_etc=${NEPI_CONFIG}/system_cfg/etc
+#dest_config=${dest_etc}/nepi_config.yaml
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 #echo "Updating NEPI System Files in ${dest_config}"
 #sudo mkdir -p ${dest_etc}
 #sudo cp $source_config $dest_config
@@ -212,9 +258,13 @@ fi
 
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 
+<<<<<<< HEAD
     sudo systemctl disable NetworkManager
     sudo systemctl stop NetworkManager
     sudo systemctl stop networking.service
+=======
+    #sudo systemctl stop NetworkManager
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 
     sudo ln -sf ${etc_source}/network/interfaces.d ${etc_sync}
     # Set up static IP addr.
@@ -312,6 +362,7 @@ echo "Configuring nepi_modprobe.conf"
 etc_path=modprobe.d/nepi_modprobe.conf
 if [ -f "/etc/${etc_path}" ]; then
     sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
+<<<<<<< HEAD
 fi
 sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
 
@@ -337,6 +388,10 @@ if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
     echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
     echo "}" | sudo tee -a $lsyncd_file
 fi
+=======
+fi
+sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 
 #sudo systemctl enable lsyncd
 #sudo systemctl restart lsyncd

@@ -45,6 +45,27 @@ fi
 echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
 
+<<<<<<< HEAD
+=======
+NEPI_CFG_SOURCE=${CONFIG_SOURCE}
+NEPI_CFG_DEST=${HOME}/.NEPI_CONFIG
+echo "Installing NEPI Config ${NEPI_CFG_DEST}"
+if [ -f "$NEPI_CFG_DEST" ]; then
+    sudo rm $NEPI_CFG_DEST
+fi
+sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
+sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
+
+NEPI_CFG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_docker_config
+NEPI_CFG_DEST=${HOME}/.nepi_config
+echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
+if [ -f "$NEPI_CFG_DEST" ]; then
+    sudo rm $NEPI_CFG_DEST
+fi
+sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
+sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
+
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "

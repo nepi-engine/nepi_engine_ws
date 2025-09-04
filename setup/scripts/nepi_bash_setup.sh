@@ -12,6 +12,7 @@
 
 # This file sets up nepi bash aliases and util functions
 
+<<<<<<< HEAD
 
 CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
 source $(pwd)/load_system_config.sh
@@ -22,6 +23,12 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
+=======
+export CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
+source ${CONFIG_SOURCE}
+wait
+
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 mkdir -p /home/${NEPI_USER}/.local/lib/python${NEPI_PYTHON}/site-packages
 
 sudo ln -sfn /usr/bin/python${NEPI_PYTHON} /usr/bin/python3
@@ -33,6 +40,18 @@ sudo python${NEPI_PYTHON} -m pip --version
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 
+<<<<<<< HEAD
+=======
+export NEPI_CONFIG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_system_config
+export NEPI_CONFIG_DEST=/home/${NEPI_USER}/.nepi_config
+echo "Installing NEPI config file ${NEPI_CONFIG_DEST} "
+if [ -f "${NEPI_CONFIG_DEST}" ]; then
+    sudo rm ${NEPI_CONFIG_DEST}
+fi
+sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
+sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_CONFIG_DEST}
+sudo ln -sfn ${NEPI_CONFIG_DEST} /root/.nepi_config
+>>>>>>> ed6950b4b7f6c45d73a725821c158e0a852c103b
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=/home/${NEPI_USER}/.nepi_bash_utils
