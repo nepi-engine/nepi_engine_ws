@@ -127,7 +127,7 @@ function export_yaml_value(){
     verbose=0
     value=$(yq e '.'"$KEY"'' $FILE)
     export ${VARIABLE}=$value
-    echo "${VARIABLE}=${value}"
+    #echo "${VARIABLE}=${value}"
 }
 export -f export_yaml_value
 

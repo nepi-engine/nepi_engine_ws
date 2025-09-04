@@ -9,7 +9,10 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 sbrc
-export NEPI_USER=$NEPI_USER
+
+NEPI_STORAGE=/mnt/nepi_storage
+NEPI_CONFIG=/mnt/nepi_config
+export NEPI_USER=nepi
 export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
 
 export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
@@ -21,7 +24,7 @@ export NEPI_IP=192.168.179.103
 
 
 
-sudo docker run -d --privileged -it -e UDEV=1 --user $NEPI_USER --gpus all \
+sudo docker run -d --privileged -it -e UDEV=1 --gpus all \
     --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
     --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
     --mount type=bind,source=/dev,target=/dev \

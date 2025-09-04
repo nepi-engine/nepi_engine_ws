@@ -14,7 +14,7 @@
 
 CONFIG_SOURCE=$(pwd)/etc/nepi_system_config.yaml
 source $(pwd)/etc/load_system_config.sh
-echo $CONFIG_SOURCE
+#echo $CONFIG_SOURCE
 wait
 
 if [ $? -eq 1 ]; then
@@ -26,7 +26,7 @@ fi
 FILE=$(pwd)/nepi_docker_config.yaml
  
 if [[ -f "$FILE" ]]; then
-    sudo echo "Updating Docker Config file from: ${FILE}"
+    #sudo echo "Updating Docker Config file from: ${FILE}"
     keys=($(yq e 'keys | .[]' ${FILE}))
     for key in "${keys[@]}"; do
         value=$(yq e '.'"$key"'' $FILE)

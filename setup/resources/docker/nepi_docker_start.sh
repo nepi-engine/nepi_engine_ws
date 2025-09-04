@@ -51,13 +51,13 @@ echo "Building NEPI Docker Run Command"
 echo $NEPI_STORAGE
 ########
 # Initialize Run Command
-DOCKER_RUN_COMMAND=" sudo docker run -d --privileged --rm -e UDEV=1 '\'
---mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} '\'
---mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} '\'
---mount type=bind,source=/dev,target=/dev '\'
--e DISPLAY=${DISPLAY} '\'
--v /tmp/.X11-unix/:/tmp/.X11-unix '\'
---net=host '\'"
+DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
+--mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
+--mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
+--mount type=bind,source=/dev,target=/dev \
+-e DISPLAY=${DISPLAY} \
+-v /tmp/.X11-unix/:/tmp/.X11-unix \
+--net=host"
 
 
 # Set Clock Settings
@@ -66,26 +66,26 @@ if [[ "$NEPI_MANAGES_CLOCK" -eq 1 ]]; then
     sudo timedatectl set-ntp no
 
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
---cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf '\'"
+--cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \ "
 fi 
 
 # Set cuda support if needed
-if [[ "$NEPI_DEVICE_ID" == "JETSON" ]]; then
+if [[ "$NEPI_DEVICE_ID" == "device1" ]]; then
     echo "Enabling Jetson GPU Support TRUE"
 
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
---gpus all '\'
---runtime nvidia '\'"
+DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
+--gpus all \
+--runtime nvidia "
 fi 
 
 # Finish Run Command
 if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
 echo "nepi_fs_a"
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
+DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
 ${NEPI_FSA}:${NEPI_FSA_TAG} /bin/bash"
 else
 echo "nepi_fs_b"
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
+DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
 ${NEPI_FSB}:${NEPI_FSB_TAG} /bin/bash"
 fi
 
@@ -96,7 +96,7 @@ fi
 echo ""
 echo "Launching NEPI Docker Container with Command"
 echo "${DOCKER_RUN_COMMAND}"
-run $DOCKER_RUN_COMMAND
+eval "$DOCKER_RUN_COMMAND"
 
 ########################
 # Start NEPI Processes
