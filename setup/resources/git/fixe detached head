@@ -1,0 +1,26 @@
+# Fix detached head in a submodule
+
+# Here's a good explanation on how to fix detached HEAD for submodules.
+# https://stackoverflow.com/questions/18770545
+
+BRANCH=ros1_develop
+SUBBRANCH=ros1_main
+
+git clone git@github.com:nepi-engine/nepi_engine_ws.git
+cd nepi_engine_ws
+git checkout $BRANCH
+
+git submodule update --init --recursive
+git submodule foreach git checkout $SUBBRANCH
+git submodule foreach git pull origin $SUBBRANCH
+
+for dir in /*/; do
+  if [ -d "$dir" ]; then # Checks if the item is a directory
+    cd $dir
+    if [ -f ".gitmodules" ]; then
+      git submodule update --init --recursive
+      git submodule foreach git checkout $SUBBRANCH
+      git submodule foreach git pull origin $SUBBRANCH
+    fi
+  fi
+fi

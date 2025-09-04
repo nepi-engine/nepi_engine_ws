@@ -1,0 +1,12 @@
+
+
+grep -r ros_ ./ > search
+
+
+find . -type f -exec perl -i -pe 's|str2replace|replace_str|g' {} +
+
+Example
+
+find . -type f -exec perl -i -pe 's|sudo source|source|g' {} +
+
+

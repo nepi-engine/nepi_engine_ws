@@ -1,0 +1,38 @@
+###################
+### Setup Once
+# Give user dialout premission
+sudo gpasswd --add ${USER} dialout
+# Then log out and back in
+
+# Can also try
+#sudo chmod a+rw /dev/ttyUSB0
+#sudo chown root:dialout /dev/ttyUSB0
+
+###################
+# Connect and Test
+
+# Set serial port buadrate
+# STANDARD_BUAD_RATES = [110, 150, 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
+stty -F /dev/ttyUSB0 9600
+
+# Start Listener in Terminal
+cat /dev/ttyUSB0
+
+# Send Message from a different Terminal
+echo -e '<YOUR_MESSAGE_STRING>/r/n' > /dev/ttyUSB0
+
+
+echo -e '#AMRA0010W/r/n' > /dev/ttyUSB0
+
+echo -e '#AMMF0011R/r/n' > /dev/ttyUSB0
+
+echo -e '#AMRE0011R/r/n' > /dev/ttyUSB0
+echo -e '#AMEE0001W/r/n' > /dev/ttyUSB0
+echo -e '#AMRE0011R/r/n' > /dev/ttyUSB0
+
+echo -e '!001:INFO?/r/n' > /dev/ttyUSB0
+
+
+
+
+

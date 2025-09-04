@@ -1,0 +1,9 @@
+# Force Max Fail Count
+# for ORIN
+sudo mount /dev/nvme0n1p1 /mnt/flash
+# for Xavier
+sudo mount /dev/mmcblk0p1 /mnt/flash
+
+# Then
+sudo vi /mnt/flash/opt/nepi/nepi_boot_failure_count.txt
+

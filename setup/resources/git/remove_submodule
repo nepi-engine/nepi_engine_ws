@@ -1,0 +1,6 @@
+# Remove the submodule entry from .git/config
+
+REPO_NAME="nepi_interfaces"
+git submodule deinit -f ${REPO_NAME}
+rm -rf .git/modules/${REPO_NAME}
+git rm -f ${REPO_NAME}

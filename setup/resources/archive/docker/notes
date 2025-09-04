@@ -1,0 +1,1 @@
+sudo systemctl restart systemd-resolved && sudo systemctl stop systemd-resolved

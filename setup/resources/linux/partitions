@@ -1,0 +1,26 @@
+######
+# NEPI File Partitions
+
+# Show Partitions
+sudo lsblk -o NAME,FSTYPE,SIZE,MOUNTPOINT,LABEL
+
+############
+#### Shrink Partition Size
+# 1) Shrink the File System (*** Slightly smaller than new partition ***)
+sudo umount /dev/nvme0n1p2
+sudo e2fsck -f /dev/nvme0n1p2
+sudo resize2fs /dev/nvme0n1p2 38G
+
+
+
+# Power Cycle
+
+sudo lsblk -o NAME,FSTYPE,SIZE,MOUNTPOINT,LABEL
+
+
+# Force Max Fail Count
+sudo mount /dev/nvme0n1p1 /mnt/flash
+sudo vi /mnt/flash/opt/nepi/nepi_boot_failure_count.txt
+
+# Set to 4 
+# Save and reboot

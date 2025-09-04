@@ -1,0 +1,12 @@
+[Unit]
+Description=NEPI Launch
+After=network.target chrony.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/nepi/engine/etc/nepi_env/nepi_launch.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

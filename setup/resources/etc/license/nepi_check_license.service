@@ -1,0 +1,12 @@
+[Unit]
+Description=NEPI Check
+After=remote-fs.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/nepi/etc/license/nepi_check_license.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
