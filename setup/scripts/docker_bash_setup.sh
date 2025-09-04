@@ -11,9 +11,14 @@
 
 # This file sets up a pc side nepi develoment environment
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
 
 echo "########################"
 echo "NEPI Docker Bash Setup"
@@ -39,24 +44,6 @@ fi
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
 BASHRC=~/.bashrc
-
-NEPI_CFG_SOURCE=${CONFIG_SOURCE}
-NEPI_CFG_DEST=${HOME}/.NEPI_CONFIG
-echo "Installing NEPI Config ${NEPI_CFG_DEST}"
-if [ -f "$NEPI_CFG_DEST" ]; then
-    sudo rm $NEPI_CFG_DEST
-fi
-sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
-sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
-
-NEPI_CFG_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_config
-NEPI_CFG_DEST=${HOME}/.nepi_config
-echo "Installing NEPI utils file ${NEPI_CFG_DEST} "
-if [ -f "$NEPI_CFG_DEST" ]; then
-    sudo rm $NEPI_CFG_DEST
-fi
-sudo cp $NEPI_CFG_SOURCE $NEPI_CFG_DEST
-sudo chown -R ${USER}:${USER} $NEPI_CFG_DEST
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils

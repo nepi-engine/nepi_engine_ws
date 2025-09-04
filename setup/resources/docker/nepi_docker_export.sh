@@ -15,7 +15,16 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_docker_config.yaml
+source $(pwd)/load_docker_config.sh
+wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
+
+
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml
@@ -23,7 +32,7 @@ refresh_nepi_config
 wait
 ########################
 
-NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+CONFIG_SOURCE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
 
 EXPORT_NAME="${RUNNING_CONT}-${RUNNING_TAG}"
 echo $EXPORT_NAME

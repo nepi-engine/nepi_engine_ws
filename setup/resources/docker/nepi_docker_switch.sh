@@ -14,32 +14,40 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_docker_config.yaml
+source $(pwd)/load_docker_config.sh
+wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
+
+
 
 ########################
-# Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi_config
-wait
-########################
+
   
 ### SET INACTIVE DATA AS ACTIVE DATA
-update_yaml_value ACTIVE_NAME "$INACTIVE_NAME" $NEPI_DOCKER_CONFIG_FILE
-update_yaml_value "ACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "ACTIVE_UPLOAD_DATE" "$INACTIVE_UPLOAD_DATE" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "ACTIVE_TAG" "$INACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "ACTIVE_ID" "$INACTIVE_ID" "$NEPI_DOCKER_CONFIG_FILE"
+update_yaml_value "ACTIVE_NAME" "${INACTIVE_NAME}" "${CONFIG_SOURCE}"
+update_yaml_value "ACTIVE_VERSION" "${INACTIVE_VERSION}" "${CONFIG_SOURCE}"
+update_yaml_value "ACTIVE_UPLOAD_DATE" "${INACTIVE_UPLOAD_DATE}" "${CONFIG_SOURCE}"
+update_yaml_value "ACTIVE_TAG" "${INACTIVE_TAG}" "${CONFIG_SOURCE}"
+update_yaml_value "ACTIVE_ID" "${INACTIVE_ID}" "${CONFIG_SOURCE}"
+update_yaml_value "ACTIVE_ID" "${INACTIVE_LABEL}" "${CONFIG_SOURCE}"
 
 ### SET ACTIVE DATA AS INACTIVE DATA
-update_yaml_value "INACTIVE_NAME" "$ACTIVE_NAME" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "INACTIVE_VERSION" "$ACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "INACTIVE_UPLOAD_DATE" "$ACTIVE_UPLOAD_DATE" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "INACTIVE_TAG" "$ACTIVE_TAG" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "INACTIVE_ID" "$ACTIVE_ID" "$NEPI_DOCKER_CONFIG_FILE"
+update_yaml_value "INACTIVE_NAME" "${ACTIVE_NAME}" "${CONFIG_SOURCE}"
+update_yaml_value "INACTIVE_VERSION" "${ACTIVE_VERSION}" "${CONFIG_SOURCE}"
+update_yaml_value "INACTIVE_UPLOAD_DATE" "${ACTIVE_UPLOAD_DATE}" "${CONFIG_SOURCE}"
+update_yaml_value "INACTIVE_TAG" "${ACTIVE_TAG}" "${CONFIG_SOURCE}"
+update_yaml_value "INACTIVE_ID" "${ACTIVE_ID}" "${CONFIG_SOURCE}"
+update_yaml_value "ACTIVE_ID" "${ACTIVE_LABEL}" "${CONFIG_SOURCE}"
+
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi_config
-wait
+
 ########################
 
 #######

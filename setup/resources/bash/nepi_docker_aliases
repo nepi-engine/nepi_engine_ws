@@ -14,10 +14,8 @@
 #echo "########################"
 #echo "NEPI Docker Aliases"
 #echo "########################"
-
-export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
-source ${NEPI_CONFIG}
-
+NEPI_DOCKER_CONFIG=/mnt/nepi_config/docker_cfg
+NEPI_STORAGE=/mnt/nepi_storage
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
@@ -49,28 +47,6 @@ function create_tag(){
 export -f create_tag
 
 ######################
-# UPDATE NEPI DOCKER CONFIG
-######################
-function config_nepi(){
-    #Run NEPI Docker Config Script
-    . /home/${USER}/docker_config_setup.sh
-}
-export -f config_nepi
-
-######################
-# RUN_NEPI
-######################
-function run_nepi(){
-    #Run NEPI in Normal Mode
-    export IT_MODE=0
-    export REMOVE_MODE=1
-    . ${NEPI_DOCKER_CONFIG}/start_nepi_docker.sh
-}
-export -f run_nepi
-
-
-
-######################
 # COMMIT_NEPI
 ######################
 function commit_nepi(){
@@ -93,7 +69,7 @@ export -f commit_nepi
 # LOGIN_NEPI
 ######################
 function login_nepi(){
-  . ${NEPI_DOCKER_CONFIG}/docker_cfg/nepi_docker_login.sh   
+  . ${NEPI_DOCKER_CONFIG}/nepi_docker_login.sh   
 }
 export -f login_nepi
 

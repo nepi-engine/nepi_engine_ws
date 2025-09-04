@@ -22,7 +22,9 @@ if [ "$ENABLE_DHCP" -eq 1 ]; then
   if [ -v NEPI_MANAGES_NETWORK ]; then
     if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
       echo "Enabling NEPI DHCP."
+    if [[ "NEPI_IN_CONTAINER" -eq 0 ]]; then
       sudo dhclient -nw
+    fi
     else
       echo "NEPI Network Management Disabled."
     fi

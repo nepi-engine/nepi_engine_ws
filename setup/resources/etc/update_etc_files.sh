@@ -29,25 +29,51 @@ function update_text_value(){
 }
 export -f update_text_value
 
-function update_hostname(){
-    HOST_NAME_FILE=${ETC_FOLDER}/hostname
-    echo $HOST_NAME_FILE
+function update_value(){
+    #HOST_NAME_FILE=${PWD}/hostname
+    #echo $HOST_NAME_FILE
     KEY=$1
     echo $KEY
     UPDATE=$2
     echo $UPDATE
-    if [ -f "$HOST_NAME_FILE" ]; then
-    if grep -q "$KEY" "$HOST_NAME_FILE"; then
-        sed -i "s/$KEY/$UPDATE/g" "$HOST_NAME_FILE"
+    FILE=${PWD}/$3
+    echo $FILE
+    if [ -f "$FILE" ]; then
+    if grep -q "$KEY" "$FILE"; then
+        sed -i "s/$KEY/$UPDATE/g" "$FILE"
 
     else
-        echo "$UPDATE" | sudo tee -a $HOST_NAME_FILE
+        echo "$UPDATE" | sudo tee -a $FILE
     fi
     else
-    echo "File not found ${HOST_NAME_FILE}"
+      echo "File not found ${FILE}"
     fi
 }
 export -f update_hostname
+
+function update_conf_value(){
+    #HOST_NAME_FILE=${PWD}/hostname
+    #echo $HOST_NAME_FILE
+    KEY=$1
+    echo $KEY
+    UPDATE=$2
+    echo $UPDATE
+    FILE=${PWD}/$3
+    echo $FILE
+    if [ -f "$FILE" ]; then
+    if grep -q "$KEY" "$FILE"; then
+        sed -i "s/^key=${KEY}/key=${UPDATE}/" $FILE
+
+    else
+        echo "$UPDATE" | sudo tee -a $FILE
+    fi
+    else
+      echo "File not found ${FILE}"
+    fi
+}
+export -f update_hostname
+
+
 
 
 ##############################################

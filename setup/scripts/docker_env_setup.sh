@@ -13,9 +13,15 @@
 # This file configigues an installed NEPI File System
 
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
 
 echo ""
 echo "NEPI Docker Enviorment Setup"
@@ -176,8 +182,8 @@ sudo docker info
 #sudo systemctl enable --now sshd.service
 
 
-#sudo apt-get install chrony -y
-#sudo systemctl enable --now chrony.service
+sudo apt-get install chrony -y
+sudo systemctl enable --now chrony.service
 
 
 #sudo apt-get install samba -y
@@ -186,12 +192,10 @@ sudo docker info
 
 # Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
 
-if [ $NEPI_MANAGES_NETWORK == 1 ]; then
-    sudo systemctl disable NetworkManager
-fi
 echo "Installing static IP dependencies"
 sudo apt-get install ifupdown -y 
 sudo apt-get install net-tools -y 
+sudo apt-get install iproute2 -y
 
 
 ####### Add NEPI IP Addr to eth0

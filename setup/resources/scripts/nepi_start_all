@@ -9,4 +9,5 @@
 ##
 
 # Start NEPI ssh service
-/usr/bin/supervisord -c /etc/supervisor/conf.d/nepi.conf
+cd usr/bin/
+sudo ./supervisord -c /etc/supervisor/conf.d/nepi.conf

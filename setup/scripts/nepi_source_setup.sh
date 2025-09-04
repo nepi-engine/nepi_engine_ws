@@ -9,9 +9,15 @@
 ##
 
 # This file installs nepi engine workspace repo
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
 
 echo ""
 echo "Setting Up NEPI NEPI Source Code Repo"

@@ -14,7 +14,14 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-NEPI_DOCKER_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_docker_config.yaml
+source $(pwd)/load_docker_config.sh
+wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml
@@ -77,10 +84,10 @@ fi
 
 sudo docker tag $ID ${NEW_NAME}:${NEW_TAG}
 #6) Update inactive version,tags,ids in nepi_docker_config.yaml
-update_yaml_value "NEPI_INACTIVE_VERSION" "$INACTIVE_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "NEPI_INACTIVE_DATE" "$NEW_DATE" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "NEPI_INACTIVE_TAG" "$NEW_TAG" "$NEPI_DOCKER_CONFIG_FILE"
-update_yaml_value "NEPI_INACTIVE_ID" "$NEW_VERSION" "$NEPI_DOCKER_CONFIG_FILE"
+update_yaml_value "NEPI_INACTIVE_VERSION" "$INACTIVE_VERSION" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_INACTIVE_DATE" "$NEW_DATE" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_INACTIVE_TAG" "$NEW_TAG" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_INACTIVE_ID" "$NEW_VERSION" "$CONFIG_SOURCE"
 echo "  ADD SOME PRINT OUTS  "
 
 ########################

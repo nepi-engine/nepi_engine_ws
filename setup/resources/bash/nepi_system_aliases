@@ -15,21 +15,9 @@
 #echo "NEPI System Aliases"
 #echo "########################"
 
-# Initialize the NEPI Configuratione
-export NEPI_CONFIG=${HOME}/.NEPI_CONFIG
-source ${NEPI_CONFIG}
-
-export USER=${NEPI_USER}
-
-#export NEPI_CONFIG_FILE=/opt/nepi/etc/nepi_config.yaml
-#if [[ -f "$NEPI_CONFIG_FILE" ]]; then
-#    source /home/${USER}/.nepi_config
-#    wait
-#else
-#    echo "NEPI Config File not found at ${NEPI_CONFIG_FILE}"
-#    exit 1
-#fi
-#CINFO="$(. ${NEPI_CONFIG_FILE} && confign)"
+NEPI_SYSTEM_CONFIG=/opt/nepi/nepi_engine/etc
+NEPI_CONFIG=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
+NEPI_STORAGE=/mnt/nepi_storage
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE

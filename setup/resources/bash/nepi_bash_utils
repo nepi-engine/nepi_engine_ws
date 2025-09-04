@@ -57,11 +57,18 @@ function sbrc(){
 }
 export -f sbrc
 
+function sdhcp(){
+    sudo dhclient -r
+    sudo dhclient
+    sudo dhclient -nw
+}
+export -f sdhcp
 
 UTILSN="${UTILSN}
 ### SYSTEM UTIL FUNCTIONS
 pingi = Check for internet
-sbrc = Source the current users bashrc file"
+sbrc = Source the current users bashrc file
+sdhcp = Start DHCP Internet Client"
 
 
 ###################################
@@ -124,7 +131,43 @@ function export_yaml_value(){
 }
 export -f export_yaml_value
 
+function load_config_file(){
+    config_file=$1
+    if [ -f "$config_file" ]; then
+        keys=($(yq e 'keys | .[]' ${config_file}))
+        for key in "${keys[@]}"; do
+            export_yaml_value "${key}" "${key}" "$config_file" 
+        done
+    else
+        echo "Config file not found ${config_file}"
+    fi
+}
 
+export -f load_config_file
+
+function print_config_file(){
+    echo $1
+    config_file=${1}
+    if [ -f "$config_file" ]; then
+        CONFIGN="#############################
+        ## NEPI Config Settings ##
+        #############################
+        FILE=${config_file}"
+
+        keys=($(yq e 'keys | .[]' ${config_file}))
+        for key in "${keys[@]}"; do
+            value=$(yq e '.'"$key"'' $config_file)
+            echo "${key}=${value}"
+            CONFIGN="${CONFIGN}
+            ${key}=${!key}"
+        done
+        echo $CONFIG
+    else
+        echo "Config file not found ${config_file}"
+    fi
+}
+
+export -f print_config_file
 
 #### Update Help Test
 UTILSN="${UTILSN}
@@ -133,7 +176,8 @@ ftext = Find text in files recursively
 ffile = Find filenames with text match recursively
 update_text_value = Adds or Replaces value in text file given FILE KEY UPDATE_STRING FILE
 update_yaml_value = Update entry in yaml file given KEY VAL FILE
-export_yaml_value = Exports the value of yaml entry to system variable given KEY VARIBLE FILE"
+export_yaml_value = Exports the value of yaml entry to system variable given KEY VARIBLE FILE
+load_config_file = Exports all of the yaml entries to system variables given FILE"
 
 
 
@@ -405,6 +449,7 @@ if [ 1 ]; then
 
 # Function to updates system environment variables from nepi_config.yaml
 function refresh_nepi_config(){
+      NEPI_CONFIG_FILE=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
       echo "refresh_nepi_config called with config file ${NEPI_CONFIG_FILE}"
       source /home/${USER}/.nepi_config
 }

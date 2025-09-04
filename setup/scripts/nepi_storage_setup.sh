@@ -9,9 +9,14 @@
 ##
 
 # This file initializes a NEPI Storage Drive Folder
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
+
+if [ ! -v NEPI_USER ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
 
 echo ""
 echo "Initializing NEPI Storage Drive"

@@ -12,8 +12,8 @@
 
 # This file sets up the ROS package 
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/NEPI_CONFIG.sh
-source ${CONFIG_SOURCE}
+export CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
+source $(pwd)/load_system_config.sh
 wait
 
 

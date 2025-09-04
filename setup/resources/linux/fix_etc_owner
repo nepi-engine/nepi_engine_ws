@@ -1,0 +1,2 @@
+pkexec chown root:root /etc/sudoers /etc/sudoers.d -R
+sudo chown -R root:root /etc

@@ -1,1 +1,0 @@
-ACTION=="add", SUBSYSTEM=="input", TEST=="power/control", ATTR{power/control}="on"

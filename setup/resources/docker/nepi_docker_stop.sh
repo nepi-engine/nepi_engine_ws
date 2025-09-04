@@ -14,6 +14,17 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_docker_config.yaml
+source $(pwd)/load_docker_config.sh
+wait
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
+
+
+
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml
 refresh_nepi_config
