@@ -26,18 +26,6 @@ echo "########################"
 
 
 
-#######################
-DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
-if [ ! -d "${DOCKER_CONFIG}" ]; then
-    sudo mkdir -p ${DOCKER_CONFIG}
-fi
-
-# Creating nepi_config.yaml file in docker config folder
-#export CONFIG_DEST_FILE=${NEPI_CONFIG}/docker_cfg/nepi_config.yaml
-#echo "Initializing nepi_config.yaml in ${CONFIG_DEST_FILE}"
-
-#source $(pwd)/docker_config_setup.sh
-#wait
 
 
 #############

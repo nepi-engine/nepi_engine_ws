@@ -51,7 +51,7 @@ echo "Building NEPI Docker Run Command"
 echo $NEPI_STORAGE
 ########
 # Initialize Run Command
-DOCKER_RUN_COMMAND=" sudo docker run -d --privileged --rm -e UDEV=1 --user ${NEPI_USER} '\'
+DOCKER_RUN_COMMAND=" sudo docker run -d --privileged --rm -e UDEV=1 '\'
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} '\'
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} '\'
 --mount type=bind,source=/dev,target=/dev '\'
