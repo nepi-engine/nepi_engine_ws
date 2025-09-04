@@ -97,28 +97,9 @@ fi
 echo $NEPI_CONFIG_DEST_PATH
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
-export_config_file ${NEPI_CONFIG_DEST}
-exit 1
+load_config_file ${NEPI_CONFIG_DEST}
 ###############
 # Update etc config files
-NEPI_CFG_DEST=${DEST_PATH}/etc/nepi_system_config.yaml
-echo ""
-echo "Updating NEPI Config file ${NEPI_CFG_DEST} from ${NEPI_CONFIG_DEST}"
-cat /dev/null > ${NEPI_CFG_DEST}
-
-while IFS= read -r line || [[ -n "$line" ]]; do
-  #echo ${line}
-  if [[ "$line" == "#"* ]]; then
-    #echo "" >> $NEPI_CFG_DEST
-    echo "${line}" >> $NEPI_CFG_DEST
-  elif [[ "$line" == *"export"* ]]; then
-    second_part="${line:7}"
-    var_name=$(echo "$second_part" | cut -d "=" -f 1)
-    var_value=$(eval "echo \$${var_name}")
-    echo "${var_name}: ${var_value}"
-    echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
-  fi
-done < "$NEPI_CONFIG_DEST"
 
 echo "Updating NEPI Config files in ${NEPI_CFG_DEST}"
 
@@ -165,7 +146,7 @@ echo "Updated NEPI Config file ${NEPI_CFG_DEST}"
 # Update Factory Config
 
 # Rsync etc folder from factory folder
-sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc  ${NEPI_CONFIG}/factory_cfg/
+#sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc  ${NEPI_CONFIG}/factory_cfg/
 
 # Copy the nepi_system_config.yaml file to the factory_cfg folder
 #source_config=${DEST_PATH}/etc/nepi_system_config.yaml

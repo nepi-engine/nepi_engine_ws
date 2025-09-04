@@ -33,8 +33,6 @@ HELPN=${UINFO}
 
 
 function create_tag(){
-    refresh_nepi_config 
-    wait
     SW_VERSION=$1
     HW_TYPE=$2
     HW_MODEL=$3

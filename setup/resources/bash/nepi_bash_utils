@@ -127,12 +127,13 @@ function export_yaml_value(){
     verbose=0
     value=$(yq e '.'"$KEY"'' $FILE)
     export ${VARIABLE}=$value
-    #echo "${VARIABLE}=${value}"
+    echo "${VARIABLE}=${value}"
 }
 export -f export_yaml_value
 
 function load_config_file(){
     config_file=$1
+    echo $config_file
     if [ -f "$config_file" ]; then
         keys=($(yq e 'keys | .[]' ${config_file}))
         for key in "${keys[@]}"; do
