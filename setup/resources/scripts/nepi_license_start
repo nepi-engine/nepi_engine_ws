@@ -9,8 +9,5 @@
 ##
 
 # Start NEPI ROS
-<<<<<<< HEAD
-sudo python /opt/nepi/scripts/nepi_license.py
-=======
+echo "Starting NEPI License Processes"
 sudo python /opt/nepi/scripts/license/nepi_license.py
->>>>>>> 980001bd64dca01cad0f878c1651683bd4a7cc3a

@@ -43,7 +43,7 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
 echo $NEPI_CONFIG_SOURCE
 
-NEPI_CONFIG_DEST_PATH=${NEPI_ENGINE}/etc/
+NEPI_CONFIG_DEST_PATH=${NEPI_BASE}/etc
 NEPI_CONFIG_DEST=${NEPI_CONFIG_DEST_PATH}/nepi_system_config.yaml
 echo $NEPI_CONFIG_DEST
 if [ ! -d "${NEPI_CONFIG_DEST_PATH}" ]; then
@@ -79,25 +79,6 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
 export_config_file ${NEPI_CONFIG_DEST}
 
 ###############
-# Update etc config files
-NEPI_CFG_DEST=${DEST_PATH}/nepi_system_config.yaml
-echo ""
-echo "Updating NEPI Config file ${NEPI_CFG_DEST} from ${NEPI_CONFIG_DEST}"
-cat /dev/null > ${NEPI_CFG_DEST}
-
-while IFS= read -r line || [[ -n "$line" ]]; do
-  #echo ${line}
-  if [[ "$line" == "#"* ]]; then
-    #echo "" >> $NEPI_CFG_DEST
-    echo "${line}" >> $NEPI_CFG_DEST
-  elif [[ "$line" == *"export"* ]]; then
-    second_part="${line:7}"
-    var_name=$(echo "$second_part" | cut -d "=" -f 1)
-    var_value=$(eval "echo \$${var_name}")
-    echo "${var_name}: ${var_value}"
-    echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
-  fi
-done < "$NEPI_CONFIG_DEST"
 
 echo "Updating NEPI Config files in ${DEST_PATH}"
 source ${DEST_PATH}/update_etc_files.sh
@@ -135,13 +116,13 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         echo "Updating system hostname"
 
         #sudo chmod 744 /etc/host*
-        sudo cp -p /etc/hosts /etc/hosts.bak
+        #sudo cp -p /etc/hosts /etc/hosts.bak
         if [ ! -f /etc/hosts ]; then
             sudo rm /etc/hosts
         fi
         sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
 
-        sudo cp -p /etc/hostname /etc/hostname.bak
+        #sudo cp -p /etc/hostname /etc/hostname.bak
         if [ ! -f "/etc/hostname" ]; then
             sudo rm /etc/hostname
         fi
@@ -151,14 +132,14 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         # Set up static IP addr.
         echo "Updating Network interfaces.d"
         if [ ! -f "/etc/network/interfaces.d" ]; then
-            sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
+            #sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
             sudo rm -r /etc/network/interfaces.d
         fi
         sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
         echo "Updating Network interfaces"
         if [ ! -f "/etc/network/interfaces" ]; then
-            sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
+            #sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
             sudo rm /etc/network/interfaces
         fi
         sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
@@ -166,7 +147,7 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         # Set up DHCP
         echo "Updating Network dhclient.conf"
         if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
-            sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
+            #sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
             sudo rm /etc/dhcp/dhclient.conf
         fi
         sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
@@ -174,7 +155,7 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
 
         # Set up WIFI
         echo "Updating Network wpa_supplicant.conf"
-        if [ ! -d "etc/wpa_supplicant" ]; then
+        if [ ! -d "/etc/wpa_supplicant" ]; then
             sudo mkdir /etc/wpa_supplicant
         fi
         if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
@@ -269,24 +250,25 @@ fi
     ################################
     # Update fstab
     echo "Updating fstab"
-    sudo cp -p -r /etc/fstab /etc/fstab.bak
-    sudo cp -sf ${NEPI_ETC}/fstabs/fstab_emmc ${NEPI_ETC}/fstabs/fstab
-    sudo ln -sf ${NEPI_ETC}/fstabs/fstab /etc/fstab
-    if [ ! -f "/etc/fstab.bak" ]; then
-        sudo rm /etc/fstab.bak
+    if [ ! -f "/etc/fstab" ]; then
+        sudo mv /etc/fstab /etc/fstab.bak
     fi
-    sudo cp ${NEPI_ETC}/fstabs/fstab /etc/fstab.bak
+    sudo cp -p ${NEPI_ETC}/fstab /etc/fstab
+    sudo chown root:root /etc/fstab
+
 
     #########################################
     # Setup supervisor
     echo ""
     echo "Setting up NEPI Supervisord"
 
-    if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
-        sudo cp -p -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
-        sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+    if [ -d "/etc/supervisor" ]; then
+        if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
+            sudo cp -p -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
+            sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+        fi
+        sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
     fi
-    sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
 
 
     #############################################
@@ -294,9 +276,9 @@ fi
     echo " "
     echo "Setting up udev rules"
         # IQR Pan/Tilt
-    sudo ln -sf ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
+    sudo cp ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
         # USB Power Saving on Cameras Disabled
-    sudo ln -sf ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+    sudo cp ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
 
 
     ##############################################

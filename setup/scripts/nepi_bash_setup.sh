@@ -24,9 +24,9 @@ fi
 
 mkdir -p /home/${NEPI_USER}/.local/lib/python${NEPI_PYTHON}/site-packages
 
-sudo ln -sfn /usr/bin/python${PYTHON_VERSION} /usr/bin/python3
+sudo ln -sfn /usr/bin/python${NEPI_PYTHON} /usr/bin/python3
 sudo ln -sfn /usr/bin/python3 /usr/bin/python
-sudo python${PYTHON_VERSION} -m pip --version
+sudo python${NEPI_PYTHON} -m pip --version
 
 
 #####################################
@@ -42,7 +42,7 @@ if [ -f "$NEPI_UTILS_DEST" ]; then
 fi
 sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_UTILS_DEST
-sudo ln -sfn ${NEPI_UTILS_DEST} /root/.nepi_bash_utils
+#sudo ln -sfn ${NEPI_UTILS_DEST} /root/.nepi_bash_utils
 
 NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_system_aliases
 NEPI_ALIASES_DEST=/home/${NEPI_USER}/.nepi_system_aliases
@@ -55,32 +55,17 @@ if [ -f "$NEPI_ALIASES_DEST" ]; then
 fi
 sudo cp $NEPI_ALIASES_SOURCE $NEPI_ALIASES_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
-sudo ln -sfn ${NEPI_ALIASES_DEST} /root/.nepi_system_aliases
+#sudo ln -sfn ${NEPI_ALIASES_DEST} /root/.nepi_system_aliases
 
 #############
 BASHRC=/home/${NEPI_USER}/.bashrc
-echo "Updating bashrc file"
+RBASHRC=/root/.bashrc
+echo "Updating userbashrc files"
 
-if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
-    : #echo "Already Done"
-else
-    echo ' ' | sudo tee -a $BASHRC
-    echo '##### Source NEPI Aliases #####' | sudo tee -a $BASHRC
-    echo 'if [ -f '${NEPI_ALIASES_DEST}' ]; then' | sudo tee -a $BASHRC
-    echo '    . '${NEPI_ALIASES_DEST} | sudo tee -a $BASHRC
-    echo 'fi' | sudo tee -a $BASHRC
-fi
-
-if grep -qnw $BASHRC -e "##### NVM Config #####" ; then
-    : #echo "Already Done"
-else
-    echo ' ' | sudo tee -a $BASHRC
-    echo '##### NVM Config #####' | sudo tee -a $BASHRC
-    echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
-    echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
-    echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
-fi
-
+sudo cp -n $RBASHRC ${RBASHRC}.bak
+sudo cp ${RBASHRC}.bak $BASHRC
+sudo chown ${NEPI_USER}:${NEPI_USER} $BASHRC
+sudo chmod 755 $BASHRC
 
 if grep -qnw $BASHRC -e "##### System Config #####" ; then
     : #echo "Already Done"
@@ -118,10 +103,27 @@ if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
     fi
 fi
 
+# Copy the bashrc at this point to rooot
+sudo cp $BASHRC $RBASHRC
+sudo chown root:root $RBASHRC
+sudo chmod 644 $RBASHRC
+
+# Add additional user bashrc statements
+
+if grep -qnw $BASHRC -e "##### Source NEPI Aliases #####" ; then
+    : #echo "Already Done"
+else
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### Source NEPI Aliases #####' | sudo tee -a $BASHRC
+    echo 'if [ -f '${NEPI_ALIASES_DEST}' ]; then' | sudo tee -a $BASHRC
+    echo '    . '${NEPI_ALIASES_DEST} | sudo tee -a $BASHRC
+    echo 'fi' | sudo tee -a $BASHRC
+fi
 sudo chmod 755 /home/${NEPI_USER}/.*
 
+# Copy files to nepiadmin home
+sudo cp /home/${NEPI_USER}/.* /home/${NEPI_ADMIN}/
 
-#sudo cp $BASHRC /root/.bashrc
 
 
 
