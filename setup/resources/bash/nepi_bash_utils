@@ -257,7 +257,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     # Function to search for topic containing string
     function ftopic(){
-    if [ $NEEDS_ROS -eq 1 ]; then
+    if [ "$NEEDS_ROS" -eq 1 ]; then
       sros
       wait
       NEEDS_ROS=0
@@ -267,7 +267,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     # Function to print all topics out
     function ltopics(){
-    if [ $NEEDS_ROS -eq 1 ]; then
+    if [ "$NEEDS_ROS" -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -277,7 +277,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     # Function to listen to topic
     function etopic(){
-    if [ $NEEDS_ROS -eq 1 ]; then
+    if [ "$NEEDS_ROS" -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -287,7 +287,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     # Function to search for service containing string
     function fservice(){
-    if [ $NEEDS_ROS -eq 1 ]; then
+    if [ "$NEEDS_ROS" -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -297,7 +297,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     # Function to print all services out
     function lservices(){
-    if [ $NEEDS_ROS -eq 1 ]; then
+    if [ "$NEEDS_ROS" -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -307,7 +307,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     # to call service
     function cservice(){
-    if [ $NEEDS_ROS -eq 1 ]; then
+    if [ "$NEEDS_ROS" -eq 1 ]; then
       sleep 1 & sros
       wait
       NEEDS_ROS=0
@@ -446,6 +446,14 @@ if [ 1 ]; then
       fi
   }
 
+  function snvm(){
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### NVM Config #####' | sudo tee -a $BASHRC
+    echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
+    echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
+    echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
+  }
+
   BUILD=${NEPI_STORAGE}/nepi_src/nepi_engine_ws
   ## NEPI build shortcuts
   alias nepibld="
@@ -471,6 +479,7 @@ UTILSN="${UTILSN}
 nepistart = start the nepi processes
 nepistop = stop the nepi processe
 mvimg = Move archived nepi images to nepi image install folder
+snvm = Sources NVM (Node Version Manager) nmv.sh
 nepibld = build/deploy all nepi repos and RUI
 codebld = build/deploy all nepi repos
 ruibld = build/deploy rui system"
