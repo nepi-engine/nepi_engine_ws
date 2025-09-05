@@ -38,7 +38,7 @@ FAIL_COUNT: 0
 # Set to "CONTAINER" if running in container 
 # Set to partition path if running directly on device's file system
 NEPI_BOOT_DEVICE: /dev/root
-NEPI_FS_DEVICE: /dev/nvme0n1p1
+NEPI_FS_DEVICE: /dev/mmcblk0p1
 NEPI_STORAGE_DEVICE: /dev/nvme0n1p3
 ####################################################
 # NEPI SOFTWARE Config

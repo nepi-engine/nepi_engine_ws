@@ -98,30 +98,26 @@ fi
 git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 echo $(pwd)
-RSYNC_EXCLUDES=" --exclude pc_deploy_nepi_engine_complete.sh \
-  --exclude .git \
-  --exclude .gitmodules \
-  --exclude .catkin_tools/profiles/*/packages \
-  --exclude devel_* --exclude logs_* --exclude install_* "
+RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
 
 echo "Excluding ${RSYNC_EXCLUDES}"
 
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
-  rsync -avrh --size-only --exclude ${RSYNC_EXCLUDES} ../nepi_engine_ws/ $(pwd) ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
+  rsync -avrh --exclude ${RSYNC_EXCLUDES} ../nepi_engine_ws/ $(pwd) ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
-  rsync -avzhe --size-only "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
+  rsync -avzhe  "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 fi
 
-echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+
 
 if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
   echo "Deploying nepi 3rd party repos"
 
     # Push Third Party Folders
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    rsync -arh --size-only --exclude='.git/' $(pwd)/src/nepi_3rd_party ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+    rsync -arh --exclude='.git/' $(pwd)/src/nepi_3rd_party ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    rsync -avzhe --size-only "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --exclude='.git/' $(pwd)/src/nepi_3rd_party ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --exclude='.git/' $(pwd)/src/nepi_3rd_party ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
   fi
 
   
@@ -131,5 +127,6 @@ else
   echo ""
 fi
 
+echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
