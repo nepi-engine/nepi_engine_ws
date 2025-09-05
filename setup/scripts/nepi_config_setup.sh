@@ -43,7 +43,7 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
 NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
 echo $NEPI_CONFIG_SOURCE
 
-NEPI_CONFIG_DEST_PATH=${NEPI_ENGINE}/etc/
+NEPI_CONFIG_DEST_PATH=${NEPI_BASE}/etc
 NEPI_CONFIG_DEST=${NEPI_CONFIG_DEST_PATH}/nepi_system_config.yaml
 echo $NEPI_CONFIG_DEST
 if [ ! -d "${NEPI_CONFIG_DEST_PATH}" ]; then
@@ -79,25 +79,6 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
 export_config_file ${NEPI_CONFIG_DEST}
 
 ###############
-# Update etc config files
-NEPI_CFG_DEST=${DEST_PATH}/nepi_system_config.yaml
-echo ""
-echo "Updating NEPI Config file ${NEPI_CFG_DEST} from ${NEPI_CONFIG_DEST}"
-cat /dev/null > ${NEPI_CFG_DEST}
-
-while IFS= read -r line || [[ -n "$line" ]]; do
-  #echo ${line}
-  if [[ "$line" == "#"* ]]; then
-    #echo "" >> $NEPI_CFG_DEST
-    echo "${line}" >> $NEPI_CFG_DEST
-  elif [[ "$line" == *"export"* ]]; then
-    second_part="${line:7}"
-    var_name=$(echo "$second_part" | cut -d "=" -f 1)
-    var_value=$(eval "echo \$${var_name}")
-    echo "${var_name}: ${var_value}"
-    echo "${var_name}: ${var_value}" >> $NEPI_CFG_DEST
-  fi
-done < "$NEPI_CONFIG_DEST"
 
 echo "Updating NEPI Config files in ${DEST_PATH}"
 source ${DEST_PATH}/update_etc_files.sh

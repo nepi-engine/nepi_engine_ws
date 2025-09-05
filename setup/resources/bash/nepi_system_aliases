@@ -21,12 +21,43 @@ NEPI_STORAGE=/mnt/nepi_storage
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
-wait
-UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
 
-HELPN=${UINFO}
+HELPN=""
+
+#############################
+# NEPI SYSTEM FUNCTIONS
+#############################
 
 
+function login_nepi(){
+  cd /opt/nepi 
+}
+export -f login_nepi
+
+function switch_nepi(){
+  TOPIC=$(ftopic switch)
+  rostopic pub ${TOPIC} std_msgs/Empty "{}"
+}
+export -f switch_nepi
+
+
+function import_nepi(){
+  :
+}
+export -f import_nepi
+
+
+function export_nepi(){
+  :
+}
+export -f export_nepi
+
+HELPN="${HELPN}
+################################
+## NEPI Docker Functions ##
+################################
+login_nepi = change to nepi opt folder
+switch_nepi = Switch to Inactive NEPI File System on next boot or reststat"
 
 
 ###################################
@@ -148,7 +179,8 @@ ucfg = /mnt/nepi_storage/user_cfg
 nfw = Show Installed NEPI FW Version"
 
 # Print out the nepi shortcuts
-function helpn(){
+function nepihelp(){
+    echo "$UTILSN"
     echo "$HELPN"
 }
 

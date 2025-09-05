@@ -13,6 +13,7 @@
 # This file installs the NEPI Engine File System installation
 
 
+echo " Must be run as sudo.  type "sudo su" then rerun"
 CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
 source $(pwd)/load_system_config.sh
 wait
@@ -23,102 +24,55 @@ if [ ! -v NEPI_USER ]; then
 fi
 
 
-echo ""
-echo "Setting up NEPI Accounts"
-
-
-
 ###################################
-echo ""
-echo "Setting up nepi admin account"
-group="${NEPI_ADMIN}"
-user="${NEPI_ADMIN}"
-if grep -q $group /etc/group;  then
-        echo "group exists"
-else
-        echo "group $group does not exist, creating"
-        addgroup ${NEPI_ADMIN}
-fi
-
-if id -u "$user" >/dev/null 2>&1; then
-    echo "User $user exists."
-else
-    echo "User $user does not exist, creating"
-    adduser --ingroup ${NEPI_ADMIN} ${NEPI_ADMIN}
-    echo "${NEPI_ADMIN} ALL=(ALL:ALL) ALL" >> /etc/sudoers
-
-    
-fi
-su ${NEPI_ADMIN}
-passwd
-${NEPI_ADMIN}
-${NEPI_ADMIN_PW}
-
-su ${NEPI_ADMIN}
-
-# Add nepi user to dialout group to allow non-sudo serial connections
-sudo adduser ${NEPI_ADMIN} dialout
-
-#or //https://arduino.stackexchange.com/questions/74714/arduino-dev-ttyusb0-permission-denied-even-when-user-added-to-group-dialout-o
-#Add your standard user to the group "dialout'
-sudo usermod -a -G dialout ${NEPI_ADMIN}
-#Add your standard user to the group "tty"
-sudo usermod -a -G tty ${NEPI_ADMIN}
-
-# Create USER python folder
-mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
-
-# Clear the Desktop
-sudo rm ${NEPI_HOME}/Desktop/*
-
-echo "User Account Setup Complete"
+function new_nepi_user(){
+    user=$1
+    password=$2
+    echo ""
+    echo "Setting up nepi user account: ${user}"
 
 
 
+    if id -u "$user" >/dev/null 2>&1; then
+        echo "User $user exists."
+        
+    else
+        echo "User $user does not exist, creating"
+        if grep -q $user /etc/group;  then
+                echo "group exists"
+        else
+                echo "group $user does not exist, creating"
+                addgroup ${user}
+        fi
 
-###################################
+        adduser --ingroup ${user} ${user}
+        echo "${user} ALL=(ALL:ALL) ALL" >> /etc/sudoers
 
-echo ""
-echo "Setting up nepi user account"
-group="${NEPI_USER}"
-user="${NEPI_USER}"
-if grep -q $group /etc/group;  then
-        echo "group exists"
-else
-        echo "group $group does not exist, creating"
-        addgroup ${NEPI_USER}
-fi
 
-if id -u "$user" >/dev/null 2>&1; then
-    echo "User $user exists."
-else
-    echo "User $user does not exist, creating"
-    adduser --ingroup ${NEPI_USER} ${NEPI_USER}
-    echo "${NEPI_USER} ALL=(ALL:ALL) ALL" >> /etc/sudoers
+        echo "new_password" | ${password} --stdin ${user}
 
-    
-fi
-su ${NEPI_USER}
-passwd
-${NEPI_USER}
-${NEPI_USER_PW}
+        # Add nepi user to dialout group to allow non-serial connections
+        adduser ${user} dialout
 
-su ${NEPI_USER}
+        #or //https://arduino.stackexchange.com/questions/74714/arduino-dev-ttyusb0-permission-denied-even-when-user-added-to-group-dialout-o
+        #Add your standard user to the group "dialout'
+        usermod -a -G dialout ${user}
+        #Add your standard user to the group "tty"
+        usermod -a -G tty ${user}
 
-# Add nepi user to dialout group to allow non-sudo serial connections
-sudo adduser ${NEPI_USER} dialout
+        # Create USER python folder
+        mkdir -p /home/${user}/.local/lib/python${NEPI_PYTHON}/site-packages
 
-#or //https://arduino.stackexchange.com/questions/74714/arduino-dev-ttyusb0-permission-denied-even-when-user-added-to-group-dialout-o
-#Add your standard user to the group "dialout'
-sudo usermod -a -G dialout ${NEPI_USER}
-#Add your standard user to the group "tty"
-sudo usermod -a -G tty ${NEPI_USER}
+        # Clear the Desktop
+        rm /home/${user}/Desktop/*
 
-# Create USER python folder
-mkdir -p ${HOME}/.local/lib/python${NEPI_PYTHON}/site-packages
+        echo "User Account Setup Complete"
+        echo ""
+    fi
+}
 
-# Clear the Desktop
-sudo rm ${NEPI_HOME}/Desktop/*
 
-echo "User Account Setup Complete"
+
+new_nepi_user $NEPI_ADMIN $NEPI_ADMIN_PW
+new_nepi_user $NEPI_USER $NEPI_USER_PW
 

@@ -10,6 +10,6 @@
 
 # Start NEPI ssh service
 
-echo "Starting NEPI SSH Management Services."
+echo "Starting NEPI SSH Processes"
 sudo /usr/sbin/sshd
 

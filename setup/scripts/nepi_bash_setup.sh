@@ -121,7 +121,8 @@ else
 fi
 sudo chmod 755 /home/${NEPI_USER}/.*
 
-
+# Copy files to nepiadmin home
+sudo cp /home/${NEPI_USER}/.* /home/${NEPI_ADMIN}/
 
 
 

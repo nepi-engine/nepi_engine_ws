@@ -17,7 +17,7 @@
 #echo "########################"
 
 
-UTILSN="#############################
+utilsn="#############################
 ## NEPI Util Functions ##
 #############################"
 
@@ -53,7 +53,7 @@ export -f pingn
 
 # source bashrc
 function sbrc(){
-    source ${HOME}/.bashrc
+    source /home/${USER}/.bashrc
 }
 export -f sbrc
 
@@ -64,7 +64,7 @@ function sdhcp(){
 }
 export -f sdhcp
 
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### SYSTEM UTIL FUNCTIONS
 pingi = Check for internet
 sbrc = Source the current users bashrc file
@@ -127,7 +127,7 @@ function export_yaml_value(){
     verbose=0
     value=$(yq e '.'"$KEY"'' $FILE)
     export ${VARIABLE}=$value
-    #echo "${VARIABLE}=${value}"
+    #Secho "${VARIABLE}=${value}"
 }
 export -f export_yaml_value
 
@@ -170,7 +170,7 @@ function print_config_file(){
 export -f print_config_file
 
 #### Update Help Test
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### NEPI FILE UTIL FUNCTIONS
 ftext = Find text in files recursively
 ffile = Find filenames with text match recursively
@@ -197,7 +197,7 @@ git push
 
 
 
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### Git UTIL FUNCTIONS
 gitn = adds git repo info to terminal prompt
 pushn = Add,commit,push repo changes with provided comment"
@@ -219,7 +219,7 @@ if which docker &> /dev/null; then
   }
 
   
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### Docker UTIL FUNCTIONS
 dimg = sudo docker images
 dps = sudo docker ps -a"
@@ -315,7 +315,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     rosservice call "$@"
     }
 
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### ROS UTIL FUNCTIONS
 sros = source ros bash setup
 ltopics = List all active topics
@@ -399,7 +399,7 @@ fi
   cd $SOURCE_FOLDER
   ./deploy_nepi_repos.sh"
 
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### NEPI DEV UTIL FUNCTIONS
 nepiclone = clone nepi main repo
 nepiclonedev = clone nepi dev repo
@@ -474,7 +474,7 @@ if [ 1 ]; then
 
 
 
-UTILSN="${UTILSN}
+utilsn="${utilsn}
 ### NEPI SYSTEM UTIL FUNCTIONS
 nepistart = start the nepi processes
 nepistop = stop the nepi processe
@@ -485,14 +485,8 @@ codebld = build/deploy all nepi repos
 ruibld = build/deploy rui system"
 fi
 
-##############################
-# Print out the nepi shortcuts
-##############################
 
-function utilsn(){
-    echo "$UTILSN"
-}
-export -f utilsn
+export UTILSN=${utilsn}
 
 export NEPI_UTILS_SOURCED=1
 

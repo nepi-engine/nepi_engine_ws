@@ -19,12 +19,59 @@ NEPI_STORAGE=/mnt/nepi_storage
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
-UINFO="$(. ${NEPI_UTILS_FILE} && utilsn)"
+
 
 ########################
 # Help Msg Initialization
 #########################
-HELPN=${UINFO}
+HELPN=""
+
+
+###################################
+# NEPI SSH Agent Config
+###################################
+
+CURRENT_DIR=$(pwd)
+
+export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
+
+LOCALHOST_IP="127.0.0.1"
+export NEPI_TARGET_IP=$LOCALHOST_IP
+export NEPI_TARGET_USERNAME=$NEPI_USER
+export NEPI_SSH_KEY=~/ssh_keys/nepi_engine_default_private_ssh_key
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src # This is the default if unset
+
+# Setup Connection Shortcuts
+alias sshn="ssh -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias scpn="scp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias sftpn="sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+
+
+SSH_ENV="$HOME/.ssh/environment"
+
+function run_ssh_env {
+  . "${SSH_ENV}" > /dev/null
+}
+
+function start_ssh_agent {
+  #echo "Initializing new SSH agent..."
+  ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+  echo "succeeded"
+  chmod 600 "${SSH_ENV}"
+
+  run_ssh_env;
+
+  ssh-add ~/.ssh/id_rsa;
+}
+
+if [ -f "${SSH_ENV}" ]; then
+  run_ssh_env;
+  ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+    start_ssh_agent;
+  }
+else
+  start_ssh_agent;
+fi
 
 
 #############################
@@ -97,57 +144,16 @@ export -f import_nepi
 function export_nepi(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_export.sh
 }
-export -f ffile
+export -f export_nepi
 
-
-
-
-###################################
-# NEPI SSH Agent Config
-###################################
-
-CURRENT_DIR=$(pwd)
-
-export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
-
-LOCALHOST_IP="127.0.0.1"
-export NEPI_TARGET_IP=$LOCALHOST_IP
-export NEPI_TARGET_USERNAME=$NEPI_USER
-export NEPI_SSH_KEY=~/ssh_keys/nepi_engine_default_private_ssh_key
-export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src # This is the default if unset
-
-# Setup Connection Shortcuts
-alias sshn="ssh -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
-alias scpn="scp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
-alias sftpn="sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
-
-
-SSH_ENV="$HOME/.ssh/environment"
-
-function run_ssh_env {
-  . "${SSH_ENV}" > /dev/null
-}
-
-function start_ssh_agent {
-  echo "Initializing new SSH agent..."
-  ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
-  echo "succeeded"
-  chmod 600 "${SSH_ENV}"
-
-  run_ssh_env;
-
-  ssh-add ~/.ssh/id_rsa;
-}
-
-if [ -f "${SSH_ENV}" ]; then
-  run_ssh_env;
-  ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
-    start_ssh_agent;
-  }
-else
-  start_ssh_agent;
-fi
-
+HELPN="${HELPN}
+################################
+## NEPI Docker Functions ##
+################################
+create_tag = Create a docker tag given SW_VERSION HW_TYPE HW_MODEL TAG_VARIABLE
+commit_nepi = Commit the running nepi container
+login_nepi = Log into the running nepi container
+switch_nepi = Switch to Inactive NEPI container on next boot or reststat"
 
 
 ###################################
@@ -325,7 +331,8 @@ HELPN="${HELPN}
 setupn = ${USER}/nepi_engine_ws/setup"
 
 
-function helpn(){
+function nepihelp(){
+    echo "$UTILSN"
     echo "$HELPN"
 }
 

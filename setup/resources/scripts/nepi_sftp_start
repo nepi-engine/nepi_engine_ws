@@ -9,5 +9,7 @@
 ##
 
 # Start NEPI ssh service
-cd usr/bin/
-sudo ./supervisord -c /etc/supervisor/conf.d/nepi.conf
+
+echo "Starting NEPI SFTP Processes"
+sudo /usr/lib/openssh/sftp-server
+
