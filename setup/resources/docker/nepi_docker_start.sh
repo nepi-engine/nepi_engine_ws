@@ -61,13 +61,14 @@ DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
 
 
 # Set Clock Settings
-if [[ "$NEPI_MANAGES_CLOCK" -eq 1 ]]; then
-    echo "Disabling Host Auto Clock Updating"
-    sudo timedatectl set-ntp no
 
-DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
---cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \ "
-fi 
+#if [[ "$NEPI_MANAGES_CLOCK" -eq 1 ]]; then
+#    echo "Disabling Host Auto Clock Updating"
+#    sudo timedatectl set-ntp no
+
+#DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND}
+#--cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \ "
+#fi 
 
 # Set cuda support if needed
 if [[ "$NEPI_DEVICE_ID" == "device1" ]]; then
