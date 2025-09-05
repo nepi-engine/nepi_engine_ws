@@ -243,9 +243,9 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     function sros(){
       # Source ROS Env
       if [[ -f "$NROS" ]]; then
-        source $NROS
+        source ${NROS}
       elif [[ -f "$ROS" ]]; then
-        source /opt/ros/noetic/setup.bash
+        source ${ROS}
       else
         echo "No Ros Setup File Found"
       fi
@@ -332,73 +332,18 @@ fi
 ###################################
 # NEPI DEV Util Functions
 ###################################
+SOURCE_FOLDER=/home/${USER}/nepi_enine_ws
 
 
-  function nepiclone(){
-  if [ ! -d "${HOME}/nepi_engine_ws" ]; then
-    sudo mkdir $NEPI_SOURCE
-    sudo chmod -R ${USER}:${USER} $NEPI_SOURCE
-  fi
-  if [ -d "${HOME}/nepi_engine_ws" ]; then
-    if [ -d "${SOURCE_FOLDER}" ]; then
-      echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
-    else
-      cd ${HOME}/nepi_engine_ws
-      BRANCH=main
-      if [[ "$NEPI_ROS" == "NOETIC" ]]; then
-        SUBBRANCH=ros1_main
-      else
-        SUBBRANCH=ros2_main
-      fi
-      git clone git@github.com:nepi-engine/nepi_engine_ws.git
-      cd nepi_engine_ws
-      git checkout $BRANCH
-      git submodule update --init --recursive
-      git submodule update 
-      git submodule foreach git checkout $SUBBRANCH 
-      git submodule foreach git pull origin $SUBBRANCH
-    fi
-  fi
-  }
+## NEPI deploy complete
+alias nepidpl="
+cd $SOURCE_FOLDER
+./deploy_nepi_complete.sh"
 
-  function nepiclonedev(){
-  if [ ! -d "${HOME}/nepi_engine_ws" ]; then
-    sudo mkdir $NEPI_SOURCE
-    sudo chmod -R ${USER}:${USER} $NEPI_SOURCE
-  fi
-  if [ -d "${HOME}/nepi_engine_ws" ]; then
-    if [ -d "${SOURCE_FOLDER}" ]; then
-      echo "NEPI Source Folder Exists: ${SOURCE_FOLDER}. Delete and try again"
-    else
-      cd ${HOME}/nepi_engine_ws
-      if [[ "$NEPI_ROS" == "NOETIC" ]]; then
-        BRANCH=ros1_develop
-        SUBBRANCH=ros1_main
-      else
-        BRANCH=ros2_develop
-        SUBBRANCH=ros2_main
-      fi
-      git clone git@github.com:nepi-engine/nepi_engine_ws.git
-      cd nepi_engine_ws
-      git checkout $BRANCH
-      git submodule update --init --recursive
-      git submodule update 
-      git submodule foreach git checkout $SUBBRANCH
-      git submodule foreach git pull origin $SUBBRANCH
-    fi
-  fi
-  }
-
-
-  ## NEPI deploy complete
-  alias nepidpl="
-  cd $SOURCE_FOLDER
-  ./deploy_nepi_complete.sh"
-
-  # NEPI deploy repos
-  alias repodpl="
-  cd $SOURCE_FOLDER
-  ./deploy_nepi_repos.sh"
+# NEPI deploy repos
+alias repodpl="
+cd $SOURCE_FOLDER
+./deploy_nepi_repos.sh"
 
 utilsn="${utilsn}
 ### NEPI DEV UTIL FUNCTIONS
@@ -411,32 +356,23 @@ repodpl = deploy specific repos"
 # NEPI SYSTEM Util Functions
 ###################################
 
+NEPI_ENGINE=/opt/nepi/nepi_engine
+NEPI_STORAGE=/mnt/nepi_storage
+NEPI_USER=nepi
+
 if [ 1 ]; then
 
   # NEPI stop and start shortcuts
   function nepistop(){
-    if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
-      sudo supervisorctl stop nepi_engine
-    else
-      sudo systemctl stop nepi_engine
-    fi
+     sudo supervisorctl stop nepi_engine
+     sudo systemctl stop nepi_engine
+
   }
 
   function nepistart(){
-    if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
       sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
-    else
       sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
-    fi
-  }
 
-  # copy arvhived images to install folder
-  function mvimg(){
-      nimg=$NEPI_IMPORT_PATH
-      narch=$NEPI_EXPORT_PATH
-      if [[ "$nimg" != "$narch" ]]; then
-        mv ${narch}/* $nimg/
-      fi
   }
 
   # copy arvhived images to install folder
