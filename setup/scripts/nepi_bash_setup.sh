@@ -24,9 +24,9 @@ fi
 
 mkdir -p /home/${NEPI_USER}/.local/lib/python${NEPI_PYTHON}/site-packages
 
-sudo ln -sfn /usr/bin/python${PYTHON_VERSION} /usr/bin/python3
+sudo ln -sfn /usr/bin/python${NEPI_PYTHON} /usr/bin/python3
 sudo ln -sfn /usr/bin/python3 /usr/bin/python
-sudo python${PYTHON_VERSION} -m pip --version
+sudo python${NEPI_PYTHON} -m pip --version
 
 
 #####################################
