@@ -193,7 +193,12 @@ function gitn(){
 function pushn(){
 git add --all
 git commit -m "*$@*" 
-git push origin HEAD:ros1_main
+cur_folder=${PWD##*/}
+par_path=$(dirname "$(pwd)")
+par_folder=${par_path##/*}
+if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
+  git push origin HEAD:ros1_main
+fi
 }
 
 
