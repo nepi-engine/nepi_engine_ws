@@ -336,6 +336,8 @@ fi
 # NEPI DEV Util Functions
 ###################################
 export SOURCE_FOLDER=/home/${USER}/nepi_engine_ws
+GREEN='\033[0;32m'
+RED='\033[0;31m'
 
 ## NEPI deploy complete
 alias nepidpl="
@@ -355,12 +357,20 @@ repodpl = deploy specific repos"
 function pushn(){
 git add --all
 git commit -m "*$@*" 
+git push
 cur_folder=${PWD##*/}
 par_path=$(dirname "$(pwd)")
 par_folder=${par_path##/*}
 if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
-  git push origin HEAD:ros1_main
+  echo -e "${GREEN}Pushing to Repo Head ros1_main"
+  result_string=$(git push origin HEAD:ros1_main)
+  if [[ "$result_string" == *"rejected"* ]]; then
+    echo -e "${GREEN}Push Failed"
+    return 1 # Failed
+  fi
 fi
+echo -e "${GREEN}Pushed Successfully"
+return 0
 }
 
 
@@ -371,7 +381,8 @@ function pushna(){
     cd $src_folder
     for d1 in */; do
       if [ -d "$d1" ]; then
-        rep_folder=${src_folder}/${d1}
+
+        rep_folder=${src_folder}${d1}
         echo ""
         echo ""
         echo "Processing Repo ${d1}"
@@ -380,23 +391,30 @@ function pushna(){
         cd ${rep_folder}
         for d2 in */; do
           if [ -d "$d2" ]; then
-            proj_folder=${rep_folder}/${d1}
+            proj_folder=${rep_folder}${d2}
             cd ${proj_folder}
-            if [ -f ".git" ]; then
+            if [ -f "${proj_folder}/.git" ]; then
               echo ""
               echo "${d2}"
               echo "--------------------"
               pushn $commit_comment
+              if [[ $? -eq 1 ]]; then
+                exit 1
+              fi
             fi
           fi
         done
         cd ${rep_folder}
-        if [ -f ".git" ]; then
+        if [ -f "${rep_folder}/.git" ]; then
             echo ""
             echo "${d1}"
             echo "--------------------"
             pushn $commit_comment
+            if [[ $? -eq 1 ]]; then
+              exit 1
+            fi
         fi
+        cd $src_folder
       fi
     done
     cd ${SOURCE_FOLDER}
@@ -404,6 +422,9 @@ function pushna(){
     echo "nepi_engine_ws"
     echo "--------------------"
     pushn $commit_comment
+    if [[ $? -eq 1S ]]; then
+      exit 1
+    fi
   fi
 }
 
