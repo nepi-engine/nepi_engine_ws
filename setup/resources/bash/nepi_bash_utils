@@ -372,6 +372,11 @@ function pushna(){
     for d1 in */; do
       if [ -d "$d1" ]; then
         rep_folder=${src_folder}/${d1}
+        echo ""
+        echo ""
+        echo "Processing Repo ${d1}"
+        echo "*********************"
+        echo ""
         cd ${rep_folder}
         for d2 in */; do
           if [ -d "$d2" ]; then
