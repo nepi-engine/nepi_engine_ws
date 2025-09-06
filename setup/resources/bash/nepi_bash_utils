@@ -193,7 +193,7 @@ function gitn(){
 function pushn(){
 git add --all
 git commit -m "*$@*" 
-git push
+git push origin HEAD:ros1_main
 }
 
 
@@ -233,7 +233,7 @@ fi
 # ROS Util Functions
 ###################################
 NROS=/opt/nepi/nepi_engine/setup.bash
-ROS=/opt/ros/noetic/setup.bash
+ROS=/opt/ros/*/setup.bash
 HAS_ROS=$(dpkg -l | grep ros-)
 if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
@@ -242,9 +242,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     # Function to search for topic containing string
     function sros(){
       # Source ROS Env
-      if [[ -f "$NROS" ]]; then
-        source ${NROS}
-      elif [[ -f "$ROS" ]]; then
+      if [[ -f "$ROS" ]]; then
         source ${ROS}
       else
         echo "No Ros Setup File Found"
@@ -254,7 +252,17 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
     export -f sros
 
+        function snros(){
+      # Source NEPI ROS Env
+      if [[ -f "$NROS" ]]; then
+        source ${NROS}
+      else
+        echo "No Ros Setup File Found"
+      fi
+      NEEDS_ROS=0
+    }
 
+    export -f snros
 
     # Function to search for topic containing string
     function ftopic(){
@@ -319,6 +327,7 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 utilsn="${utilsn}
 ### ROS UTIL FUNCTIONS
 sros = source ros bash setup
+snros = source nepi ros bash setup
 ltopics = List all active topics
 ftopic = Find topics containing provided string
 etopic = Echo to provided topic
@@ -332,8 +341,7 @@ fi
 ###################################
 # NEPI DEV Util Functions
 ###################################
-SOURCE_FOLDER=/home/${USER}/nepi_enine_ws
-
+export SOURCE_FOLDER=/home/${USER}/nepi_enine_ws
 
 ## NEPI deploy complete
 alias nepidpl="
@@ -347,8 +355,6 @@ cd $SOURCE_FOLDER
 
 utilsn="${utilsn}
 ### NEPI DEV UTIL FUNCTIONS
-nepiclone = clone nepi main repo
-nepiclonedev = clone nepi dev repo
 nepidpl = deploy nepi complete
 repodpl = deploy specific repos"
 
@@ -356,23 +362,39 @@ repodpl = deploy specific repos"
 # NEPI SYSTEM Util Functions
 ###################################
 
-NEPI_ENGINE=/opt/nepi/nepi_engine
-NEPI_STORAGE=/mnt/nepi_storage
-NEPI_USER=nepi
+export NEPI_USER=nepi
+export NEPI_HOME=/home/nepi
+export NEPI_ENGINE=/opt/nepi/nepi_engine
+export NEPI_STORAGE=/mnt/nepi_storage
 
 if [ 1 ]; then
 
+
+  ## NEPI deploy complete
+  alias nepihomeNEPI_HOME="
+  cd ${NEPI_HOME}"
+
+
   # NEPI stop and start shortcuts
   function nepistop(){
-     sudo supervisorctl stop nepi_engine
-     sudo systemctl stop nepi_engine
+
+    service_name="nepi_engine"
+    if systemctl status > /dev/null 2>&1; then
+      if systemctl is-active --quiet "$service_name.service" ; then
+        systemctl stop "$service_name"
+      fi
+    elif supervisorctl status > /dev/null 2>&1; then
+      #echo "Supervisor and its managed processes appear to be running."
+      status = supervisorctl status "$service_name" 2>/dev/null
+      if echo "$status" | grep -q "RUNNING"; then
+        sudo supervisorctl stop nepi_engine
+      fi
+    fi
 
   }
 
   function nepistart(){
       sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
-      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
-
   }
 
   # copy arvhived images to install folder
@@ -413,6 +435,7 @@ if [ 1 ]; then
 
 utilsn="${utilsn}
 ### NEPI SYSTEM UTIL FUNCTIONS
+nepihome = change to nepi home dir
 nepistart = start the nepi processes
 nepistop = stop the nepi processe
 mvimg = Move archived nepi images to nepi image install folder

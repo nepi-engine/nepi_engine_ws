@@ -18,9 +18,7 @@
 
 
 # Note, this script deploys the Auto Scripts to on host system
-sros
-wait
-echo "ROS Sourced"
+
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then

@@ -32,8 +32,6 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
-sros
-echo "ROS Sourced"
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
@@ -119,7 +117,7 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 ###### NEPI Engine #####
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  catkin build --profile=release
+  catkin build --profile=release --env-cache
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI Engine SDK Build by User Request ***${CLEAR}\n"
@@ -143,7 +141,7 @@ else
     source ${NEPI_HOME}/.nvm/nvm.sh
     source ./devenv.sh
     cd src/rui_webserver/rui-app/
-    npm run build
+    npm run build 
     deactivate
     cd ${NEPI_ENGINE_SRC_ROOTDIR}
     printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"

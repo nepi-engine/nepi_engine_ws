@@ -117,12 +117,14 @@ sudo apt-get install -y lsyncd rsync
 sudo add-apt-repository ppa:rmescandon/yq -y
 sudo apt update 
 sudo apt install yq -y
+sudo apt install ninja-build
+
 
 ### Install ccache
 #https://askubuntu.com/questions/470545/how-do-i-set-up-ccache
-cd $TMP
+
 sudo apt install -y ccache
-#sudo /usr/sbin/update-ccache-symlinks
+sudo /usr/sbin/update-ccache-symlinks
 echo 'export PATH="/usr/lib/ccache:$PATH"' | tee -a ~/.bashrc
 source ~/.bashrc && echo $PATH
 ccache --version

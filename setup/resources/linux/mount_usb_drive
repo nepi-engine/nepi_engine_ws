@@ -11,8 +11,8 @@ sudo ls -l /dev/disk/by-label/
 # Mount the drive
 
 sudo su
-DRIVE=sda1
-MOUNT=usbd
+DRIVE=sda2
+MOUNT=usbd2
 cd /mnt
 mkdir $MOUNT
 chown ${USER}:${USER} $MOUNT
