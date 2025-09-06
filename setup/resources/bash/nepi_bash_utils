@@ -190,23 +190,12 @@ function gitn(){
   PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\033[0;32m$(__git_ps1 " (%s)")\033[0m\$ '
 }
 
-function pushn(){
-git add --all
-git commit -m "*$@*" 
-cur_folder=${PWD##*/}
-par_path=$(dirname "$(pwd)")
-par_folder=${par_path##/*}
-if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
-  git push origin HEAD:ros1_main
-fi
-}
 
 
 
 utilsn="${utilsn}
 ### Git UTIL FUNCTIONS
-gitn = adds git repo info to terminal prompt
-pushn = Add,commit,push repo changes with provided comment"
+gitn = adds git repo info to terminal prompt"
 
 
 
@@ -346,7 +335,7 @@ fi
 ###################################
 # NEPI DEV Util Functions
 ###################################
-export SOURCE_FOLDER=/home/${USER}/nepi_enine_ws
+export SOURCE_FOLDER=/home/${USER}/nepi_engine_ws
 
 ## NEPI deploy complete
 alias nepidpl="
@@ -362,6 +351,49 @@ utilsn="${utilsn}
 ### NEPI DEV UTIL FUNCTIONS
 nepidpl = deploy nepi complete
 repodpl = deploy specific repos"
+
+function pushn(){
+git add --all
+git commit -m "*$@*" 
+cur_folder=${PWD##*/}
+par_path=$(dirname "$(pwd)")
+par_folder=${par_path##/*}
+if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
+  git push origin HEAD:ros1_main
+fi
+}
+
+
+function pushna(){
+  if [ -d "$SOURCE_FOLDER" ]; then
+    commit_comment=*$@*
+    cd ${SOURCE_FOLDER}/src
+    for d1 in */; do
+      if [ -d "$d1" ]; then
+        cd ${d1}
+        for d2 in */; do
+          cd ${d2}
+          if [ -f ".git" ]; then
+            pushn $commit_comment
+          fi
+        done
+        cd ${d1}
+        if [ -f ".git" ]; then
+            pushn $commit_comment
+        fi
+      fi
+    done
+    cd ${SOURCE_FOLDER}
+    pushn $commit_comment
+  fi
+}
+
+utilsn="${utilsn}
+### NEPI DEV UTIL FUNCTIONS
+nepidpl = Deploy nepi complete to nepi device
+repodpl = Deploy repos to nepi device
+pushn = Add,commit,push repo changes with provided comment
+pushna = Add,commit,push repo changes with provided comment for all nepi repos"
 
 ###################################
 # NEPI SYSTEM Util Functions
