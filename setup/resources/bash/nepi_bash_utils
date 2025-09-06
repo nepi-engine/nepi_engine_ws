@@ -378,20 +378,26 @@ function pushna(){
             proj_folder=${rep_folder}/${d1}
             cd ${proj_folder}
             if [ -f ".git" ]; then
-              echo "Pushing repo project repo: ${d2}"
+              echo ""
+              echo "${d2}"
+              echo "--------------------"
               pushn $commit_comment
             fi
           fi
         done
         cd ${rep_folder}
         if [ -f ".git" ]; then
-            echo "Pushing repo: ${d1}"
+            echo ""
+            echo "${d1}"
+            echo "--------------------"
             pushn $commit_comment
         fi
       fi
     done
     cd ${SOURCE_FOLDER}
-    echo "Pushing workspace: nepi_engine_ws"
+    echo ""
+    echo "nepi_engine_ws"
+    echo "--------------------"
     pushn $commit_comment
   fi
 }
