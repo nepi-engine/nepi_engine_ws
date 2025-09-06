@@ -367,23 +367,31 @@ fi
 function pushna(){
   if [ -d "$SOURCE_FOLDER" ]; then
     commit_comment=*$@*
-    cd ${SOURCE_FOLDER}/src
+    src_folder=${SOURCE_FOLDER}/src
+    cd $src_folder
     for d1 in */; do
       if [ -d "$d1" ]; then
-        cd ${d1}
+        rep_folder=${src_folder}/${d1}
+        cd ${rep_folder}
         for d2 in */; do
-          cd ${d2}
-          if [ -f ".git" ]; then
-            pushn $commit_comment
+          if [ -d "$d2" ]; then
+            proj_folder=${rep_folder}/${d1}
+            cd ${proj_folder}
+            if [ -f ".git" ]; then
+              echo "Pushing repo project repo: ${d2}"
+              pushn $commit_comment
+            fi
           fi
         done
-        cd ${d1}
+        cd ${rep_folder}
         if [ -f ".git" ]; then
+            echo "Pushing repo: ${d1}"
             pushn $commit_comment
         fi
       fi
     done
     cd ${SOURCE_FOLDER}
+    echo "Pushing workspace: nepi_engine_ws"
     pushn $commit_comment
   fi
 }
