@@ -382,7 +382,7 @@ function pushna(){
     for d1 in */; do
       if [ -d "$d1" ]; then
 
-        rep_folder=${src_folder}${d1}
+        rep_folder=${src_folder}/${d1}
         echo ""
         echo ""
         echo "Processing Repo ${d1}"
@@ -391,7 +391,7 @@ function pushna(){
         cd ${rep_folder}
         for d2 in */; do
           if [ -d "$d2" ]; then
-            proj_folder=${rep_folder}${d2}
+            proj_folder=${rep_folder}/${d2}
             cd ${proj_folder}
             if [ -f "${proj_folder}/.git" ]; then
               echo ""
