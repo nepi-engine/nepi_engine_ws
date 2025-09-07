@@ -95,11 +95,11 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 
 ###### ROS-based SDK Components #####
 if [ "${DO_SDK}" -eq "1" ]; then
-  printf "\n${HIGHLIGHT}*** Starting NEPI Engine ROS SDK Build ***${CLEAR}\n"
-  catkin build --profile=release --env-cache
+  printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
+  catkin build --profile=release --env-cache #-v
   printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
 else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine ROS SDK Build by User Request ***${CLEAR}\n"
+  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine Build by User Request ***${CLEAR}\n"
 fi
 
 

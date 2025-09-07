@@ -72,7 +72,7 @@ if grep -qnw $BASHRC -e "##### System Config #####" ; then
 else
     echo ' ' | sudo tee -a $BASHRC
     echo '##### System Config #####' | sudo tee -a $BASHRC
-    echo 'export CMAKE_POLICY_VERSION_MINIMUM=3.5' | sudo tee -a $BASHRC
+    echo '#export CMAKE_POLICY_VERSION_MINIMUM=3.5' | sudo tee -a $BASHRC
     echo 'export SETUPTOOLS_USE_DISTUTILS=stdlib' | sudo tee -a $BASHRC
     echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib' | sudo tee -a $BASHRC
     echo 'export LD_PRELOAD=/usr/local/lib/libOpen3D.so' | sudo tee -a $BASHRC

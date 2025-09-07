@@ -27,7 +27,7 @@
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to 
 #######################################################################################################
 
-REPOS="nepi_interfaces nepi_engine nepi_rui" #nepi_drivers nepi_ai_frameworks nepi_apps"
+REPOS="nepi_engine nepi_interfaces  nepi_rui nepi_ai_frameworks" #nepi_drivers nepi_apps"
 
 
 # Set NEPI folder variables if not configured by nepi aliases bash script

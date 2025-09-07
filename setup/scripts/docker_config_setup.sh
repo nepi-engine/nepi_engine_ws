@@ -174,17 +174,36 @@ echo "Updated NEPI Config file ${NEPI_CFG_DEST}"
 echo "Setting up NEPI Docker Host services"
 etc_source=${NEPI_CONFIG}/docker_cfg/etc
 
-etc_dest=/etc
-etc_sync=${NEPI_CONFIG}/docker_cfg/etc/docker/etc
-lsyncd_file=${etc_dest}/lsyncd/lsyncd.conf
 
-sudo rm -r ${NEPI_DOCKER_CONFIG}/etc/docker/etc/*
+etc_sync=/docker/etc
+
+
+# Setup NEPI ETC to OS Host ETC Linked files
+sudo cp -r ${etc_source}/lsyncd /etc/
+function add_etc_sync(){
+    etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
+    etc_dest=/etc/${1}
+    lsyncd_file=/etc/lsyncd/lsyncd.conf
+    echo "" | sudo tee -a $lsyncd_file
+    echo "sync {" | sudo tee -a $lsyncd_file
+    echo "    default.rsync," | sudo tee -a $lsyncd_file
+    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+    echo "}" | sudo tee -a $lsyncd_file
+    echo " " | sudo tee -a $lsyncd_file
+}
+
+
+if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
+
+fi
+
 sudo chown -R ${USER}:${USER} ${NEPI_DOCKER_CONFIG}
 
 sudo ln -sf ${etc_source}/hosts ${etc_sync}
 if [ ! -f "/etc/hosts.bak" ]; then
     sudo cp -p /etc/hosts /etc/hosts.bak
-fi
+fi 
 
 sudo ln -sf ${etc_source}/hostname ${etc_sync}
 if [ ! -f "/etc/hostname.bak" ]; then
@@ -248,10 +267,6 @@ fi
 ###########################################
 # Set up SSH
 
-#sudo ln -sf ${NEPI_ETC}/ssh ${etc_sync}/ssh
-#if [ ! -f "/etc/ssh/sshd_config.bak" ]; then
-#    sudo cp -p -r /etc/ssh /etc/ssh
-#fi
 
 
 echo " "
@@ -309,15 +324,7 @@ sudo cp ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules
 #############################################
 ### Configure and restart nepi etc sync process
 
-sudo cp -r ${etc_source}/lsyncd ${etc_dest}
-if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
-    echo "" | sudo tee -a $lsyncd_file
-    echo "sync {" | sudo tee -a $lsyncd_file
-    echo "    default.rsync," | sudo tee -a $lsyncd_file
-    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
-    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
-    echo "}" | sudo tee -a $lsyncd_file
-fi
+
 
 #sudo systemctl enable lsyncd
 #sudo systemctl restart lsyncd

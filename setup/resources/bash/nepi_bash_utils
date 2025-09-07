@@ -355,26 +355,26 @@ nepidpl = deploy nepi complete
 repodpl = deploy specific repos"
 
 function pushn(){
-git add --all
-git commit -m "*$@*" 
-git push
-cur_folder=${PWD##*/}
-par_path=$(dirname "$(pwd)")
-par_folder=${par_path##/*}
-if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
-  echo -e "${GREEN}Pushing to Repo Head ros1_main"
-  result_string=$(git push origin HEAD:ros1_main)
-  if [[ "$result_string" == *"rejected"* ]]; then
-    echo -e "${GREEN}Push Failed"
-    return 1 # Failed
+  git add --all
+  git commit -m "*$@*" 
+  git push
+  cur_folder=${PWD##*/}
+  par_path=$(dirname "$(pwd)")
+  par_folder=${par_path##/*}
+  if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
+    echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ros1_main"
+    git push origin HEAD:ros1_main
+    if [ ! $? -eq 0 ]; then
+      echo -e "${RED}Push Failed"
+      return 1 # Failed
+    fi
   fi
-fi
-echo -e "${GREEN}Pushed Successfully"
-return 0
+  echo -e "${GREEN}Push Successfully"
 }
 
 
 function pushna(){
+  failed=0
   if [ -d "$SOURCE_FOLDER" ]; then
     commit_comment=*$@*
     src_folder=${SOURCE_FOLDER}/src
@@ -389,41 +389,52 @@ function pushna(){
         echo "*********************"
         echo ""
         cd ${rep_folder}
+        echo 1
         for d2 in */; do
+          echo $d2
           if [ -d "$d2" ]; then
+            echo 3
             proj_folder=${rep_folder}/${d2}
+            echo 4
             cd ${proj_folder}
+            echo 5
             if [ -f "${proj_folder}/.git" ]; then
+              echo 6
               echo ""
               echo "${d2}"
               echo "--------------------"
-              pushn $commit_comment
-              if [[ $? -eq 1 ]]; then
-                exit 1
+              failed=pushn $commit_comment
+              echo "Pushed ${d2}"
+              if [[ "failed" -eq 1 ]]; then
+                break
               fi
             fi
           fi
         done
         cd ${rep_folder}
-        if [ -f "${rep_folder}/.git" ]; then
+        if [ -f "${rep_folder}/.git" and "$failed" -eq 0 ]; then
             echo ""
             echo "${d1}"
             echo "--------------------"
-            pushn $commit_comment
-            if [[ $? -eq 1 ]]; then
-              exit 1
+            failed=pushn $commit_comment
+            echo "Pushed ${d1}"
+            if [[ "$failed" -eq 1 ]]; then
+              break
             fi
         fi
         cd $src_folder
       fi
     done
     cd ${SOURCE_FOLDER}
-    echo ""
-    echo "nepi_engine_ws"
-    echo "--------------------"
-    pushn $commit_comment
-    if [[ $? -eq 1S ]]; then
-      exit 1
+    if [ "$failed" -e 0 ]; then
+      echo ""
+
+      echo "nepi_engine_ws"
+      echo "--------------------"
+      pushn $commit_comment
+      if [[ $? -eq 1S ]]; then
+        success=0
+      fi
     fi
   fi
 }
@@ -458,7 +469,7 @@ if [ 1 ]; then
     service_name="nepi_engine"
     if systemctl status > /dev/null 2>&1; then
       if systemctl is-active --quiet "$service_name.service" ; then
-        systemctl stop "$service_name"
+        sudo systemctl stop "$service_name"
       fi
     elif supervisorctl status > /dev/null 2>&1; then
       #echo "Supervisor and its managed processes appear to be running."

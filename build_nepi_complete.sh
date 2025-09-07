@@ -117,10 +117,11 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 ###### NEPI Engine #####
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  catkin build --profile=release --env-cache
+
+  catkin build --profile=release --env-cache #-v
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
 else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine SDK Build by User Request ***${CLEAR}\n"
+  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine by User Request ***${CLEAR}\n"
 fi
 
 
