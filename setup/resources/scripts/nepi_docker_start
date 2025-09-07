@@ -1,0 +1,17 @@
+#! /bin/bash
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
+#source /opt/nepi/etc/load_system_config.sh
+
+# Start NEPI Time Management Processes
+echo "Starting NEPI Synce Processes"
+cd usr/bin/
+sudo ./supervisord -c /etc/supervisor/conf.d/nepi.conf
+

@@ -31,6 +31,8 @@ source $(pwd)/load_docker_config.sh
 wait
 ########################
 
+# stop etc sync functions
+sudo systemctl stop lsyncd
 
 ########################
 # Stop Running Command

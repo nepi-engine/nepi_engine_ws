@@ -23,26 +23,99 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-
 ########################
 # Stop Any Running NEPI Containers
 ########################
 . ./nepi_docker_stop.sh
 wait
 
+
 #######################
+# Update ETC Config Files
+#######################
+DOCKER_ETC=${NEPI_CONFIG}/docker_cfg/etc
+
+# Sync with factory config first
+cp ${DOCKER_ETC}/nepi_system_config.yaml ${DOCKER_ETC}/nepi_system_config.tmp
+cp ${DOCKER_ETC}/nepi_etc_update.yaml ${DOCKER_ETC}/nepi_etc_update.tmp
+
+sudo rsync -arh ${NEPI_CONFIG}/factory_cfg/etc/ ${NEPI_CONFIG}/docker_cfg/
+
+mv ${DOCKER_ETC}/nepi_system_config.tmp ${DOCKER_ETC}/nepi_system_config.yaml
+mv ${DOCKER_ETC}/nepi_etc_update.tmp ${DOCKER_ETC}/nepi_etc_update.yaml
 # Update Etc
-export ETC_FOLDER=$(pwd)/etc
-source $(pwd)/load_docker_config.sh
-wait
 source $(pwd)/update_etc_files.sh
 wait
 
-#***********************
-##### TO DO
-# NEED TO SYNC TO NEPI factory and system etc folders
-#####
-#***********************
+sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/factory_cfg/
+
+# Sync with system config
+cp ${DOCKER_ETC}/nepi_system_config.yaml ${DOCKER_ETC}/nepi_system_config.tmp
+cp ${DOCKER_ETC}/nepi_etc_update.yaml ${DOCKER_ETC}/nepi_etc_update.tmp
+
+sudo rsync -arh ${NEPI_CONFIG}/system_cfg/etc/ ${NEPI_CONFIG}/docker_cfg/
+
+mv ${DOCKER_ETC}/nepi_system_config.tmp ${DOCKER_ETC}/nepi_system_config.yaml
+mv ${DOCKER_ETC}/nepi_etc_update.tmp ${DOCKER_ETC}/nepi_etc_update.yaml
+
+# Update Etc
+source $(pwd)/update_etc_files.sh
+wait
+
+sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/system_cfg/
+
+########################################
+# Update NEPI ETC to OS Host ETC Linked files
+########################################
+sudo systemctl stop lsyncd
+sudo cp -r ${etc_source}/lsyncd /etc/
+lsyncd_file=/etc/lsyncd/lsyncd.conf
+function add_etc_sync(){
+    etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
+    etc_dest=/etc/${1}
+    echo "" | sudo tee -a $lsyncd_file
+    echo "sync {" | sudo tee -a $lsyncd_file
+    echo "    default.rsync," | sudo tee -a $lsyncd_file
+    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+    echo "}" | sudo tee -a $lsyncd_file
+    echo " " | sudo tee -a $lsyncd_file
+}
+sudo chown -R ${USER}:${USER} ${lsyncd_file}
+
+add_etc_sync hosts
+add_etc_sync hostname
+if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+    add_etc_sync /network/interfaces.d
+    add_etc_sync network/interfaces
+    add_etc_sync dhcp/dhclient.conf
+    add_etc_sync wpa_supplicant
+
+    # # RESTART NETWORK
+    # #sudo ip addr flush eth0 && 
+    # sudo systemctl start networking.service
+    # sudo ifdown --force --verbose eth0
+    # sudo ifup --force --verbose eth0
+
+    # # Remove and restart dhclient
+    # sudo dhclient -r
+    # sudo dhclient
+    # sudo dhclient -nw
+    # #ps aux | grep dhcp
+fi
+
+if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+    add_etc_sync ${etc_path}
+    sudo systemctl restart chrony
+fi
+
+add_etc_sync ssh/sshd_config
+sudo systemctl restart sshd
+
+# restart the sync service
+sudo systemctl restart lsyncd
+###########################################
+
 
 ########################
 # Build Run Command

@@ -28,26 +28,37 @@ fi
 
 ###################
 # Copy Config Files
-SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
-DEST_PATH=${NEPI_ETC}
+ETC_SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+ETC_DEST_PATH=${NEPI_ETC}
+
+SCRIPTS_SOURCE_PATH=$(dirname "$(pwd)")/resources/scripts
+SCRIPTS_DEST_PATH=${NEPI_SCRIPTS}
+
 CONFIG_USER=${NEPI_USER}
 
 
 echo ""
-echo "Populating System Folders from ${SOURCE_PATH}"
-sudo cp -R ${SOURCE_PATH}/* ${DEST_PATH}/
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
+echo "Updating System Scrips from ${SCRIPTS_SOURCE_PATH}"
+sudo cp -R ${SCRIPTS_SOURCE_PATH}/* ${SCRIPTS_DEST_PATH}/
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $SCRIPTS_DEST_PATH
+sudpo chmod +x $SCRIPTS_DEST_PATH/*
+sudo cp ${SCRIPTS_SOURCE_PATH}/nepi_docker_start.sh /nepi_docker_start.sh
+
+echo ""
+echo "Updating System Etc from ${ETC_SOURCE_PATH}"
+sudo cp -R ${ETC_SOURCE_PATH}/* ${ETC_DEST_PATH}/
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
 
 # Update Deployed Config
 
 NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
 echo $NEPI_CONFIG_SOURCE
 
-NEPI_CONFIG_DEST_PATH=${NEPI_BASE}/etc
-NEPI_CONFIG_DEST=${NEPI_CONFIG_DEST_PATH}/nepi_system_config.yaml
+NEPI_CONFIG_ETC_DEST_PATH=${NEPI_BASE}/etc
+NEPI_CONFIG_DEST=${NEPI_CONFIG_ETC_DEST_PATH}/nepi_system_config.yaml
 echo $NEPI_CONFIG_DEST
-if [ ! -d "${NEPI_CONFIG_DEST_PATH}" ]; then
-    sudo mkdir -p ${NEPI_CONFIG_DEST_PATH}
+if [ ! -d "${NEPI_CONFIG_ETC_DEST_PATH}" ]; then
+    sudo mkdir -p ${NEPI_CONFIG_ETC_DEST_PATH}
 fi
 if [ ! -f "${NEPI_CONFIG_DEST}" ]; then
     sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
@@ -73,21 +84,21 @@ if [ "$OVERWRITE" -eq 1 ]; then
   sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
 fi
 
-echo $NEPI_CONFIG_DEST_PATH
+echo $NEPI_CONFIG_ETC_DEST_PATH
 
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_ETC_DEST_PATH
 export_config_file ${NEPI_CONFIG_DEST}
 
 ###############
 
-echo "Updating NEPI Config files in ${DEST_PATH}"
-source ${DEST_PATH}/update_etc_files.sh
+echo "Updating NEPI Config files in ${ETC_DEST_PATH}"
+source ${ETC_DEST_PATH}/update_etc_files.sh
 wait
 
 
 #######################
 # Copy the nepi_system_config.yaml file to the factory_cfg folder
-source_config=${DEST_PATH}/nepi_system_config.yaml
+source_config=${ETC_DEST_PATH}/nepi_system_config.yaml
 dest_etc=${NEPI_CONFIG}/factory_cfg/etc
 dest_config=${dest_etc}/nepi_system_config.yaml
 echo "Updating NEPI System Files in ${dest_config}"
@@ -96,7 +107,7 @@ sudo cp $source_config $dest_config
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_etc
 
 # Copy the nepi_system_config.yaml file to the system_cfg folder
-source_config=${DEST_PATH}/nepi_system_config.yaml
+source_config=${ETC_DEST_PATH}/nepi_system_config.yaml
 dest_etc=${NEPI_CONFIG}/system_cfg/etc
 dest_config=${dest_etc}/nepi_system_config.yaml
 echo "Updating NEPI System Files in ${dest_config}"
@@ -304,6 +315,27 @@ fi
 
 
     echo "NEPI Engine Service Setup Complete"
+
+
+#########################################
+# Setup NEPI etc sync process
+sudo cp -r ${etc_source}/lsyncd /etc/
+sudo chown -R ${USER}:${USER} ${lsyncd_file}
+
+lsyncd_file=/etc/lsyncd/lsyncd.conf
+etc_sync=${NEPI_BASE}/etc
+etc_dest=${NEPI_CONFIG}/docker_cfg/etc
+echo "" | sudo tee -a $lsyncd_file
+echo "sync {" | sudo tee -a $lsyncd_file
+echo "    default.rsync," | sudo tee -a $lsyncd_file
+echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+echo "}" | sudo tee -a $lsyncd_file
+echo " " | sudo tee -a $lsyncd_file
+
+# Make sure lsyncd is only started manually by nepi_launch.sh script
+sudo systemctl disable lsyncd
+
 
 
 ##############################################
