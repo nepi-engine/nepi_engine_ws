@@ -8,7 +8,7 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 
-echo "Starting NEPI RUI"
+source /opt/nepi/etc/load_nepi_config.sh
 source /opt/nepi/nepi_rui/etc/start_rui.sh
 
 

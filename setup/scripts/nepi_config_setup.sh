@@ -42,7 +42,7 @@ echo "Updating System Scrips from ${SCRIPTS_SOURCE_PATH}"
 sudo cp -R ${SCRIPTS_SOURCE_PATH}/* ${SCRIPTS_DEST_PATH}/
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $SCRIPTS_DEST_PATH
 sudpo chmod +x $SCRIPTS_DEST_PATH/*
-sudo cp ${SCRIPTS_SOURCE_PATH}/nepi_docker_start.sh /nepi_docker_start.sh
+sudo cp ${SCRIPTS_SOURCE_PATH}/nepi_start_all /nepi_start_all
 
 echo ""
 echo "Updating System Etc from ${ETC_SOURCE_PATH}"

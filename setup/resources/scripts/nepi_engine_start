@@ -9,4 +9,5 @@
 ##
 
 # Start NEPI ROS
+source /opt/nepi/etc/load_nepi_config.sh
 source /opt/nepi/engine/etc/roslaunch.sh

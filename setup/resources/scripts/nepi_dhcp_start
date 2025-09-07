@@ -9,9 +9,25 @@
 ##
 
 # Start NEPI DHCP process
-echo "Starting NEPI DHCP Processes"
-sudo dhclient -r
-sudo dhclient
-sudo dhclient -nw
+source /opt/nepi/etc/load_nepi_config.sh
+if [[ -v NEPI_IN_CONTAINER ]]; then
+  if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
+    if [[ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]]; then
+        echo "Starting NEPI DHCP Processes"
+        sudo dhclient -r
+        sudo dhclient
+        sudo dhclient -nw
+    else
+        echo "DHCP on Startup Disabled."
+    fi
+  else
+    echo "Running in container. NEPI DHCP Management Disabled."
+  fi
+
+else
+  echo "NEPI DHCP Management Disabled."
+fi
+
+
    
 
