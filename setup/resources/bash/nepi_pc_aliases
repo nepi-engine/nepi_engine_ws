@@ -97,7 +97,9 @@ function pushn(){
   cur_folder=${PWD##*/}
   par_path=$(dirname "$(pwd)")
   par_folder=${par_path##/*}
-  if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
+  echo $cur_folder
+  echo $par_folder
+  if [[ "$cur_folder" != 'nepi_engine_ws' && "$par_folder" != 'nepi_engine_ws' ]]; then
     echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ros1_main"
     git push origin HEAD:ros1_main
     if [ ! $? -eq 0 ]; then

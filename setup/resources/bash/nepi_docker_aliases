@@ -103,7 +103,9 @@ function pushn(){
   cur_folder=${PWD##*/}
   par_path=$(dirname "$(pwd)")
   par_folder=${par_path##/*}
-  if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
+  echo $cur_folder
+  echo $par_folder
+  if [[ "$cur_folder" != 'nepi_engine_ws' && "$par_folder" != 'nepi_engine_ws' ]]; then
     echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ros1_main"
     git push origin HEAD:ros1_main
     if [ ! $? -eq 0 ]; then
@@ -209,7 +211,7 @@ export NEPI_CONFIG=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
 export NEPI_STORAGE=/mnt/nepi_storage
 
 alias nepihome="
-cd ${NEPI_HOME}"
+cd ${USER}"
 
 function nepienable(){
     . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
@@ -276,7 +278,7 @@ HELPN="${HELPN}
 ################################
 ## NEPI Docker Functions ##
 ################################
-nepihome = Switch to NEPI home folder
+nepihome = Switch to Home folder
 nepienable = Enable NEPI Docker Service on Startup
 nepidisable = Disable NEPI Docker Service on Startup
 nepistart = Start the nepi docker container
