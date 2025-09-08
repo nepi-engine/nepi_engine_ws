@@ -96,11 +96,16 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     sudo ifdown --force --verbose eth0 && \
     sudo ifup --force --verbose eth0
 
+    sleep 2
+
+    if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
     # # Remove and restart dhclient
-    # sudo dhclient -r
-    # sudo dhclient
-    # sudo dhclient -nw
+    sudo dhclient -r
+    sudo dhclient
+    sudo dhclient -nw
     # #ps aux | grep dhcp
+    fi
+
 fi
 
 if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
@@ -110,7 +115,7 @@ fi
 
 sudo systemctl restart sshd
 
-# restart the sync service
+# start the sync service
 sudo systemctl start lsyncd
 
 ########################
