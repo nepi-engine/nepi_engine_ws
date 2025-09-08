@@ -65,6 +65,14 @@ function restart_nepi(){
 
 }
 
+
+####################################
+# Configure NEPI Managed Services
+
+if [[ "$NEPI_DHCP_ON_START" -eq 1 && "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
+    sdhcp
+fi
+
 ####################################
 # RESET NEPI DOCKER CONFIG Update Variables
 

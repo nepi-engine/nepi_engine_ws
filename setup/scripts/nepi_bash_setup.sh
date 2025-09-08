@@ -125,7 +125,10 @@ sudo chmod 755 /home/${NEPI_USER}/.*
 sudo cp /home/${NEPI_USER}/.* /home/${NEPI_ADMIN}/
 
 
-
+sleep 1 & source $BASHRC
+wait
+# Print out nepi aliases
+. ${NEPI_ALIASES_DEST} && nepihelp
 
 echo " "
 echo "NEPI Bash Aliases Setup Complete"

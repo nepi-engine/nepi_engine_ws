@@ -182,7 +182,9 @@ function pushna(){
 }
 
 utilsn="${utilsn}
+################################
 ### NEPI DEV UTIL FUNCTIONS
+################################
 nepidpl = Deploy nepi complete to nepi device
 repodpl = Deploy repos to nepi device
 pushn = Add,commit,push repo changes with provided comment"
@@ -215,6 +217,7 @@ function nepienable(){
     sleep 3
     sudo systemctl enable nepi_docker
 }
+export -f nepienable
 
 function nepidisable(){
     . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
@@ -222,52 +225,51 @@ function nepidisable(){
     sleep 3
     sudo systemctl disable nepi_docker
 }
+export -f nepidisable
 
 # NEPI stop and start shortcuts
 function nepistop(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
 }
+export -f nepistop
 
 function nepistart(){
     . ${NEPI_DOCKER_CONFIG}/nepi_docker_start.sh
 }
-
+export -f nepistart
 
 function nepilogin(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_login.sh   
 }
-export -f login_nepi
+export -f nepilogin
 
 
 
 function nepicommit(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_commit.sh
 }
-export -f commit_nepi
+export -f nepicommit
 
 
 
 function nepiswitch(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_switch.sh
 }
-export -f switch_nepi
+export -f nepiswitch
 
 
 function nepiimport(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_import.sh
 }
-export -f import_nepi
+export -f nepiimport
 
 
 function nepiexport(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_export.sh
 }
-export -f export_nepi
+export -f nepiexport
 
-# copy arvhived images to install folder
-function ndhcp(){
-  :
-}
+
 
 
 HELPN="${HELPN}

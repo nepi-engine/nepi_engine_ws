@@ -65,7 +65,9 @@ function sdhcp(){
 export -f sdhcp
 
 utilsn="${utilsn}
+################################
 ### SYSTEM UTIL FUNCTIONS
+################################
 pingi = Check for internet
 sbrc = Source the current users bashrc file
 sdhcp = Start DHCP Internet Client"
@@ -172,7 +174,9 @@ export -f print_config_file
 
 #### Update Help Test
 utilsn="${utilsn}
+################################
 ### NEPI FILE UTIL FUNCTIONS
+################################
 ftext = Find text in files recursively
 ffile = Find filenames with text match recursively
 update_text_value = Adds or Replaces value in text file given FILE KEY UPDATE_STRING FILE
@@ -194,7 +198,9 @@ function gitn(){
 
 
 utilsn="${utilsn}
+################################
 ### Git UTIL FUNCTIONS
+################################
 gitn = adds git repo info to terminal prompt"
 
 

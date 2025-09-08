@@ -152,15 +152,6 @@ sudo systemctl enable --now samba.service
 echo "Installing chrony for NTP services"
 sudo apt install chrony -y
 
-if [ $NEPI_MANAGES_TIME == 1 ]; then
-    sudo systemctl enable --now chrony.service
-fi
-
-if [ $NEPI_MANAGES_NETWORK == 1 ]; then
-    sudo systemctl disable NetworkManager
-fi
-
-
 # Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
 
 

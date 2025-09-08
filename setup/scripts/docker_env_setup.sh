@@ -158,32 +158,31 @@ sudo systemctl start docker.socket
 sudo systemctl start docker
 sudo systemctl status docker
 
-'
-#Test Docker install
-sudo docker pull hello-world
-sudo docker container run hello-world
 
-#Some Debug Commands
-sudo dockerd --debug
+# #Test Docker install
+# sudo docker pull hello-world
+# sudo docker container run hello-world
 
-sudo vi /etc/docker/daemon.json
+# #Some Debug Commands
+# sudo dockerd --debug
 
-sudo systemctl stop docker
-sudo systemctl stop docker.socket
-sudo systemctl daemon-reload
-sudo systemctl start docker.socket
-sudo systemctl start docker
-sudo systemctl status docker
-sudo docker info
-'
+# sudo vi /etc/docker/daemon.json
+
+# sudo systemctl stop docker
+# sudo systemctl stop docker.socket
+# sudo systemctl daemon-reload
+# sudo systemctl start docker.socket
+# sudo systemctl start docker
+# sudo systemctl status docker
+# sudo docker info
+
 ###################################
 # Config System Services 
 #sudo apt-get install openssh-server -y
 #sudo systemctl enable --now sshd.service
 
 
-sudo apt-get install chrony -y
-sudo systemctl enable --now chrony.service
+
 
 
 #sudo apt-get install samba -y
@@ -193,11 +192,12 @@ sudo systemctl enable --now chrony.service
 # Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
 
 echo "Installing static IP dependencies"
-sudo apt-get install ifupdown -y 
-sudo apt-get install net-tools -y 
-sudo apt-get install iproute2 -y
+sudo apt install netplan.io -y
+sudo apt install ifupdown -y 
+sudo apt install net-tools -y 
+sudo apt install iproute2 -y
 
-
+sudo apt-get install chrony -y
 ####### Add NEPI IP Addr to eth0
 #sudo ip addr add ${NEPI_IP}/24 dev eth0
 

@@ -170,7 +170,7 @@ sudo copy ${etc_source}/hostname ${etc_dest}/
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 
     sudo systemctl stop NetworkManager
-    #sudo systemctl stop networking.service
+    sudo systemctl stop networking.service
 
     
     # Set up static IP addr.
@@ -205,6 +205,8 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 
 
     sudo systemctl start NetworkManager
+    sudo systemctl stop networking.service
+    nmcli n on
     # # RESTART NETWORK
     # #sudo ip addr flush eth0 && 
     # sudo systemctl start networking.service

@@ -72,4 +72,4 @@ echo " "
 sleep 1 & source $BASHRC
 wait
 # Print out nepi aliases
-. ${NEPI_ALIASES_DEST} && helpn
+. ${NEPI_ALIASES_DEST} && nepihelp
