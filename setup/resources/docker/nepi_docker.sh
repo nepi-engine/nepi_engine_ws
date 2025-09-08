@@ -26,3 +26,77 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
+####################################
+# Process Functions
+
+function reset_update_vars(){
+update_yaml_value "NEPI_FS_SWITCH" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_FS_RESTART" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_FS_IMPORT" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_FS_EXPORT" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_FAIL_COUNT" 0 $CONFIG_SOURCE
+}
+
+function restart_nepi(){
+    NEPI_FAIL_COUNT=$NEPI_FAIL_COUNT + 1
+    update_yaml_value "NEPI_FAIL_COUNT" $NEPI_FAIL_COUNT $CONFIG_SOURCE
+    while [[ ! "$NEPI_FAIL_COUNT" -eq 0 ]]; do
+        source $(pwd)/nepi_docker_start.sh
+        wait
+        echo "Waiting ${NEPI_BOOT_TIME_SEC} for NEPI to load and update FAIL COUNT to 0"
+        sleep $NEPI_BOOT_TIME_SEC
+        source load_docker_config.sh
+
+        if [[ "$NEPI_FAIL_COUNT" -gt "$NEPI_MAX_FAIL_COUNT" ]]; then # Switch to Backup
+            echo "NEPI Start attempts have exceeded max tries of ${NEPI_MAX_FAIL_COUNT}"
+            echo "Switching to Backup NEPI File System Container"
+            source $(pwd)/nepi_docker_stop.sh
+            source $(pwd)/nepi_docker_switch.sh
+            update_yaml_value "NEPI_FAIL_COUNT" 1 $CONFIG_SOURCE
+        elif [[ "$NEPI_FAIL_COUNT" -le "$NEPI_MAX_FAIL_COUNT" ]]; then # Try Again
+            echo "NEPI Start has failed with attempt count ${NEPI_FAIL_COUNT} out of ${NEPI_MAX_FAIL_COUNT}"
+            NEPI_FAIL_COUNT=$NEPI_FAIL_COUNT + 1
+            update_yaml_value "NEPI_FAIL_COUNT" $NEPI_FAIL_COUNT $CONFIG_SOURCE
+        else
+            echo "NEPI Started Successfully"
+            return 0
+        fi
+    done
+
+}
+
+####################################
+# RESET NEPI DOCKER CONFIG Update Variables
+
+reset_update_vars
+
+#####################################
+# Start NEPI CONTAINER
+
+running=restart_nepi
+
+#####################################
+# Monitor NEPI Services
+
+ echo "Starting NEPI Services Monitoring"
+ while [[ "$running" -eq 1 ]]; do
+    source load_docker_config.sh
+    if [[ "$NEPI_RUNNING" -eq 1 ]]; then
+        if [[ "$NEPI_FS_SWITCH" -eq 1 ]]; then
+            source $(pwd)/nepi_docker_switch.sh
+        fi
+        if [[ "$NEPI_FS_RESTART" -eq 1 ]]; then
+            running=restart_nepi
+        fi
+        if [[ "$NEPI_FS_IMPORT" -eq 1 ]]; then
+            source $(pwd)/nepi_docker_import.sh
+        fi
+        if [[ "$NEPI_FS_EXPORT" -eq 1 ]]; then
+            source $(pwd)/nepi_docker_export.sh
+        fi
+    fi
+    reset_update_vars
+    sleep 1
+done
+
+

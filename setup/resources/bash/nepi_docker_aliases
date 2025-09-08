@@ -210,16 +210,21 @@ alias nepihome="
 cd ${NEPI_HOME}"
 
 function nepienable(){
+    . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
+    wait
+    sleep 3
     sudo systemctl enable nepi_docker
 }
 
 function nepidisable(){
+    . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
+    wait
+    sleep 3
     sudo systemctl disable nepi_docker
 }
 
 # NEPI stop and start shortcuts
 function nepistop(){
-
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
 }
 
