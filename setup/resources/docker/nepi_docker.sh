@@ -35,6 +35,11 @@ update_yaml_value "NEPI_FS_RESTART" 0 $CONFIG_SOURCE
 update_yaml_value "NEPI_FS_IMPORT" 0 $CONFIG_SOURCE
 update_yaml_value "NEPI_FS_EXPORT" 0 $CONFIG_SOURCE
 update_yaml_value "NEPI_FAIL_COUNT" 0 $CONFIG_SOURCE
+
+update_yaml_value "NEPI_WIRED" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_WIFI" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_DHCP" 0 $CONFIG_SOURCE
+update_yaml_value "NEPI_NTP" 0 $CONFIG_SOURCE
 }
 
 function restart_nepi(){
@@ -57,11 +62,11 @@ function restart_nepi(){
             echo "NEPI Start has failed with attempt count ${NEPI_FAIL_COUNT} out of ${NEPI_MAX_FAIL_COUNT}"
             NEPI_FAIL_COUNT=$NEPI_FAIL_COUNT + 1
             update_yaml_value "NEPI_FAIL_COUNT" $NEPI_FAIL_COUNT $CONFIG_SOURCE
-        else
+        elif [[ "$NEPI_FAIL_COUNT" -le 0 ]]; then
             echo "NEPI Started Successfully"
-            return 0
-        fi
+           fi
     done
+    return 0
 
 }
 
@@ -102,9 +107,24 @@ running=restart_nepi
         if [[ "$NEPI_FS_EXPORT" -eq 1 ]]; then
             source $(pwd)/nepi_docker_export.sh
         fi
+        if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
+            if [[ "$NEPI_WIRED" -eq 1 ]]; then
+                : # Do Something
+            fi
+            if [[ "$NEPI_WIFI" -eq 1 ]]; then
+                : # Do Something
+            fi
+            if [[ "$NEPI_DHCP" -eq 1 ]]; then
+                : # Do Something
+            fi
+        fi
+        if [[ "$NEPI_MANAGES_TIME" -eq 1 ]]; then
+            if [[ "$NEPI_NTP" -eq 1 ]]; then
+                : # Do Something
+            fi
+        fi
     fi
     reset_update_vars
     sleep 1
 done
-
 
