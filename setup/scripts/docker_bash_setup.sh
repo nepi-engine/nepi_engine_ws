@@ -65,11 +65,14 @@ fi
 
 sudo chmod 755 ${HOME}/.*
 
-echo " "
-echo "NEPI Bash Aliases Setup Complete"
-echo " "
 
+
+#################################
 sleep 1 & source $BASHRC
 wait
 # Print out nepi aliases
+echo " "
+echo "NEPI Bash Aliases Setup Complete"
+echo " "
+echo " "
 . ${NEPI_ALIASES_DEST} && nepihelp

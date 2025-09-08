@@ -194,9 +194,6 @@ function gitn(){
   PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\033[0;32m$(__git_ps1 " (%s)")\033[0m\$ '
 }
 
-
-
-
 utilsn="${utilsn}
 ################################
 ### Git UTIL FUNCTIONS
@@ -221,7 +218,9 @@ if which docker &> /dev/null; then
 
   
 utilsn="${utilsn}
+###########################
 ### Docker UTIL FUNCTIONS
+###########################
 dimg = sudo docker images
 dps = sudo docker ps -a"
 
@@ -325,7 +324,9 @@ if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
     }
 
 utilsn="${utilsn}
+###########################
 ### ROS UTIL FUNCTIONS
+###########################
 sros = source ros bash setup
 snros = source nepi ros bash setup
 ltopics = List all active topics

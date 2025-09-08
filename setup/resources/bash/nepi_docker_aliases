@@ -24,7 +24,7 @@ source $NEPI_UTILS_FILE
 ########################
 # Help Msg Initialization
 #########################
-HELPN=""
+HELPN="${UTILSN}"
 
 
 ###################################
@@ -463,8 +463,8 @@ HELPN="${HELPN}
 setupn = ${USER}/nepi_engine_ws/setup"
 
 
+# Print out the nepi shortcuts
 function nepihelp(){
-    echo "$UTILSN"
     echo "$HELPN"
 }
 
