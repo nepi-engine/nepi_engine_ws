@@ -19,7 +19,7 @@ source ${NEPI_CONFIG}
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
 
-HELPN=""
+HELPN="${UTILSN}"
 
 
 ###################################
@@ -362,7 +362,6 @@ setupn = ${USER}/nepi_engine_ws/setup
 
 # Print out the nepi shortcuts
 function nepihelp(){
-    echo "$UTILSN"
     echo "$HELPN"
 }
 

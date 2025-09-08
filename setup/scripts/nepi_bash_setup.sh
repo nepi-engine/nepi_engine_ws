@@ -104,7 +104,7 @@ if [[ "$NEPI_HAS_CUDA" -eq 1 ]]; then
 fi
 
 # Copy the bashrc at this point to rooot
-sudo cp $BASHRC $RBASHRC
+sudo cp $BASHRC $RBASHRC 
 sudo chown root:root $RBASHRC
 sudo chmod 644 $RBASHRC
 
@@ -122,15 +122,19 @@ fi
 sudo chmod 755 /home/${NEPI_USER}/.*
 
 # Copy files to nepiadmin home
-sudo cp /home/${NEPI_USER}/.* /home/${NEPI_ADMIN}/
+sudo cp /home/${NEPI_USER}/.* /home/${NEPI_ADMIN}/ >/dev/null 2>&1
 
 
+
+#################################
 sleep 1 & source $BASHRC
 wait
 # Print out nepi aliases
-. ${NEPI_ALIASES_DEST} && nepihelp
-
 echo " "
 echo "NEPI Bash Aliases Setup Complete"
 echo " "
+echo " "
+. ${NEPI_ALIASES_DEST} && nepihelp
+
+
 

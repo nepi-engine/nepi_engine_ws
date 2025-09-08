@@ -60,17 +60,6 @@ fi
 
 sudo chmod 755 ${HOME}/.*
 
-echo " "
-echo "NEPI Bash Aliases Setup Complete"
-echo " "
-
-sleep 1 & source $BASHRC
-wait
-# Print out nepi aliases
-. ${NEPI_ALIASES_DEST} && nepihelp
-
-
-
 ###################################
 # SSH Setup
 
@@ -104,3 +93,14 @@ fi
 sudo chmod 600 $NEPI_SSH_PATH
 sudo chmod 700 $NEPI_SSH_DIR
 sudo chown -R ${USER}:${USER} $NEPI_SSH_DIR
+
+
+#################################
+sleep 1 & source $BASHRC
+wait
+# Print out nepi aliases
+echo " "
+echo "NEPI Bash Aliases Setup Complete"
+echo " "
+echo " "
+. ${NEPI_ALIASES_DEST} && nepihelp
