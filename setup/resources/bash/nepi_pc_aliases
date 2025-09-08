@@ -68,11 +68,124 @@ else
   start_ssh_agent;
 fi
 
-
-
 ###################################
+# NEPI DEV Util Functions
+###################################
+export SOURCE_FOLDER=/home/${USER}/nepi_engine_ws
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+
+## NEPI deploy complete
+alias nepidpl="
+cd $SOURCE_FOLDER
+./deploy_nepi_complete.sh"
+
+# NEPI deploy repos
+alias repodpl="
+cd $SOURCE_FOLDER
+./deploy_nepi_repos.sh"
+
+utilsn="${utilsn}
+### NEPI DEV UTIL FUNCTIONS
+nepidpl = deploy nepi complete
+repodpl = deploy specific repos"
+
+function pushn(){
+  git add --all
+  git commit -m "*$@*" 
+  git push
+  cur_folder=${PWD##*/}
+  par_path=$(dirname "$(pwd)")
+  par_folder=${par_path##/*}
+  if [[ "$cur_folder" != 'nepi_engine_ws' || "$par_folder" != 'nepi_engine_ws' ]]; then
+    echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ros1_main"
+    git push origin HEAD:ros1_main
+    if [ ! $? -eq 0 ]; then
+      echo -e "${RED}Push Failed"
+      return 1 # Failed
+    fi
+  fi
+  echo -e "${GREEN}Push Successfully"
+}
+
+
+function pushna(){
+  failed=0
+  if [ -d "$SOURCE_FOLDER" ]; then
+    commit_comment=*$@*
+    src_folder=${SOURCE_FOLDER}/src
+    cd $src_folder
+    for d1 in */; do
+      if [ -d "$d1" ]; then
+
+        rep_folder=${src_folder}/${d1}
+        echo ""
+        echo ""
+        echo "Processing Repo ${d1}"
+        echo "*********************"
+        echo ""
+        cd ${rep_folder}
+        echo 1
+        for d2 in */; do
+          echo $d2
+          if [ -d "$d2" ]; then
+            echo 3
+            proj_folder=${rep_folder}/${d2}
+            echo 4
+            cd ${proj_folder}
+            echo 5
+            if [ -f "${proj_folder}/.git" ]; then
+              echo 6
+              echo ""
+              echo "${d2}"
+              echo "--------------------"
+              failed=pushn $commit_comment
+              echo "Pushed ${d2}"
+              if [[ "failed" -eq 1 ]]; then
+                break
+              fi
+            fi
+          fi
+        done
+        cd ${rep_folder}
+        if [ -f "${rep_folder}/.git" and "$failed" -eq 0 ]; then
+            echo ""
+            echo "${d1}"
+            echo "--------------------"
+            failed=pushn $commit_comment
+            echo "Pushed ${d1}"
+            if [[ "$failed" -eq 1 ]]; then
+              break
+            fi
+        fi
+        cd $src_folder
+      fi
+    done
+    cd ${SOURCE_FOLDER}
+    if [ "$failed" -e 0 ]; then
+      echo ""
+
+      echo "nepi_engine_ws"
+      echo "--------------------"
+      pushn $commit_comment
+      if [[ $? -eq 1S ]]; then
+        success=0
+      fi
+    fi
+  fi
+}
+
+utilsn="${utilsn}
+### NEPI DEV UTIL FUNCTIONS
+nepidpl = Deploy nepi complete to nepi device
+repodpl = Deploy repos to nepi device
+pushn = Add,commit,push repo changes with provided comment"
+
+
+
 ###################################
 #NEPI folder shortcuts
+###################################
 export AI="/mnt/nepi_storage/ai_models"
 export AIF="/opt/nepi/nepi_engine/share/nepi_ai_ifs"
 export API="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api"

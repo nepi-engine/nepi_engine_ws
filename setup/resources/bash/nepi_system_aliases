@@ -15,9 +15,6 @@
 #echo "NEPI System Aliases"
 #echo "########################"
 
-NEPI_SYSTEM_CONFIG=/opt/nepi/nepi_engine/etc
-NEPI_CONFIG=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
-NEPI_STORAGE=/mnt/nepi_storage
 
 NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
 source $NEPI_UTILS_FILE
@@ -28,36 +25,85 @@ HELPN=""
 # NEPI SYSTEM FUNCTIONS
 #############################
 
+export NEPI_USER=nepi
+export NEPI_HOME=/home/nepi
+export NEPI_ENGINE=/opt/nepi/nepi_engine
 
-function login_nepi(){
-  cd /opt/nepi 
-}
-export -f login_nepi
-
-function switch_nepi(){
-  TOPIC=$(ftopic switch)
-  rostopic pub ${TOPIC} std_msgs/Empty "{}"
-}
-export -f switch_nepi
+export NEPI_SYSTEM_CONFIG=/opt/nepi/nepi_engine/etc
+export NEPI_CONFIG=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
+export NEPI_STORAGE=/mnt/nepi_storage
 
 
-function import_nepi(){
-  :
-}
-export -f import_nepi
+  ## NEPI deploy complete
+  alias nepihomeNEPI_HOME="
+  cd ${NEPI_HOME}"
 
 
-function export_nepi(){
-  :
-}
-export -f export_nepi
+  # NEPI stop and start shortcuts
+  function nepistop(){
+
+    service_name="nepi_engine"
+    if systemctl status > /dev/null 2>&1; then
+      if systemctl is-active --quiet "$service_name.service" ; then
+        sudo systemctl stop "$service_name"
+      fi
+    elif supervisorctl status > /dev/null 2>&1; then
+      #echo "Supervisor and its managed processes appear to be running."
+      status = supervisorctl status "$service_name" 2>/dev/null
+      if echo "$status" | grep -q "RUNNING"; then
+        sudo supervisorctl stop nepi_engine
+      fi
+    fi
+
+  }
+
+  function nepistart(){
+      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
+  }
+
+  # copy arvhived images to install folder
+  function ndhcp(){
+      if [[ -f "/opt/nepi/scripts/nepi_dhcp_start" ]]; then
+        export ENABLE_NEPI_DHCP=1
+        source /opt/nepi/scripts/nepi_dhcp_start
+      fi
+  }
+
+  function snvm(){
+    echo ' ' | sudo tee -a $BASHRC
+    echo '##### NVM Config #####' | sudo tee -a $BASHRC
+    echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
+    echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
+    echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
+  }
+
+  BUILD=${NEPI_STORAGE}/nepi_src/nepi_engine_ws
+  ## NEPI build shortcuts
+  alias nepibld="
+  cd $BUILD
+  ./build_nepi_complete.sh"
+
+  # NEPI build shortcuts
+  alias codebld="
+  cd $BUILD
+  ./build_nepi_code.sh"
+
+  # NEPI build shortcuts
+  alias ruibld="
+  cd $BUILD
+  ./build_nepi_rui.sh"
 
 HELPN="${HELPN}
-################################
-## NEPI Docker Functions ##
-################################
-login_nepi = change to nepi opt folder
-switch_nepi = Switch to Inactive NEPI File System on next boot or reststat"
+### NEPI SYSTEM UTIL FUNCTIONS
+nepihome = change to nepi home dir
+nepistart = start the nepi processes
+nepistop = stop the nepi processe
+mvimg = Move archived nepi images to nepi image install folder
+snvm = Sources NVM (Node Version Manager) nmv.sh
+nepibld = build/deploy all nepi repos and RUI
+codebld = build/deploy all nepi repos
+ruibld = build/deploy rui system"
+
 
 
 ###################################
