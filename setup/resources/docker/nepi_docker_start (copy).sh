@@ -10,14 +10,11 @@
 ##
 
 # This script launches NEPI Container
-
+# This file Switches a Running Containers
 source /home/${USER}/.nepi_bash_utils
 wait
 
-source $(pwd)/load_system_config.sh
-wait
-
-CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
+CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
 wait
 
@@ -32,35 +29,34 @@ fi
 . ./nepi_docker_stop.sh
 wait
 
-########################
-# Configure NEPI Host Services
-########################
-
-if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-
-    sudo systemctl start NetworkManager
-    # # RESTART NETWORK
-    # #sudo ip addr flush eth0 && 
-    # sudo systemctl start networking.service
-    # sudo ifdown --force --verbose eth0
-    # sudo ifup --force --verbose eth0
-
-    # # Remove and restart dhclient
-    # sudo dhclient -r
-    # sudo dhclient
-    # sudo dhclient -nw
-    # #ps aux | grep dhcp
-fi
-
-###########################################
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    :
-fi
-
 
 #######################
 # Update ETC Config Files
 #######################
+DOCKER_ETC=${NEPI_CONFIG}/docker_cfg/etc
+
+# Sync with factory config first
+cp ${DOCKER_ETC}/nepi_system_config.yaml ${DOCKER_ETC}/nepi_system_config.tmp
+cp ${DOCKER_ETC}/nepi_etc_update.yaml ${DOCKER_ETC}/nepi_etc_update.tmp
+
+sudo rsync -arh ${NEPI_CONFIG}/factory_cfg/etc/ ${NEPI_CONFIG}/docker_cfg/
+
+mv ${DOCKER_ETC}/nepi_system_config.tmp ${DOCKER_ETC}/nepi_system_config.yaml
+mv ${DOCKER_ETC}/nepi_etc_update.tmp ${DOCKER_ETC}/nepi_etc_update.yaml
+# Update Etc
+source $(pwd)/update_etc_files.sh
+wait
+
+sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/factory_cfg/
+
+# Sync with system config
+cp ${DOCKER_ETC}/nepi_system_config.yaml ${DOCKER_ETC}/nepi_system_config.tmp
+cp ${DOCKER_ETC}/nepi_etc_update.yaml ${DOCKER_ETC}/nepi_etc_update.tmp
+
+sudo rsync -arh ${NEPI_CONFIG}/system_cfg/etc/ ${NEPI_CONFIG}/docker_cfg/
+
+mv ${DOCKER_ETC}/nepi_system_config.tmp ${DOCKER_ETC}/nepi_system_config.yaml
+mv ${DOCKER_ETC}/nepi_etc_update.tmp ${DOCKER_ETC}/nepi_etc_update.yaml
 
 # Update Etc
 source $(pwd)/update_etc_files.sh

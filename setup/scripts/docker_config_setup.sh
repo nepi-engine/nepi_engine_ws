@@ -98,16 +98,9 @@ echo $NEPI_CONFIG_DEST_PATH
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
 load_config_file ${NEPI_CONFIG_DEST}
+
+
 ###############
-# Update etc config files
-
-echo "Updating NEPI Config files in ${NEPI_CFG_DEST}"
-
-source ${DEST_PATH}/etc/update_etc_files.sh
-wait
-
-
-
 # Create simlinks
 NEPI_LOAD_SOURCE=${NEPI_CONFIG}/docker_cfg/etc/load_system_config.sh
 NEPI_LOAD_DEST=${NEPI_CONFIG}/docker_cfg/load_system_config.sh
@@ -139,8 +132,13 @@ sudo ln -sf ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST}
 ###
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${DEST_PATH}
 
-echo "Updated NEPI Config file ${NEPI_CFG_DEST}"
 
+
+###############
+# Update etc config files
+
+source ${DEST_PATH}/update_etc_files.sh
+wait
 
 
 ##################################
@@ -171,7 +169,6 @@ sudo copy ${etc_source}/hostname ${etc_dest}/
 
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 
-    sudo systemctl disable NetworkManager
     sudo systemctl stop NetworkManager
     #sudo systemctl stop networking.service
 
@@ -206,6 +203,8 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     fi
     sudo cp -p -r ${etc_source}/wpa_supplicant /etc/
 
+
+    sudo systemctl start NetworkManager
     # # RESTART NETWORK
     # #sudo ip addr flush eth0 && 
     # sudo systemctl start networking.service
@@ -221,6 +220,19 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     
 fi
 
+###########################################
+if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+    sudo timedatectl set-ntp false
+    # Install NTP Sources
+    echo " "
+    echo "Configuring chrony.conf"
+    etc_path=chrony/chrony.conf
+    if [ -f "/etc/${etc_path}" ]; then
+        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
+    fi
+    sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
+    sudo systemctl enable chronyd
+fi
 
 
 
@@ -251,21 +263,9 @@ if [ ! -f "/etc/ssh/sshd_config" ]; then
     sudo rm -r /etc/ssh/sshd_config
 fi
 sudo cp ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
+sudo systemctl enable sshd
 
-###########################################
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    sudo timedatectl set-ntp false
-    # Install NTP Sources
-    echo " "
-    echo "Configuring chrony.conf"
-    etc_path=chrony/chrony.conf
-    if [ -f "/etc/${etc_path}" ]; then
-        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
-    fi
-    sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
-    sudo systemctl enable chron
-    sudo systemctl start chronyy
-fi
+
 
 ###########################################
 # Install Modeprobe Conf
@@ -288,8 +288,27 @@ sudo cp ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules
 
 
 #############################################
-### Configure and restart nepi etc sync process
+### Setup NEPI Docker Service
+sudo cp ${NEPI_DOCKER_CONFIG}/nepi_docker.service /etc/systemd/system/nepi_docker.service
 
+ENABLE_NEPI
+echo "Enable NEPI Docker Service on startup?"
+while true; do
+    read -p "$1 [Y/n]: " yn
+    case $yn in
+        [Yy]* ) ENABLE_NEPI=1;; # User entered 'y' or 'Y', return success (0)
+        [Nn]* ) ENABLE_NEPI=0;; # User entered 'n' or 'N', return failure (1)
+        * ) echo "Please answer yes or no.";; # Invalid input, prompt again
+    esac
+done
+
+if [[ "$ENABLE_NEPI" -eq 1 ]]; then
+    sudo systemctl enable nepi_docker
+    echo "NEPI Docker Service enabled on startup"
+else
+    echo "NEPI Docker Service disabled on startup"
+    echo "You can manually enable/disable nepi_docker service with nepienable/nepidisable"
+fi
 
 #sudo systemctl enable lsyncd
 #sudo systemctl restart lsyncd

@@ -11,10 +11,14 @@
 
 
 # This file Switches a Running Containers
+
 source /home/${USER}/.nepi_bash_utils
 wait
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_docker_config.yaml
+source $(pwd)/load_system_config.sh
+wait
+
+CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
 wait
 
@@ -23,13 +27,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-
-########################
-# Update NEPI Docker Variables from nepi_docker_config.yaml
-refresh_nepi_config
-wait
-########################
-  
+#########################################
 # Connect to the Running Container
 if [[ ! -v NEPI_RUNNING ]]; then
     if [[ ( -v NEPI_RUNNING && "$NEPI_RUNNING" -eq 1 ) ]]; then

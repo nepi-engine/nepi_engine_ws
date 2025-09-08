@@ -1,0 +1,11 @@
+[Unit]
+Description=Start NEPI Docker Container Management Service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/mnt/nepi_config/docker_config/nepi_docker.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
