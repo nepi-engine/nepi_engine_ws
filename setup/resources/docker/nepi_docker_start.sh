@@ -32,30 +32,7 @@ fi
 . ./nepi_docker_stop.sh
 wait
 
-########################
-# Configure NEPI Host Services
-########################
 
-if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-
-    sudo systemctl start NetworkManager
-    # # RESTART NETWORK
-    # #sudo ip addr flush eth0 && 
-    # sudo systemctl start networking.service
-    # sudo ifdown --force --verbose eth0
-    # sudo ifup --force --verbose eth0
-
-    # # Remove and restart dhclient
-    # sudo dhclient -r
-    # sudo dhclient
-    # sudo dhclient -nw
-    # #ps aux | grep dhcp
-fi
-
-###########################################
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    :
-fi
 
 
 #######################
@@ -94,12 +71,30 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     add_etc_sync network/interfaces
     add_etc_sync dhcp/dhclient.conf
     add_etc_sync wpa_supplicant
+fi
 
-    # # RESTART NETWORK
-    # #sudo ip addr flush eth0 && 
-    # sudo systemctl start networking.service
-    # sudo ifdown --force --verbose eth0
-    # sudo ifup --force --verbose eth0
+if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+    add_etc_sync ${etc_path}
+    
+fi
+
+add_etc_sync ssh/sshd_config
+
+#############################
+
+
+########################
+# Configure NEPI Host Services
+########################
+
+if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+
+    sudo systemctl stop NetworkManager
+    # RESTART NETWORK
+    sudo ip addr flush eth0 && \
+    sudo systemctl start networking.service && \
+    sudo ifdown --force --verbose eth0 && \
+    sudo ifup --force --verbose eth0
 
     # # Remove and restart dhclient
     # sudo dhclient -r
@@ -109,17 +104,14 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 fi
 
 if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    add_etc_sync ${etc_path}
-    sudo systemctl restart chrony
+    sudo timedatectl set-ntp false
+    sudo systemctl start chrony
 fi
 
-add_etc_sync ssh/sshd_config
 sudo systemctl restart sshd
 
 # restart the sync service
-sudo systemctl restart lsyncd
-###########################################
-
+sudo systemctl start lsyncd
 
 ########################
 # Build Run Command

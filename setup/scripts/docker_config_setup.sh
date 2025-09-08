@@ -222,7 +222,7 @@ fi
 
 ###########################################
 if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    sudo timedatectl set-ntp false
+    
     # Install NTP Sources
     echo " "
     echo "Configuring chrony.conf"
@@ -231,10 +231,8 @@ if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
         sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
     fi
     sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
-    sudo systemctl enable chronyd
+    
 fi
-
-
 
 
 ###########################################

@@ -27,7 +27,21 @@ if [ $? -eq 1 ]; then
 fi
 
 ########################
-# stop etc sync functions
+# Configure NEPI Host Services
+########################
+
+if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+    sudo systemctl restart NetworkManager
+fi
+
+if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+    sudo systemctl stop chrony
+    sudo timedatectl set-ntp true
+fi
+
+sudo systemctl restart sshd
+
+# stop the sync service
 sudo systemctl stop lsyncd
 
 ########################
