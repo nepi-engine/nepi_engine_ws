@@ -3,6 +3,7 @@ build_space: build_release
 catkin_make_args: []
 cmake_args:
 - -DCMAKE_BUILD_TYPE=Release
+- -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 devel_layout: linked
 devel_space: devel_release
 extend_path: null
