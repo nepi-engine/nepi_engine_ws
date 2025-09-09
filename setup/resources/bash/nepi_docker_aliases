@@ -106,81 +106,24 @@ function pushn(){
   echo $cur_folder
   echo $par_folder
   branch_name=$(git symbolic-ref --short HEAD)
-  echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ${branch_name}"
-  git push origin HEAD:${branch_name}
-  if [ ! $? -eq 0 ]; then
-    echo -e "${RED}Push Failed"
-    return 1 # Failed
-  fi
-  echo -e "${GREEN}Push Successfully"
-}
-
-
-function pushna(){
-  failed=0
-  if [ -d "$SOURCE_FOLDER" ]; then
-    commit_comment=*$@*
-    src_folder=${SOURCE_FOLDER}/src
-    cd $src_folder
-    for d1 in */; do
-      if [ -d "$d1" ]; then
-
-        rep_folder=${src_folder}/${d1}
-        echo ""
-        echo ""
-        echo "Processing Repo ${d1}"
-        echo "*********************"
-        echo ""
-        cd ${rep_folder}
-        echo 1
-        for d2 in */; do
-          echo $d2
-          if [ -d "$d2" ]; then
-            echo 3
-            proj_folder=${rep_folder}/${d2}
-            echo 4
-            cd ${proj_folder}
-            echo 5
-            if [ -f "${proj_folder}/.git" ]; then
-              echo 6
-              echo ""
-              echo "${d2}"
-              echo "--------------------"
-              failed=pushn $commit_comment
-              echo "Pushed ${d2}"
-              if [[ "failed" -eq 1 ]]; then
-                break
-              fi
-            fi
-          fi
-        done
-        cd ${rep_folder}
-        if [ -f "${rep_folder}/.git" and "$failed" -eq 0 ]; then
-            echo ""
-            echo "${d1}"
-            echo "--------------------"
-            failed=pushn $commit_comment
-            echo "Pushed ${d1}"
-            if [[ "$failed" -eq 1 ]]; then
-              break
-            fi
-        fi
-        cd $src_folder
+  if [[ "$?" -eq 0 ]]; then
+    if [[ "$cur_folder" != 'nepi_engine_ws' && "$par_folder" != 'nepi_engine_ws'  && "$(pwd)" != *"nepi_engine_ws/setup"* ]]; then
+        echo -e "${GREEN}Pushing to repo ${PWD##*/} Head main"
+        git push origin HEAD:main
+    else
+      echo -e "${GREEN}Pushing to repo ${PWD##*/} Head develop"
+      git push origin HEAD:develop
+      if [ ! $? -eq 0 ]; then
+        echo -e "${RED}Push Failed"
+        return 1 # Failed
       fi
-    done
-    cd ${SOURCE_FOLDER}
-    if [ "$failed" -e 0 ]; then
-      echo ""
-
-      echo "nepi_engine_ws"
-      echo "--------------------"
-      pushn $commit_comment
-      if [[ $? -eq 1S ]]; then
-        success=0
-      fi
+      echo -e "${GREEN}Push Successfully"
     fi
+  else
+   echo "${RED}Not in Git Repo"
   fi
 }
+
 
 utilsn="${utilsn}
 ################################
@@ -454,14 +397,14 @@ fcfg = /mnt/nepi_config/factory_cfg
 scfg = /mnt/nepi_config/system_cfg
 ucfg = /mnt/nepi_storage/user_cfg"
 
-export SETUPN="${USER}/nepi_engine_ws/setup"
+export SETUPN="/home/${USER}/nepi_engine_ws/setup"
 alias setupn="cd ${SETUPN}"
 
 HELPN="${HELPN}
 ################################
 ## NEPI folder shortcuts ##
 ################################
-setupn = ${USER}/nepi_engine_ws/setup"
+setupn = /home/${USER}/nepi_engine_ws/setup"
 
 
 # Print out the nepi shortcuts
