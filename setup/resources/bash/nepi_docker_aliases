@@ -107,18 +107,19 @@ function pushn(){
   echo $par_folder
   branch_name=$(git symbolic-ref --short HEAD)
   if [[ "$?" -eq 0 ]]; then
-    if [[ "$cur_folder" != 'nepi_engine_ws' && "$par_folder" != 'nepi_engine_ws'  && "$(pwd)" != *"nepi_engine_ws/setup"* ]]; then
+    if [[ "$cur_folder" == 'nepi_engine_ws' || "$par_folder" == 'nepi_engine_ws'  || "$(pwd)" == *"nepi_engine_ws/setup"* ]]; then
+        echo -e "${GREEN}Pushing to repo ${PWD##*/} Head develop"
+        git push origin HEAD:develop
+
+    else
         echo -e "${GREEN}Pushing to repo ${PWD##*/} Head main"
         git push origin HEAD:main
-    else
-      echo -e "${GREEN}Pushing to repo ${PWD##*/} Head develop"
-      git push origin HEAD:develop
-      if [ ! $? -eq 0 ]; then
-        echo -e "${RED}Push Failed"
-        return 1 # Failed
-      fi
-      echo -e "${GREEN}Push Successfully"
     fi
+    if [ ! $? -eq 0 ]; then
+      echo -e "${RED}Push Failed"
+      return 1 # Failed
+    fi
+    echo -e "${GREEN}Push Successfully"
   else
    echo "${RED}Not in Git Repo"
   fi
