@@ -18,7 +18,7 @@ echo "########################"
 
 
 CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
-source $(pwd)/load_system_config.sh
+source $(pwd)/etc/load_system_config.sh
 wait
 
 if [ $? -eq 1 ]; then
@@ -35,7 +35,7 @@ NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
 if [ -d "$NEPI_DOCKER_CONFIG" ]; then
     sudo mkdir -p $NEPI_DOCKER_CONFIG
 fi
-echo "Copying nepi config files to ${NEPI_DOCKER_CONFIG}"
+echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
 sudo cp -r -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
 
@@ -50,25 +50,18 @@ CONFIG_USER=${USER}
 echo ""
 echo "Populating System Folders from ${SOURCE_PATH} to ${DEST_PATH}"
 sudo cp -R ${SOURCE_PATH} ${DEST_PATH}/
-
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
-
-# Rsync etc folder from factory folder
-sudo rsync -arh ${NEPI_CONFIG}/factory_cfg/etc ${NEPI_CONFIG}/docker_cfg/
-
-# Rsync etc folder from system folder
-# sudo rsync -arh ${NEPI_CONFIG}/system_cfg/etc ${NEPI_CONFIG}/docker_cfg/
 
 # Update Deployed Config
 
 NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
 echo $NEPI_CONFIG_SOURCE
 
-NEPI_CONFIG_DEST_PATH=${NEPI_CONFIG}/docker_cfg/etc
-NEPI_CONFIG_DEST=${NEPI_CONFIG_DEST_PATH}/nepi_system_config.yaml
+ETC_DEST_PATH=${NEPI_CONFIG}/docker_cfg/etc
+NEPI_CONFIG_DEST=${ETC_DEST_PATH}/nepi_system_config.yaml
 echo $NEPI_CONFIG_DEST
-if [ ! -d "${NEPI_CONFIG_DEST_PATH}" ]; then
-    sudo mkdir -p ${NEPI_CONFIG_DEST_PATH}
+if [ ! -d "${ETC_DEST_PATH}" ]; then
+    sudo mkdir -p ${ETC_DEST_PATH}
 fi
 if [ ! -f "${NEPI_CONFIG_DEST}" ]; then
     sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
@@ -94,9 +87,9 @@ if [ "$OVERWRITE" -eq 1 ]; then
   sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
 fi
 
-echo $NEPI_CONFIG_DEST_PATH
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
 
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_CONFIG_DEST_PATH
+echo "Refreshing NEPI CONFIG from ${NEPI_CONFIG_DEST} "
 load_config_file ${NEPI_CONFIG_DEST}
 
 
@@ -108,37 +101,18 @@ NEPI_LOAD_DEST=${NEPI_CONFIG}/docker_cfg/load_system_config.sh
 if [ -f "$NEPI_LOAD_DEST" ]; then
     sudo rm ${NEPI_LOAD_DEST}
 fi
-echo "Creating symlink from ${NEPI_LOAD_SOURCE} to ${NEPI_LOAD_DEST}"
-sudo ln -sf ${NEPI_LOAD_SOURCE} ${NEPI_LOAD_DEST} 
-###
-NEPI_UPDATE_SOURCE=${NEPI_CONFIG}/docker_cfg/etc/update_etc_files.sh
-NEPI_UPDATE_DEST=${NEPI_CONFIG}/docker_cfg/update_etc_files.sh
-
-if [ -f "$NEPI_UPDATE_DEST" ]; then
-    sudo rm ${NEPI_UPDATE_DEST}
-fi
-echo "Creating symlink from ${NEPI_UPDATE_SOURCE} to ${NEPI_UPDATE_DEST}"
-sudo ln -sf ${NEPI_UPDATE_SOURCE} ${NEPI_UPDATE_DEST} 
-###
-NEPI_CFG_SOURCE=${NEPI_CONFIG}/docker_cfg/etc/nepi_system_config.yaml
-NEPI_CFG_DEST=${NEPI_CONFIG}/docker_cfg/nepi_system_config.yaml
-
-if [ -f "$NEPI_CFG_DEST" ]; then
-    sudo rm ${NEPI_CFG_DEST}
-fi
-echo "Creating NEPI symlink from ${NEPI_CFG_SOURCE} to ${NEPI_CFG_DEST}"
-sudo ln -sf ${NEPI_CFG_SOURCE} ${NEPI_CFG_DEST} 
-
-###
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${DEST_PATH}
 
 
 
 ###############
-# Update etc config files
-
-source ${DEST_PATH}/update_etc_files.sh
+# RUN ETC UPDATE SCRIPT
+cur_dir=$(pwd)
+cd ${ETC_DEST_PATH}
+echo "Updating NEPI Config files in ${ETC_DEST_PATH}"
+source $(pwd)/update_etc_files.sh
 wait
+cd $cur_dir
 
 
 ##################################
@@ -152,7 +126,7 @@ etc_source=${NEPI_CONFIG}/docker_cfg/etc
 
 # Setup NEPI ETC to OS Host ETC Link Service
 sudo cp -r ${etc_source}/lsyncd /etc/
-sudo chown -R ${USER}:${USER} ${lsyncd_file}
+sudo chown -R ${USER}:${USER} ${etc_source}/lsyncd
 
 ### Update hosts file
 if [ ! -f "/etc/hosts.bak" ]; then

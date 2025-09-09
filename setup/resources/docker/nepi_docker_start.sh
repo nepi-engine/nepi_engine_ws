@@ -14,8 +14,14 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-source $(pwd)/load_system_config.sh
+cd etc
+source load_system_config.sh
 wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load $(pwd)/load_system_config.sh"
+    exit 1
+fi
+cd ..
 
 CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
@@ -40,7 +46,7 @@ wait
 #######################
 
 # Update Etc
-source $(pwd)/update_etc_files.sh
+source $(pwd)/etc/update_etc_files.sh
 wait
 
 sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/system_cfg/

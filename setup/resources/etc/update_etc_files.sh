@@ -65,39 +65,39 @@ function update_etc_files(){
 }
 
 
-echo "Updating NEPI Config files in ${NEPI_CFG_DEST}"
+echo "Updating NEPI Factory and System Config files"
 
 
 ####################################
 ### SYNC WITH NEPI CONFIG FOLDERS
-DOCKER_ETC=${NEPI_CONFIG}/docker_cfg/etc
+
 #############
 # Sync with factory config first
-cp ${DOCKER_ETC}/nepi_system_config.yaml ${DOCKER_ETC}/nepi_system_config.tmp
-cp ${DOCKER_ETC}/nepi_etc_update.yaml ${DOCKER_ETC}/nepi_etc_update.tmp
+UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
+cp nepi_system_config.yaml nepi_system_config.tmp
+cp nepi_etc_update.sh nepi_etc_update.tmp
 
-sudo rsync -arh ${NEPI_CONFIG}/factory_cfg/etc/ ${NEPI_CONFIG}/docker_cfg/
+sudo mkdir -p /etc
+sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
 
-mv ${DOCKER_ETC}/nepi_system_config.tmp ${DOCKER_ETC}/nepi_system_config.yaml
-mv ${DOCKER_ETC}/nepi_etc_update.tmp ${DOCKER_ETC}/nepi_etc_update.yaml
-# Update Etc
+mv nepi_system_config.tmp nepi_system_config.yaml
+mv nepi_etc_update.tmp nepi_etc_update.sh
 
-update_etc_files
-sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/factory_cfg/
+sudo rsync -arh ./ ${UPDATE_PATH}/
 
 #############
 # Sync with system config
-cp ${DOCKER_ETC}/nepi_system_config.yaml ${DOCKER_ETC}/nepi_system_config.tmp
-cp ${DOCKER_ETC}/nepi_etc_update.yaml ${DOCKER_ETC}/nepi_etc_update.tmp
+UPDATE_PATH=${NEPI_CONFIG}/system_cfg
+cp nepi_system_config.yaml nepi_system_config.tmp
+cp nepi_etc_update.sh nepi_etc_update.tmp
 
-sudo rsync -arh ${NEPI_CONFIG}/system_cfg/etc/ ${NEPI_CONFIG}/docker_cfg/
+sudo mkdir -p /etc
+sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
 
-mv ${DOCKER_ETC}/nepi_system_config.tmp ${DOCKER_ETC}/nepi_system_config.yaml
-mv ${DOCKER_ETC}/nepi_etc_update.tmp ${DOCKER_ETC}/nepi_etc_update.yaml
-echo "Updated NEPI Config file ${NEPI_CFG_DEST}"
+mv nepi_system_config.tmp nepi_system_config.yaml
+mv nepi_etc_update.tmp nepi_etc_update.sh
 
-update_etc_files
-sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/system_cfg/
+sudo rsync -arh ./ ${UPDATE_PATH}/
 
 ##############################################
 echo "NEPI ETC Update Complete"

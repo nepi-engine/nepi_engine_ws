@@ -12,15 +12,14 @@
 
 # This file loads the nepi_system_config.yaml values
 
-CONFIG_SOURCE=$(pwd)/etc/nepi_system_config.yaml
-source $(pwd)/etc/load_system_config.sh
-#echo $CONFIG_SOURCE
+cd etc
+source load_system_config.sh
 wait
-
 if [ $? -eq 1 ]; then
-    echo "Failed to load ${CONFIG_SOURCE}"
+    echo "Failed to load $(pwd)/load_system_config.sh"
     exit 1
 fi
+cd ..
 
 
 FILE=$(pwd)/nepi_docker_config.yaml

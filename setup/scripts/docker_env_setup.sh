@@ -178,28 +178,30 @@ sudo systemctl status docker
 
 ###################################
 # Config System Services 
-#sudo apt-get install openssh-server -y
-#sudo systemctl enable --now sshd.service
+
+
+if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
+    echo "Installing NEPI NETWORK Management Software"
+    ####### Add NEPI IP Addr to eth0
+    #sudo ip addr add ${NEPI_IP}/24 dev eth0
+    # OR?
+    sudo apt install netplan.io -y
+    sudo apt install ifupdown -y 
+    sudo apt install net-tools -y 
+    sudo apt install iproute2 -y
+fi
+if [[ "$NEPI_MANAGES_TIME" -eq 1 ]]; then
+    echo "Installing NEPI TIME Management Software"
+    sudo apt-get install chrony -y
+fi
+if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
+    echo "Installing NEPI SSH Management Software"
+    apt-get install openssh-server -y
+
+fi
 
 
 
-
-
-#sudo apt-get install samba -y
-#sudo systemctl enable --now samba.service
-
-
-# Disable NetworkManager (for next boot)... causes issues with NEPI IP addr. management
-
-echo "Installing static IP dependencies"
-sudo apt install netplan.io -y
-sudo apt install ifupdown -y 
-sudo apt install net-tools -y 
-sudo apt install iproute2 -y
-
-sudo apt-get install chrony -y
-####### Add NEPI IP Addr to eth0
-#sudo ip addr add ${NEPI_IP}/24 dev eth0
 
 
 

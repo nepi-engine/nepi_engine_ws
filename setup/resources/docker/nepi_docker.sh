@@ -14,8 +14,14 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-source $(pwd)/load_system_config.sh
+cd etc
+source load_system_config.sh
 wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load $(pwd)/load_system_config.sh"
+    exit 1
+fi
+cd ..
 
 CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
@@ -122,6 +128,9 @@ running=restart_nepi
             if [[ "$NEPI_NTP" -eq 1 ]]; then
                 : # Do Something
             fi
+        fi
+        if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
+            : # Maybe Do Something 
         fi
     fi
     reset_update_vars

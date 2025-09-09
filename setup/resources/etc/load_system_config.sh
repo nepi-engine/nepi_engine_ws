@@ -12,7 +12,7 @@
 
 # This file loads the nepi_system_config.yaml values
 
-FILE=$(pwd)/nepi_system_config.yaml
+FILE=/opt/nepi/etc/nepi_system_config.yaml
 export NEPI_SYSTEM_CONFIG=$FILE
  
 if [[ -f "$FILE" ]]; then

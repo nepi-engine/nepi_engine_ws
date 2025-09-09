@@ -21,7 +21,8 @@ if [[ -f "$FILE" ]]; then
         value=$(yq e '.'"$key"'' $FILE)
         export ${key}=$value
     done
+    return 0
 else
     echo "Config file not found ${FILE}"
-    exit 1
+    return 1
 fi
