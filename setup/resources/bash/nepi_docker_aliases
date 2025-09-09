@@ -102,7 +102,7 @@ function pushn(){
   git push
   cur_folder=${PWD##*/}
   par_path=$(dirname "$(pwd)")
-  par_folder=${par_path##/*}
+  par_folder=$(basename "$par_path")
   echo $cur_folder
   echo $par_folder
   branch_name=$(git symbolic-ref --short HEAD)
