@@ -99,13 +99,12 @@ function pushn(){
   par_folder=${par_path##/*}
   echo $cur_folder
   echo $par_folder
-  if [[ "$cur_folder" != 'nepi_engine_ws' && "$par_folder" != 'nepi_engine_ws' ]]; then
-    echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ros1_main"
-    git push origin HEAD:ros1_main
-    if [ ! $? -eq 0 ]; then
-      echo -e "${RED}Push Failed"
-      return 1 # Failed
-    fi
+  branch_name=$(git symbolic-ref --short HEAD)
+  echo -e "${GREEN}Pushing to repo ${PWD##*/} Head ${branch_name}"
+  git push origin HEAD:${branch_name}
+  if [ ! $? -eq 0 ]; then
+    echo -e "${RED}Push Failed"
+    return 1 # Failed
   fi
   echo -e "${GREEN}Push Successfully"
 }
