@@ -99,14 +99,14 @@ repodpl = deploy specific repos"
 function pushn(){
   git add --all
   git commit -m "*$@*" 
-  git push
+  git push >/dev/null 2>&1
   cur_folder=${PWD##*/}
   par_path=$(dirname "$(pwd)")
   par_folder=$(basename "$par_path")
-  echo $cur_folder
-  echo $par_folder
-  branch_name=$(git symbolic-ref --short HEAD)
-  if [[ "$?" -eq 0 ]]; then
+  #echo $cur_folder
+  #echo $par_folder
+  head_name=$(git rev-parse --abbrev-ref HEAD) >/dev/null 2>&1
+  if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
     if [[ "$cur_folder" == 'nepi_engine_ws' || "$par_folder" == 'nepi_engine_ws'  || "$(pwd)" == *"nepi_engine_ws/setup"* ]]; then
         echo -e "${GREEN}Pushing to repo ${PWD##*/} Head develop"
         git push origin HEAD:develop
@@ -121,7 +121,7 @@ function pushn(){
     fi
     echo -e "${GREEN}Push Successfully"
   else
-   echo "${RED}Not in Git Repo"
+    echo -e "${RED}Not in Git Repo"
   fi
 }
 

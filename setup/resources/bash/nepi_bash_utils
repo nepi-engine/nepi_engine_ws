@@ -190,7 +190,7 @@ load_config_file = Exports all of the yaml entries to system variables given FIL
 # Git Util Functions
 ###################################
 
-branch_name=$(git symbolic-ref --short HEAD) >/dev/null 2>&1
+head_name=$(git rev-parse --abbrev-ref HEAD) >/dev/null 2>&1
 if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
   export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 
@@ -199,14 +199,6 @@ if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
       git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
   }
 fi
-
-
-utilsn="${utilsn}
-################################
-### Git UTIL FUNCTIONS
-################################
-gitn = adds git repo info to terminal prompt"
-
 
 
 
