@@ -31,11 +31,13 @@ CONFIG_MIN_GB: 1
 # and HOST OS /etc files will be overwitten.
 NEPI_MANAGES_NETWORK: 1
 NEPI_MANAGES_TIME: 1
+NEPI_MANAGES_SSH: 1
 # If not enabled, proper HOST service configurations must be done manually.
-# -NETWORK-Ensure the Host OS the NEPI_IP address enabled
-# -NETWORK-Setup and Enable DHCP for internet connections if needed
+# -NETWORK-Ensure on the Host OS that the NEPI_IP address enabled as a static ip address
+# -NETWORK-Setup and Enable DHCP Client for internet connections if needed
 # -TIME-Setup and configure Chrony time management service
 # -TIME-Configure Chrony's NTP service to listen for the NEPI_NTP_IP address
+# -SSH-Configure the SSH credentials and SSH requried conf files
 
 ####################################################
 ### BUILD-TIME CONFIGURABLE SETTINGS
