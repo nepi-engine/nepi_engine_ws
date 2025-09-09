@@ -90,10 +90,8 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 fi
 
 
-if [[ -z "${NEPI_TARGET_SRC_DIR}" ]]; then
-  NEPI_TARGET_SRC_DIR="$NEPI_STORAGE/nepi_src"
-  echo "No NEPI_TARGET_SRC_DIR environment variable... will use default ${NEPI_TARGET_SRC_DIR}"
-fi
+NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
+
 
 git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
