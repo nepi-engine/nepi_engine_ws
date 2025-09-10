@@ -30,7 +30,7 @@ echo "########################"
 ### Backup ETC folder if needed
 if [ ! -d "/etc.bak" ]; then
     echo "Backing Up ETC folder to /etc.bak"
-    sudo cp -R /etc /etc.bak
+    sudo cp -R -a /etc /etc.bak
 fi
 #############################################
 
@@ -75,13 +75,13 @@ load_config_file ${NEPI_SYSTEM_CONFIG_DEST}
 # Create Nepi Required Folders
 echo "Checking NEPI Required Folders"
 rfolder=$NEPI_BASE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=$NEPI_STORAGE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
@@ -94,13 +94,13 @@ if [ ! -f "$rfolder" ]; then
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/factory_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/system_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
@@ -263,8 +263,8 @@ if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
     sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
     ###
     sudo timedatectl set-ntp false
-    sudo systemctl enable chronyd
-    sudo systemctl restart chronyd
+    sudo systemctl enable chrony
+    sudo systemctl restart chrony
 fi
 
 
@@ -324,6 +324,10 @@ sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/92-usb-input-no-powersave.rules /etc/u
 sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/100-microstrain.rules /etc/udev/rules.d/100-microstrain.rules
 
 
+if [ ! -d "/etc.nepi" ]; then
+    echo "Backing Up ETC folder to /etc.nepi"
+    sudo cp -R -a /etc /etc.nepi
+fi
 
 
 

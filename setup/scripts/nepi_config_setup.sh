@@ -31,7 +31,7 @@ echo "########################"
 ### Backup ETC folder if needed
 if [ ! -d "/etc.org" ]; then
     echo "Backing Up ETC folder to /etc.bak"
-    sudo cp -R /etc /etc.org
+    sudo cp -R -a /etc /etc.org
 fi
 
 ###################
@@ -80,38 +80,32 @@ load_config_file ${NEPI_SYSTEM_CONFIG_DEST}
 # Create Nepi Required Folders
 echo "Checking NEPI Required Folders"
 rfolder=$NEPI_BASE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=$NEPI_STORAGE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 
-# Ensure required config folder is setup
-if [ ! -d "/mnt/nepi_config" ]; then
-    sudo mkdir -p ${NEPI_STORAGE}/nepi_config
-    sudo ln -sf ${NEPI_STORAGE}/nepi_config /mnt/nepi_config
-fi
-
 rfolder=${NEPI_CONFIG}/docker_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/factory_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/system_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
@@ -212,12 +206,13 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
     #
-    sudo systemctl stop networking.service
-    sudo ip addr flush eth0 && 
-    sudo systemctl enable networking.service
-    sudo systemctl restart networking.service
-    sudo ifdown --force --verbose eth0
-    sudo ifup --force --verbose eth0
+    # sudo systemctl enable networking.service
+    # sudo systemctl stop networking.service
+    # sudo ip addr flush eth0 && 
+ 
+    # sudo systemctl restart networking.service
+    # sudo ifdown --force --verbose eth0
+    # sudo ifup --force --verbose eth0
 
 
     ###########################################
@@ -252,11 +247,14 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
     # Set up Chrony
     echo " "
     echo "Configuring Chrony"
-    sudo cp -a /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+    if [ ! -f "/etc/fstab" ]; then
+        sudo cp -a -r /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+        sudo rm -r /etc/chrony/chrony.conf.bak
+    fi 
     sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
 
-    sudo systemctl enable nepi_engine
-    sudo systemctl restart nepi_engine
+    sudo systemctl enable chrony
+    sudo systemctl restart chrony
 
 
     #########################################
@@ -361,10 +359,8 @@ fi
     fi
     sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
 
-    if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
-        sudo systemctl enable smbd
-        sudo systemctl restart smbd
-    fi
+    sudo systemctl enable smbd
+    sudo systemctl restart smbd
 
     
     #printf "nepi\nepi\n" | sudo smbpasswd -a nepi
@@ -396,8 +392,8 @@ fi
 
 
 if [ ! -d "/etc.nepi" ]; then
-    echo "Backing Up ETC folder to /etc.bak"
-    sudo cp -R /etc /etc.nepi
+    echo "Backing Up ETC folder to /etc.nepi"
+    sudo cp -R -a /etc /etc.nepi
 fi
 
 ##############################################
