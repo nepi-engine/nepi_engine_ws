@@ -35,7 +35,7 @@ fi
 ########################
 # Configure NEPI Host Services
 ########################
-
+echo "Updating NEPI Managed Serices"
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     #sudo systemctl restart NetworkManager
     :
