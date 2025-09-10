@@ -134,8 +134,9 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
 # RUN ETC UPDATE SCRIPT
 cur_dir=$(pwd)
 cd ${ETC_DEST_PATH}/etc
+ls
 echo "Updating NEPI Config files in ${ETC_DEST_PATH}/etc"
-source $(pwd)/update_etc_files.sh
+source update_etc_files.sh
 wait
 cd $cur_dir
 
@@ -150,8 +151,8 @@ echo "Would You Like to Enable NEPI Docker Service on startup?"
 while true; do
     read -p "$1 [Y/n]: " yn
     case $yn in
-        [Yy]* ) ENABLE_NEPI=1;; # User entered 'y' or 'Y', return success (0)
-        [Nn]* ) ENABLE_NEPI=0;; # User entered 'n' or 'N', return failure (1)
+        [Yy]* ) ENABLE_NEPI=1; break;; # User entered 'y' or 'Y', return success (0)
+        [Nn]* ) ENABLE_NEPI=0; break;; # User entered 'n' or 'N', return failure (1)
         * ) echo "Please answer yes or no.";; # Invalid input, prompt again
     esac
 done
@@ -294,7 +295,7 @@ if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
         sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
         sudo rm -r /etc/ssh/sshd_config
     fi
-    sudo cp ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
+    sudo cp ${DOCKER_ETC_FOLDER}/ssh/sshd_config /etc/ssh/sshd_config
     ###
     sudo systemctl enable sshd
     sudo systemctl restart sshd
@@ -317,10 +318,10 @@ sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
 echo " "
 echo "Setting up udev rules"
     # IQR Pan/Tilt
-sudo cp ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
+sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
     # USB Power Saving on Cameras Disabled
-sudo cp ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
-sudo cp ${NEPI_ETC}/udev/rules.d/100-microstrain.rules /etc/udev/rules.d/100-microstrain.rules
+sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/100-microstrain.rules /etc/udev/rules.d/100-microstrain.rules
 
 
 

@@ -84,34 +84,34 @@ else
   # Sync with factory config first
   UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
   cp nepi_system_config.yaml nepi_system_config.tmp
-  cp nepi_etc_update.sh nepi_etc_update.tmp
+  cp update_etc_files.sh update_etc_files.tmp
 
   sudo mkdir -p ${UPDATE_PATH}/etc
-  sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
+  sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/etc/
 
   mv nepi_system_config.tmp nepi_system_config.yaml
-  mv nepi_etc_update.tmp nepi_etc_update.sh
+  mv update_etc_files.tmp update_etc_files.sh
 
   update_etc_files
   
-  sudo rsync -arh ../etc ${UPDATE_PATH}/
+  sudo rsync -arh ../etc/ ${UPDATE_PATH}/etc/
   sudo chown -R ${USER}:${USER} UPDATE_PATH
 
   #############
   # Sync with system config
   UPDATE_PATH=${NEPI_CONFIG}/system_cfg
   cp nepi_system_config.yaml nepi_system_config.tmp
-  cp nepi_etc_update.sh nepi_etc_update.tmp
+  cp update_etc_files.sh update_etc_files.tmp
 
   sudo mkdir -p ${UPDATE_PATH}/etc
-  sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
+  sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/etc/
 
   mv nepi_system_config.tmp nepi_system_config.yaml
-  mv nepi_etc_update.tmp nepi_etc_update.sh
+  mv update_etc_files.tmp update_etc_files.sh
 
   update_etc_files
   
-  sudo rsync -arh ../etc ${UPDATE_PATH}/
+  sudo rsync -arh ../etc/ ${UPDATE_PATH}/etc/
   sudo chown -R ${USER}:${USER} UPDATE_PATH
 
 
