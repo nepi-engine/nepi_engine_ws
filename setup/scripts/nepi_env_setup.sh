@@ -141,18 +141,14 @@ ccache --version
 # https://stackoverflow.com/questions/8430332/uninstall-boost-and-install-another-version
 # First uninstall older version
 sudo apt -y install libboost-all-dev libboost-doc libboost-dev
-
 sudo apt install -y lsyncd rsync
 
 
 ###################################
 # Config System Services 
 sudo apt install openssh-server -y
-udo systemctl enable --now sshd.service
-
 
 sudo apt install samba -y
-sudo systemctl enable --now samba.service
 
 echo "Installing chrony for NTP services"
 sudo apt install chrony -y

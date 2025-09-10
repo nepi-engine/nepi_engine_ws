@@ -17,11 +17,11 @@ NEPI_DHCP_ON_START: 0
 # Set to DOCKER to use dockers native docker image storage location
 # Set to custom path to configure a custom docker image storage loacation
 NEPI_DOCKER: /mnt/nepi_docker
+DOCKER_MIN_GB: 100
 # NEPI Storage and Config Folders
 NEPI_STORAGE: /mnt/nepi_storage
-NEPI_CONFIG: /mnt/nepi_storage/nepi_config
-DOCKER_MIN_GB: 100
 STORAGE_MIN_GB: 250
+NEPI_CONFIG: /mnt/nepi_config
 CONFIG_MIN_GB: 1
 ####################################################
 # NEPI MANAGED SERVICES Config
@@ -82,9 +82,9 @@ NEPI_ENGINE: /opt/nepi/nepi_engine
 NEPI_ETC: /opt/nepi/etc
 NEPI_SCRIPTS: /opt/nepi/scripts
 # NEPI Config Paths
-NEPI_DOCKER_CONFIG: /mnt/nepi_storage/nepi_config/docker_cfg
-NEPI_FACTORY_CONFIG: /mnt/nepi_storage/nepi_config/factory_cfg
-NEPI_SYSTEM_CONFIG: /mnt/nepi_storage/nepi_config/system_cfg
+NEPI_DOCKER_CONFIG: /mnt/nepi_config/docker_cfg
+NEPI_FACTORY_CONFIG: /mnt/nepi_config/factory_cfg
+NEPI_SYSTEM_CONFIG: /mnt/nepi_config/system_cfg
 NEPI_USR_CONFIG: /mnt/nepi_storage/user_cfg
 # NEPI Image Paths
 NEPI_IMPORT_PATH: /mnt/nepi_storage/nepi_full_img

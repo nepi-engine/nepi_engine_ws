@@ -16,19 +16,131 @@ echo "########################"
 echo "NEPI DOCKER CONFFIG SETUP"
 echo "########################"
 
-# Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
-if [ $? -eq 1 ]; then
-    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
-    exit 1
+# # Load System Config File
+# SCRIPT_FOLDER=$(pwd)
+# cd $(dirname $(pwd))/config
+# source load_system_config.sh
+# if [ $? -eq 1 ]; then
+#     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
+#     cd $SCRIPT_FOLDER
+#     exit 1
+# fi
+# cd $SCRIPT_FOLDER
+
+### Backup ETC folder if needed
+if [ ! -d "/etc.bak" ]; then
+    echo "Backing Up ETC folder to /etc.bak"
+    sudo cp -R /etc /etc.bak
 fi
-cd $SCRIPT_FOLDER
-
-
 #############################################
+
+CONFIG_USER=$USER
+
+NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
+NEPI_SYSTEM_CONFIG_DEST_PATH=/mnt/nepi_config/docker_cfg/etc
+NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
+
+
+
+if [ -f "$NEPI_SYSTEM_CONFIG_DEST" ]; then
+    ## Check Selection
+    echo ""
+    echo ""
+    echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
+    select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
+        case $ovw in
+            View_Original ) print_config_file $NEPI_SYSTEM_CONFIG_DEST;;
+            View_New )  print_config_file $NEPI_SYSTEM_CONFIG_SOURCE;;
+            Yes ) OVERWRITE=1; break;;
+            No ) OVERWRITE=0; break;;
+            Quit ) exit 1
+        esac
+    done
+
+
+    if [ "$OVERWRITE" -eq 1 ]; then
+    echo "Updating NEPI CONFIG ${NEPI_SYSTEM_CONFIG_DEST} "
+    sudo cp ${NEPI_SYSTEM_CONFIG_SOURCE} ${NEPI_SYSTEM_CONFIG_DEST}
+    fi
+
+else
+    sudo mkdir -p $NEPI_SYSTEM_CONFIG_DEST_PATH
+    sudo cp ${NEPI_SYSTEM_CONFIG_SOURCE} ${NEPI_SYSTEM_CONFIG_DEST}
+fi
+
+echo "Refreshing NEPI CONFIG from ${NEPI_SYSTEM_CONFIG_DEST} "
+load_config_file ${NEPI_SYSTEM_CONFIG_DEST}
+
+#################################
+# Create Nepi Required Folders
+echo "Checking NEPI Required Folders"
+rfolder=$NEPI_BASE
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+rfolder=$NEPI_STORAGE
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+
+rfolder=${NEPI_CONFIG}/docker_cfg/etc
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+rfolder=${NEPI_CONFIG}/factory_cfg/etc
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+rfolder=${NEPI_CONFIG}/system_cfg/etc
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+#################################
+
+#####################################
+# Copy Files to NEPI Docker Config Folder
+####################################
+NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
+if [ -d "$NEPI_DOCKER_CONFIG" ]; then
+    sudo mkdir -p $NEPI_DOCKER_CONFIG
+fi
+echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
+sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
+sudo cp -r -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
+
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_DOCKER_CONFIG
+
+###################
+# Copy Config Files
+ETC_SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+ETC_DEST_PATH=${NEPI_CONFIG}/docker_cfg
+
+echo ""
+echo "Populating System ETC Folder from ${ETC_SOURCE_PATH} to ${ETC_DEST_PATH}"
+sudo cp -R ${ETC_SOURCE_PATH} ${ETC_DEST_PATH}/
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
+
+###############
+# RUN ETC UPDATE SCRIPT
+cur_dir=$(pwd)
+cd ${ETC_DEST_PATH}/etc
+echo "Updating NEPI Config files in ${ETC_DEST_PATH}/etc"
+source $(pwd)/update_etc_files.sh
+wait
+cd $cur_dir
+
+
+#######################################
 ### Setup NEPI Docker Service
 echo "Setting Up NEPI Docker Service"
 sudo cp ${NEPI_DOCKER_CONFIG}/nepi_docker.service /etc/systemd/system/nepi_docker.service
@@ -56,129 +168,6 @@ fi
 #sudo systemctl restart lsyncd
 
 
-#################################
-# Create Nepi Required Folders
-echo "Checking NEPI Required Folders"
-rfolder=/opt/nepi
-if [ ! -f "$rfolder" ]; then
-    echo "Creating NEPI Folder: ${rfolder}"
-    sudo mkdir -p $rfolder
-    sudo chown -R ${USER}:${USER} $rfolder
-fi
-rfolder=/mnt/nepi_storage
-if [ ! -f "$rfolder" ]; then
-    echo "Creating NEPI Folder: ${rfolder}"
-    sudo mkdir -p $rfolder
-    sudo chown -R ${USER}:${USER} $rfolder
-fi
-rfolder=/mnt/nepi_config/docker_cfg
-if [ ! -f "$rfolder" ]; then
-    echo "Creating NEPI Folder: ${rfolder}"
-    sudo mkdir -p $rfolder
-    sudo chown -R ${USER}:${USER} $rfolder
-fi
-rfolder=/mnt/nepi_config/factory_cfg
-if [ ! -f "$rfolder" ]; then
-    echo "Creating NEPI Folder: ${rfolder}"
-    sudo mkdir -p $rfolder
-    sudo chown -R ${USER}:${USER} $rfolder
-fi
-rfolder=/mnt/nepi_config/system_cfg
-if [ ! -f "$rfolder" ]; then
-    echo "Creating NEPI Folder: ${rfolder}"
-    sudo mkdir -p $rfolder
-    sudo chown -R ${USER}:${USER} $rfolder
-fi
-#################################
-
-
-#####################################
-# Copy Files to NEPI Docker Config Folder
-####################################
-NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
-if [ -d "$NEPI_DOCKER_CONFIG" ]; then
-    sudo mkdir -p $NEPI_DOCKER_CONFIG
-fi
-echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
-sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
-sudo cp -r -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
-
-sudo chown -R ${USER}:${USER} $NEPI_DOCKER_CONFIG
-
-###################
-# Copy Config Files
-SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
-DEST_PATH=${NEPI_CONFIG}/docker_cfg
-CONFIG_USER=${USER}
-
-echo ""
-echo "Populating System Folders from ${SOURCE_PATH} to ${DEST_PATH}"
-sudo cp -R ${SOURCE_PATH} ${DEST_PATH}/
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $DEST_PATH
-
-# Update Deployed Config
-
-NEPI_SYSTEM_CONFIG_FILE=${SYSTEM_CONFIG_FILE}
-echo $NEPI_SYSTEM_CONFIG_FILE
-
-ETC_DEST_PATH=${NEPI_CONFIG}/docker_cfg/etc
-NEPI_CONFIG_DEST=${ETC_DEST_PATH}/nepi_system_config.yaml
-echo $NEPI_CONFIG_DEST
-if [ ! -d "${ETC_DEST_PATH}" ]; then
-    sudo mkdir -p ${ETC_DEST_PATH}
-fi
-if [ ! -f "${NEPI_CONFIG_DEST}" ]; then
-    sudo cp ${NEPI_SYSTEM_CONFIG_FILE} ${NEPI_CONFIG_DEST}
-fi
-
-## Check Selection
-echo ""
-echo ""
-echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
-select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
-    case $ovw in
-        View_Original ) print_config_file $NEPI_CONFIG_DEST;;
-        View_New )  print_config_file $NEPI_SYSTEM_CONFIG_FILE;;
-        Yes ) OVERWRITE=1; break;;
-        No ) OVERWRITE=0; break;;
-        Quit ) exit 1
-    esac
-done
-
-
-if [ "$OVERWRITE" -eq 1 ]; then
-  echo "Updating NEPI CONFIG ${NEPI_CONFIG_DEST} "
-  sudo cp ${NEPI_SYSTEM_CONFIG_FILE} ${NEPI_CONFIG_DEST}
-fi
-
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
-
-echo "Refreshing NEPI CONFIG from ${NEPI_CONFIG_DEST} "
-load_config_file ${NEPI_CONFIG_DEST}
-
-
-###############
-# Create simlinks
-NEPI_LOAD_SOURCE=${NEPI_CONFIG}/docker_cfg/etc/load_system_config.sh
-NEPI_LOAD_DEST=${NEPI_CONFIG}/docker_cfg/load_system_config.sh
-
-if [ -f "$NEPI_LOAD_DEST" ]; then
-    sudo rm ${NEPI_LOAD_DEST}
-fi
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${DEST_PATH}
-
-
-
-###############
-# RUN ETC UPDATE SCRIPT
-cur_dir=$(pwd)
-cd ${ETC_DEST_PATH}
-echo "Updating NEPI Config files in ${ETC_DEST_PATH}"
-source $(pwd)/update_etc_files.sh
-wait
-cd $cur_dir
-
-
 ##################################
 # Setting Up NEPI Managed Services on Host
 
@@ -190,7 +179,7 @@ etc_source=${NEPI_CONFIG}/docker_cfg/etc
 
 # Setup NEPI ETC to OS Host ETC Link Service
 sudo cp -r ${etc_source}/lsyncd /etc/
-sudo chown -R ${USER}:${USER} ${etc_source}/lsyncd
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${etc_source}/lsyncd
 
 ### Update hosts file
 if [ ! -f "/etc/hosts.bak" ]; then
@@ -273,7 +262,8 @@ if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
     sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
     ###
     sudo timedatectl set-ntp false
-    sudo systemctl enable -now chronyd
+    sudo systemctl enable chronyd
+    sudo systemctl restart chronyd
 fi
 
 
@@ -286,18 +276,18 @@ if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
     echo "Configuring SSH Keys"
     DOCKER_ETC_FOLDER=${NEPI_DOCKER_CONFIG}/etc
     # And link default public key - Make sure all ownership and permissions are as required by SSH
-    sudo chown ${USER}:${USER} ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
+    sudo chown ${CONFIG_USER}:${CONFIG_USER} ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
     sudo chmod 0600 ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
 
-    if [ -f "/home/${USER}/.ssh" ]; then
-        sudo rm /home/${USER}/.ssh/authorized_keys
+    if [ -f "/home/${CONFIG_USER}/.ssh" ]; then
+        sudo rm /home/${CONFIG_USER}/.ssh/authorized_keys
     fi
-    sudo cp ${DOCKER_ETC_FOLDER}/ssh/authorized_keys /home/${USER}/.ssh/authorized_keys
-    sudo chown ${USER}:${USER} /home/${USER}/.ssh/authorized_keys
-    sudo chmod 0600 /home/${USER}/.ssh/authorized_keys
+    sudo cp ${DOCKER_ETC_FOLDER}/ssh/authorized_keys /home/${CONFIG_USER}/.ssh/authorized_keys
+    sudo chown ${CONFIG_USER}:${CONFIG_USER} /home/${CONFIG_USER}/.ssh/authorized_keys
+    sudo chmod 0600 /home/${CONFIG_USER}/.ssh/authorized_keys
 
-    sudo chmod 0700 /home/${USER}/.ssh
-    sudo chown -R ${USER}:${USER} /home/${USER}/.ssh
+    sudo chmod 0700 /home/${CONFIG_USER}/.ssh
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} /home/${CONFIG_USER}/.ssh
 
 
     if [ ! -f "/etc/ssh/sshd_config" ]; then
@@ -306,7 +296,8 @@ if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
     fi
     sudo cp ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
     ###
-    sudo systemctl enable --now sshd
+    sudo systemctl enable sshd
+    sudo systemctl restart sshd
 fi
 
 
@@ -337,7 +328,7 @@ sudo cp ${NEPI_ETC}/udev/rules.d/100-microstrain.rules /etc/udev/rules.d/100-mic
 
 
 ##################################
-sudo chown -R ${USER}:${USER} ${NEPI_DOCKER_CONFIG}
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${NEPI_DOCKER_CONFIG}
 echo ""
 echo 'NEPI Docker Config Setup Complete'
 ##################################

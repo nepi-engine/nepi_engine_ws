@@ -17,103 +17,148 @@ echo "NEPI CONFIG SETUP"
 echo "########################"
 
 
-# Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
-if [ $? -eq 1 ]; then
-    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
-    exit 1
+# # Load System Config File
+# SCRIPT_FOLDER=$(pwd)
+# cd $(dirname $(pwd))/config
+# source load_system_config.sh
+# if [ $? -eq 1 ]; then
+#     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
+#     cd $SCRIPT_FOLDER
+#     exit 1
+# fi
+# cd $SCRIPT_FOLDER
+
+### Backup ETC folder if needed
+if [ ! -d "/etc.org" ]; then
+    echo "Backing Up ETC folder to /etc.bak"
+    sudo cp -R /etc /etc.org
 fi
-cd $SCRIPT_FOLDER
 
 ###################
-# Ensure required config folder is setup
-if [ ! -d "/mnt/nepi_config" ]; then
-    sudo ln -sf /mnt/nepi_config $NEPI_CONFIG
+
+CONFIG_USER=nepi
+
+NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
+NEPI_SYSTEM_CONFIG_DEST_PATH=/opt/nepi/etc
+NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
+
+
+
+
+
+if [ -f "$NEPI_SYSTEM_CONFIG_DEST" ]; then
+    ## Check Selection
+    echo ""
+    echo ""
+    echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
+    select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
+        case $ovw in
+            View_Original ) print_config_file $NEPI_SYSTEM_CONFIG_DEST;;
+            View_New )  print_config_file $NEPI_SYSTEM_CONFIG_SOURCE;;
+            Yes ) OVERWRITE=1; break;;
+            No ) OVERWRITE=0; break;;
+            Quit ) exit 1
+        esac
+    done
+
+
+    if [ "$OVERWRITE" -eq 1 ]; then
+    echo "Updating NEPI CONFIG ${NEPI_SYSTEM_CONFIG_DEST} "
+    sudo cp ${NEPI_SYSTEM_CONFIG_SOURCE} ${NEPI_SYSTEM_CONFIG_DEST}
+    fi
+
+else
+    sudo mkdir -p $NEPI_SYSTEM_CONFIG_DEST_PATH
+    sudo cp ${NEPI_SYSTEM_CONFIG_SOURCE} ${NEPI_SYSTEM_CONFIG_DEST}
+
 fi
 
+echo "Refreshing NEPI CONFIG from ${NEPI_SYSTEM_CONFIG_DEST} "
+load_config_file ${NEPI_SYSTEM_CONFIG_DEST}
 
+#################################
+# Create Nepi Required Folders
+echo "Checking NEPI Required Folders"
+rfolder=$NEPI_BASE
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+rfolder=$NEPI_STORAGE
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+
+# Ensure required config folder is setup
+if [ ! -d "/mnt/nepi_config" ]; then
+    sudo mkdir -p ${NEPI_STORAGE}/nepi_config
+    sudo ln -sf ${NEPI_STORAGE}/nepi_config /mnt/nepi_config
+fi
+
+rfolder=${NEPI_CONFIG}/docker_cfg/etc
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+rfolder=${NEPI_CONFIG}/factory_cfg/etc
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+rfolder=${NEPI_CONFIG}/system_cfg/etc
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
+fi
+#################################
+
+#####################################
+# Copy Files to NEPI Docker Config Folder
+####################################
+NEPI_DOCKER_CONFIG=${NEPI_CONFIG}/docker_cfg
+if [ -d "$NEPI_DOCKER_CONFIG" ]; then
+    sudo mkdir -p $NEPI_DOCKER_CONFIG
+fi
+echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
+sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
+sudo cp -r -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
+
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_DOCKER_CONFIG
 
 ###################
 # Copy Config Files
 ETC_SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
-echo "Using ETC Source: ${ETC_SOURCE_PATH}"
-ETC_DEST_PATH=${NEPI_ETC}
-echo "Using ETC Dest: ${ETC_DEST_PATH}"
-
-SCRIPTS_SOURCE_PATH=$(dirname "$(pwd)")/resources/scripts
-SCRIPTS_DEST_PATH=${NEPI_SCRIPTS}
-
-CONFIG_USER=${NEPI_USER}
-
+ETC_DEST_PATH=${NEPI_BASE}
 
 echo ""
-echo "Updating System Scrips from ${SCRIPTS_SOURCE_PATH}"
-sudo cp -R ${SCRIPTS_SOURCE_PATH}/* ${SCRIPTS_DEST_PATH}/
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $SCRIPTS_DEST_PATH
-sudpo chmod +x ${SCRIPTS_DEST_PATH}/*
-sudo cp ${SCRIPTS_SOURCE_PATH}/nepi_start_all /nepi_start_all
-
-echo ""
-echo "Updating System Etc from ${ETC_SOURCE_PATH}"
-sudo cp -R ${ETC_SOURCE_PATH}/* ${ETC_DEST_PATH}/
+echo "Populating System ETC Folder from ${ETC_SOURCE_PATH} to ${ETC_DEST_PATH}"
+sudo cp -R ${ETC_SOURCE_PATH} ${ETC_DEST_PATH}/
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
-
-# Update Deployed Config
-
-NEPI_SYSTEM_CONFIG_FILE=${SYSTEM_CONFIG_FILE}
-echo $NEPI_SYSTEM_CONFIG_FILE
-
-NEPI_CONFIG_DEST=${ETC_DEST_PATH}/nepi_system_config.yaml
-echo $NEPI_CONFIG_DEST
-if [ ! -d "${ETC_DEST_PATH}" ]; then
-    sudo mkdir -p ${ETC_DEST_PATH}
-fi
-if [ ! -f "${NEPI_CONFIG_DEST}" ]; then
-    sudo cp ${NEPI_SYSTEM_CONFIG_FILE} ${NEPI_CONFIG_DEST}
-fi
-
-## Check Selection
-echo ""
-echo ""
-echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
-select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
-    case $ovw in
-        View_Original ) print_config_file $NEPI_CONFIG_DEST;;
-        View_New )  print_config_file $NEPI_SYSTEM_CONFIG_FILE;;
-        Yes ) OVERWRITE=1; break;;
-        No ) OVERWRITE=0; break;;
-        Quit ) exit 1
-    esac
-done
-
-
-if [ "$OVERWRITE" -eq 1 ]; then
-  echo "Updating NEPI CONFIG ${NEPI_CONFIG_DEST} "
-  sudo cp ${NEPI_SYSTEM_CONFIG_FILE} ${NEPI_CONFIG_DEST}
-fi
-
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
-
-echo "Refreshing NEPI CONFIG from ${NEPI_CONFIG_DEST} "
-load_config_file ${NEPI_CONFIG_DEST}
 
 ###############
 # RUN ETC UPDATE SCRIPT
 cur_dir=$(pwd)
-cd ${ETC_DEST_PATH}
-echo "Updating NEPI Config files in ${ETC_DEST_PATH}"
+cd ${ETC_DEST_PATH}/etc
+echo "Updating NEPI Config files in ${ETC_DEST_PATH}/etc"
 source $(pwd)/update_etc_files.sh
 wait
 cd $cur_dir
 
 
-###################
+
+#############################################
 # Set up the default hostname
 # Hostname Setup - the link target file may be updated by NEPI specialization scripts, but no link will need to move
 if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
+    sudo systemctl disable NetworkManager
+    sudo systemctl stop NetworkManager
+
     if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
         echo " "
         echo "Updating system hostname"
@@ -166,9 +211,13 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         fi
         sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
-fi
-
-
+    #
+    sudo systemctl stop networking.service
+    sudo ip addr flush eth0 && 
+    sudo systemctl enable networking.service
+    sudo systemctl restart networking.service
+    sudo ifdown --force --verbose eth0
+    sudo ifup --force --verbose eth0
 
 
     ###########################################
@@ -196,25 +245,8 @@ fi
     fi
     sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
 
-
-
-    ###########################################
-    # Set up Samba
-    echo "Configuring nepi storage Samba share drive"
-    if [ ! -f "/etc/samba/smb.conf" ]; then
-        sudo cp -p -r /etc/samba/smb.conf /etc/samba/smb.conf.bak
-        sudo rm -r /etc/samba/smb.conf
-    fi
-    sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
-    #printf "nepi\nepi\n" | sudo smbpasswd -a nepi
-
-    # Create the mountpoint for samba shares (now that sambashare group exists)
-    #sudo chown -R nepi:sambashare ${NEPI_STORAGE}
-    #sudo chmod -R 0775 ${NEPI_STORAGE}
-
-    #sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
-    #sudo chown nepi:sambashare ${NEPI_STORAGE}
-    #sudo chmod -R 0775 ${NEPI_STORAGE}
+    sudo systemctl enable sshd.service
+    sudo systemctl restart sshd.service
 
     ###########################################
     # Set up Chrony
@@ -223,32 +255,20 @@ fi
     sudo cp -p /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
     sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
 
-
-    ###########################################
-    # Install Modeprobe Conf
-    echo " "
-    echo "Configuring nepi_modprobe.conf"
-    etc_path=modprobe.d/nepi_modprobe.conf
-    if [ -f "/etc/${etc_path}" ]; then
-        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
-    fi
-    sudo ln -sf ${NEPI_ETC}/${etc_path} /etc/${etc_path}
+    sudo systemctl enable nepi_engine
+    sudo systemctl restart nepi_engine
 
 
+    #########################################
+    # Setup NEPI Engine services
+    echo ""
+    echo "Setting up NEPI Engine Service"
 
-    ##################################################
-    # Set up the NEPI sys env bash file
-    echo "Updating system env bash file"
-    sudo chmod +x ${NEPI_ETC}/sys_env.bash
-    sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
-    if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
-        sudo rm ${NEPI_BASE}/sys_env.bash
-    fi
-    sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
-    if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
-        sudo rm ${NEPI_BASE}/sys_env.bash.bak
-    fi
-    sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
+    sudo chmod +x ${NEPI_ETC}/services/*
+
+    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
+    sudo systemctl enable nepi_engine
+
 
     ################################
     # Update fstab
@@ -259,20 +279,15 @@ fi
     sudo cp -p ${NEPI_ETC}/fstab /etc/fstab
     sudo chown root:root /etc/fstab
 
-
-    #########################################
-    # Setup supervisor
-    echo ""
-    echo "Setting up NEPI Supervisord"
-
-    if [ -d "/etc/supervisor" ]; then
-        if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
-            sudo cp -p -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
-            sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
-        fi
-        sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
+    ###########################################
+    # Install Modeprobe Conf
+    echo " "
+    echo "Configuring nepi_modprobe.conf"
+    etc_path=modprobe.d/nepi_modprobe.conf
+    if [ -f "/etc/${etc_path}" ]; then
+        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
     fi
-
+    sudo ln -sf ${NEPI_ETC}/${etc_path} /etc/${etc_path}
 
     #############################################
     # Set up some udev rules for plug-and-play hardware
@@ -295,40 +310,95 @@ fi
     #sudo ln -sf ${NEPI_ETC}/ubuntu.css /usr/share/gnome-shell/theme/ubuntu.css
     gsettings set org.gnome.desktop.background picture-uri file:///${NEPI_ETC}/nepi/nepi_wallpaper.png
 
-    #########################################
-    # Setup system services
-    echo ""
-    echo "Setting up NEPI Engine Service"
-
-    sudo chmod +x ${NEPI_ETC}/services/*
-
-    sudo cp ${NEPI_ETC}/services/nepi_engine.service ${SYSTEMD_SERVICE_PATH}/nepi_engine.service
-    sudo systemctl enable nepi_engine
 
 
     echo "NEPI Engine Service Setup Complete"
 
+else
 
-#########################################
-# Setup NEPI etc sync process
-sudo cp -r ${NEPI_ETC}/lsyncd /etc/
-sudo chown -R ${USER}:${USER} ${NEPI_ETC}/lsyncd
+    #########################################
+    # Setup supervisor
+    echo ""
+    echo "Setting up NEPI Supervisord"
 
-lsyncd_file=/etc/lsyncd/lsyncd.conf
-etc_sync=${NEPI_BASE}/etc
-etc_dest=${NEPI_CONFIG}/docker_cfg/etc
-echo "" | sudo tee -a $lsyncd_file
-echo "sync {" | sudo tee -a $lsyncd_file
-echo "    default.rsync," | sudo tee -a $lsyncd_file
-echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
-echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
-echo "}" | sudo tee -a $lsyncd_file
-echo " " | sudo tee -a $lsyncd_file
+    if [ -d "/etc/supervisor" ]; then
+        if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
+            sudo cp -p -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
+            sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+        fi
+        sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
+    fi
+    sudo systemctl enable supervisor.service
+    sudo systemctl restart supervisor.service
 
-# Make sure lsyncd is only started manually by nepi_launch.sh script
-sudo systemctl disable lsyncd
+    #########################################
+    # Setup NEPI etc sync process
+    sudo cp -r ${NEPI_ETC}/lsyncd /etc/
+    sudo chown -R ${USER}:${USER} ${NEPI_ETC}/lsyncd
+
+    lsyncd_file=/etc/lsyncd/lsyncd.conf
+    etc_sync=${NEPI_BASE}/etc
+    etc_dest=${NEPI_CONFIG}/docker_cfg/etc
+    echo "" | sudo tee -a $lsyncd_file
+    echo "sync {" | sudo tee -a $lsyncd_file
+    echo "    default.rsync," | sudo tee -a $lsyncd_file
+    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+    echo "}" | sudo tee -a $lsyncd_file
+    echo " " | sudo tee -a $lsyncd_file
+
+    # Make sure lsyncd is only started manually by nepi_launch.sh script
+    # sudo systemctl disable lsyncd
+
+fi
+
+    ###########################################
+    # Set up Samba
+    echo "Configuring nepi storage Samba share drive"
+    if [ ! -f "/etc/samba/smb.conf" ]; then
+        sudo cp -p -r /etc/samba/smb.conf /etc/samba/smb.conf.bak
+        sudo rm -r /etc/samba/smb.conf
+    fi
+    sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
+
+    if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
+        sudo systemctl enable smbd
+        sudo systemctl restart smbd
+    fi
+
+    
+    #printf "nepi\nepi\n" | sudo smbpasswd -a nepi
+
+    # Create the mountpoint for samba shares (now that sambashare group exists)
+    #sudo chown -R nepi:sambashare ${NEPI_STORAGE}
+    #sudo chmod -R 0775 ${NEPI_STORAGE}
+
+    #sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+    #sudo chown nepi:sambashare ${NEPI_STORAGE}
+    #sudo chmod -R 0775 ${NEPI_STORAGE}
 
 
+
+
+    ##################################################
+    # Set up the NEPI sys env bash file
+    echo "Updating system env bash file"
+    sudo chmod +x ${NEPI_ETC}/sys_env.bash
+    sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
+    if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
+        sudo rm ${NEPI_BASE}/sys_env.bash
+    fi
+    sudo ln -sf ${NEPI_ETC}/sys_env.bash ${NEPI_BASE}/sys_env.bash
+    if [ ! -f "${NEPI_BASE}/sys_env.bash.bak" ]; then
+        sudo rm ${NEPI_BASE}/sys_env.bash.bak
+    fi
+    sudo ln -sf ${NEPI_ETC}/sys_env.bash.bak ${NEPI_BASE}/sys_env.bash.bak
+
+
+if [ ! -d "/etc.nepi" ]; then
+    echo "Backing Up ETC folder to /etc.bak"
+    sudo cp -R /etc /etc.nepi
+fi
 
 ##############################################
 echo "NEPI Config Setup Complete"

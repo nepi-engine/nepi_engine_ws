@@ -60,9 +60,10 @@ wait
 # export -f update_hostname
 
 
-# function update_etc_files(){
-#   :
-# }
+ function update_etc_files(){
+   #************** ADD UPDATE PROCESSES ****************
+   echo "TODO: Add ETC Update Processes"
+ }
 
 ################################################################
 # Load the config file
@@ -72,21 +73,29 @@ else
   source $(pwd)/load_system_config.sh
   wait
 
-  echo "Updating NEPI Factory and System Config files"
+  if [ ! -d "/etc.nepi" ]; then
+    echo "Backing Up ETC folder to /etc.bak"
+    sudo cp -R /etc /etc.nepi
+  fi
+  sudo rsync -arp ../etc /etc.nepi/
 
+  echo "Updating NEPI Factory and System Config files"
   #############
   # Sync with factory config first
   UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
   cp nepi_system_config.yaml nepi_system_config.tmp
   cp nepi_etc_update.sh nepi_etc_update.tmp
 
-  sudo mkdir -p /etc
+  sudo mkdir -p ${UPDATE_PATH}/etc
   sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
 
   mv nepi_system_config.tmp nepi_system_config.yaml
   mv nepi_etc_update.tmp nepi_etc_update.sh
 
-  sudo rsync -arh ./ ${UPDATE_PATH}/
+  update_etc_files
+  
+  sudo rsync -arh ../etc ${UPDATE_PATH}/
+  sudo chown -R ${USER}:${USER} UPDATE_PATH
 
   #############
   # Sync with system config
@@ -94,17 +103,52 @@ else
   cp nepi_system_config.yaml nepi_system_config.tmp
   cp nepi_etc_update.sh nepi_etc_update.tmp
 
-  sudo mkdir -p /etc
+  sudo mkdir -p ${UPDATE_PATH}/etc
   sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
 
   mv nepi_system_config.tmp nepi_system_config.yaml
   mv nepi_etc_update.tmp nepi_etc_update.sh
 
-  sudo rsync -arh ./ ${UPDATE_PATH}/
+  update_etc_files
+  
+  sudo rsync -arh ../etc ${UPDATE_PATH}/
+  sudo chown -R ${USER}:${USER} UPDATE_PATH
 
-  ##############################################
-  echo "NEPI ETC Update Complete"
-  ##############################################
+
+  ########################
+  # Configure NEPI Host Services
+  ########################
+  if [[ "$NEPI_IN_CONTAINER" -eq 0 ]]; then
+    echo "Updating NEPI Managed Serices"
+    if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+        sudo systemctl stop NetworkManager
+        sudo ip addr flush eth0 && \
+        sudo systemctl start networking.service && \
+        sudo ifdown --force --verbose eth0 && \
+        sudo ifup --force --verbose eth0
+        sleep 2
+
+        if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
+            #Remove and restart dhclient
+            sudo dhclient -r
+            sudo dhclient
+            sudo dhclient -nw
+            ps aux | grep dhcp
+            
+        fi
+    fi
+
+    if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+        sudo timedatectl set-ntp false
+        sudo systemctl start chronyd
+    fi
+
+
+    if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+        sudo systemctl restart sshd
+        
+    fi
+  fi
 
 fi
 
