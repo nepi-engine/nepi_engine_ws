@@ -184,7 +184,7 @@ cd $cur_dir
 ##################################
 # Setting Up NEPI Managed Services on Host
 
-echo "Setting up NEPI Docker Host services"
+echo "Setting Up NEPI Managed Serices"
 etc_source=${NEPI_CONFIG}/docker_cfg/etc
 
 #etc_sync=${NEPI_CONFIG}/docker_cfg/etc/docker/etc

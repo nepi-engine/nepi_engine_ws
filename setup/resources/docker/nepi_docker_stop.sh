@@ -37,15 +37,20 @@ fi
 ########################
 
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-    sudo systemctl restart NetworkManager
+    #sudo systemctl restart NetworkManager
+    :
 fi
 
 if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    sudo systemctl stop chrony
-    sudo timedatectl set-ntp true
+    # sudo systemctl stop chrony
+    # sudo timedatectl set-ntp true
+    :
 fi
 
-sudo systemctl restart sshd
+if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+    #sudo systemctl restart sshd
+    :
+fi
 
 # stop the sync service
 sudo systemctl stop lsyncd
