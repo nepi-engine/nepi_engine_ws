@@ -30,6 +30,34 @@ if [ $? -eq 1 ]; then
 fi
 
 
+#############################################
+### Setup NEPI Docker Service
+echo "Setting Up NEPI Docker Service"
+sudo cp ${NEPI_DOCKER_CONFIG}/nepi_docker.service /etc/systemd/system/nepi_docker.service
+
+ENABLE_NEPI
+echo "Would You Like to Enable NEPI Docker Service on startup?"
+while true; do
+    read -p "$1 [Y/n]: " yn
+    case $yn in
+        [Yy]* ) ENABLE_NEPI=1;; # User entered 'y' or 'Y', return success (0)
+        [Nn]* ) ENABLE_NEPI=0;; # User entered 'n' or 'N', return failure (1)
+        * ) echo "Please answer yes or no.";; # Invalid input, prompt again
+    esac
+done
+
+if [[ "$ENABLE_NEPI" -eq 1 ]]; then
+    sudo systemctl enable nepi_docker
+    echo "NEPI Docker Service enabled on startup"
+else
+    echo "NEPI Docker Service disabled on startup"
+    echo "You can manually enable/disable nepi_docker service with nepienable/nepidisable"
+fi
+
+#sudo systemctl enable lsyncd
+#sudo systemctl restart lsyncd
+
+
 #################################
 # Create Nepi Required Folders
 echo "Checking NEPI Required Folders"
@@ -181,8 +209,8 @@ sudo copy ${etc_source}/hostname ${etc_dest}/
 
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
 
-    sudo systemctl stop NetworkManager
-    sudo systemctl stop networking.service
+    #sudo systemctl stop NetworkManager
+    #sudo systemctl stop networking.service
 
     
     # Set up static IP addr.
@@ -216,12 +244,12 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     sudo cp -p -r ${etc_source}/wpa_supplicant /etc/
 
 
-    sudo systemctl start NetworkManager
-    sudo systemctl stop networking.service
-    nmcli n on
+    #sudo systemctl start NetworkManager
+    #sudo systemctl stop networking.service
+    #nmcli n on
     # # RESTART NETWORK
     # #sudo ip addr flush eth0 && 
-    # sudo systemctl start networking.service
+    # sudo systemctl enable -now networking.service
     # sudo ifdown --force --verbose eth0
     # sudo ifup --force --verbose eth0
 
@@ -245,37 +273,43 @@ if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
         sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
     fi
     sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
-    
+    ###
+    sudo timedatectl set-ntp false
+    sudo systemctl enable -now chronyd
 fi
+
 
 
 ###########################################
-# Set up SSH
+if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+    # Set up SSH
 
-echo " "
-echo "Configuring SSH Keys"
-DOCKER_ETC_FOLDER=${NEPI_DOCKER_CONFIG}/etc
-# And link default public key - Make sure all ownership and permissions are as required by SSH
-sudo chown ${USER}:${USER} ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
-sudo chmod 0600 ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
+    echo " "
+    echo "Configuring SSH Keys"
+    DOCKER_ETC_FOLDER=${NEPI_DOCKER_CONFIG}/etc
+    # And link default public key - Make sure all ownership and permissions are as required by SSH
+    sudo chown ${USER}:${USER} ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
+    sudo chmod 0600 ${DOCKER_ETC_FOLDER}/ssh/authorized_keys
 
-if [ -f "/home/${USER}/.ssh" ]; then
-    sudo rm /home/${USER}/.ssh/authorized_keys
+    if [ -f "/home/${USER}/.ssh" ]; then
+        sudo rm /home/${USER}/.ssh/authorized_keys
+    fi
+    sudo cp ${DOCKER_ETC_FOLDER}/ssh/authorized_keys /home/${USER}/.ssh/authorized_keys
+    sudo chown ${USER}:${USER} /home/${USER}/.ssh/authorized_keys
+    sudo chmod 0600 /home/${USER}/.ssh/authorized_keys
+
+    sudo chmod 0700 /home/${USER}/.ssh
+    sudo chown -R ${USER}:${USER} /home/${USER}/.ssh
+
+
+    if [ ! -f "/etc/ssh/sshd_config" ]; then
+        sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+        sudo rm -r /etc/ssh/sshd_config
+    fi
+    sudo cp ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
+    ###
+    sudo systemctl enable --now sshd
 fi
-sudo cp ${DOCKER_ETC_FOLDER}/ssh/authorized_keys /home/${USER}/.ssh/authorized_keys
-sudo chown ${USER}:${USER} /home/${USER}/.ssh/authorized_keys
-sudo chmod 0600 /home/${USER}/.ssh/authorized_keys
-
-sudo chmod 0700 /home/${USER}/.ssh
-sudo chown -R ${USER}:${USER} /home/${USER}/.ssh
-
-
-if [ ! -f "/etc/ssh/sshd_config" ]; then
-    sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
-    sudo rm -r /etc/ssh/sshd_config
-fi
-sudo cp ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
-sudo systemctl enable sshd
 
 
 
@@ -297,33 +331,10 @@ echo "Setting up udev rules"
 sudo cp ${NEPI_ETC}/udev/rules.d/56-iqr-pan-tilt.rules /etc/udev/rules.d/56-iqr-pan-tilt.rules
     # USB Power Saving on Cameras Disabled
 sudo cp ${NEPI_ETC}/udev/rules.d/92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules
+sudo cp ${NEPI_ETC}/udev/rules.d/100-microstrain.rules /etc/udev/rules.d/100-microstrain.rules
 
 
-#############################################
-### Setup NEPI Docker Service
-sudo cp ${NEPI_DOCKER_CONFIG}/nepi_docker.service /etc/systemd/system/nepi_docker.service
 
-ENABLE_NEPI
-echo "Enable NEPI Docker Service on startup?"
-while true; do
-    read -p "$1 [Y/n]: " yn
-    case $yn in
-        [Yy]* ) ENABLE_NEPI=1;; # User entered 'y' or 'Y', return success (0)
-        [Nn]* ) ENABLE_NEPI=0;; # User entered 'n' or 'N', return failure (1)
-        * ) echo "Please answer yes or no.";; # Invalid input, prompt again
-    esac
-done
-
-if [[ "$ENABLE_NEPI" -eq 1 ]]; then
-    sudo systemctl enable nepi_docker
-    echo "NEPI Docker Service enabled on startup"
-else
-    echo "NEPI Docker Service disabled on startup"
-    echo "You can manually enable/disable nepi_docker service with nepienable/nepidisable"
-fi
-
-#sudo systemctl enable lsyncd
-#sudo systemctl restart lsyncd
 
 
 

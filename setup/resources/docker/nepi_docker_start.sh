@@ -119,7 +119,10 @@ if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
     
 fi
 
-add_etc_sync ssh/sshd_config
+if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+    add_etc_sync ssh/sshd_config
+fi
+
 
 #############################
 
@@ -129,32 +132,34 @@ add_etc_sync ssh/sshd_config
 ########################
 
 if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-
-    sudo systemctl stop NetworkManager
-    # RESTART NETWORK
-    sudo ip addr flush eth0 && \
-    sudo systemctl start networking.service && \
-    sudo ifdown --force --verbose eth0 && \
-    sudo ifup --force --verbose eth0
-
-    sleep 2
+    # sudo systemctl stop NetworkManager
+    # sudo ip addr flush eth0 && \
+    # sudo systemctl start networking.service && \
+    # sudo ifdown --force --verbose eth0 && \
+    # sudo ifup --force --verbose eth0
+    # sleep 2
 
     if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
-    # # Remove and restart dhclient
-    sudo dhclient -r
-    sudo dhclient
-    sudo dhclient -nw
-    # #ps aux | grep dhcp
+        # # Remove and restart dhclient
+        # sudo dhclient -r
+        # sudo dhclient
+        # sudo dhclient -nw
+        # #ps aux | grep dhcp
+        :
     fi
-
 fi
 
 if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    sudo timedatectl set-ntp false
-    sudo systemctl start chrony
+    #sudo timedatectl set-ntp false
+    #sudo systemctl start chronyd
 fi
 
-sudo systemctl restart sshd
+
+if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+    #sudo systemctl restart sshd
+    :
+fi
+
 
 # start the sync service
 sudo systemctl start lsyncd
@@ -167,6 +172,7 @@ echo $NEPI_STORAGE
 ########
 # Initialize Run Command
 DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
+--mount type=bind,source=${NEPI_BASE},target=${NEPI_BASE} \
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
 --mount type=bind,source=/dev,target=/dev \
@@ -195,7 +201,7 @@ DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
 fi 
 
 # Finish Run Command
-if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
+if [[ "$NEPI_ACTIVE_FS" == "nepi_fs_a" ]]; then
 echo "nepi_fs_a"
 DOCKER_RUN_COMMAND="${DOCKER_RUN_COMMAND} \
 ${NEPI_FSA_NAME}:${NEPI_FSA_TAG} /bin/bash"
