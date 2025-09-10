@@ -12,17 +12,17 @@
 
 # This file loads the nepi_system_config.yaml values
 
-FILE=$(dirname "$(pwd)")/nepi_system_config.yaml
+export SYSTEM_CONFIG_FILE=$(pwd)/nepi_system_config.yaml
  
-if [[ -f "$FILE" ]]; then
-    sudo echo "Updating NEPI Config file from: ${FILE}"
-    keys=($(yq e 'keys | .[]' ${FILE}))
+if [[ -f "$SYSTEM_CONFIG_FILE" ]]; then
+    sudo echo "Updating NEPI Config file from: ${SYSTEM_CONFIG_FILE}"
+    keys=($(yq e 'keys | .[]' ${SYSTEM_CONFIG_FILE}))
     for key in "${keys[@]}"; do
-        value=$(yq e '.'"$key"'' $FILE)
+        value=$(yq e '.'"$key"'' $SYSTEM_CONFIG_FILE)
         export ${key}=$value
     done
     return 0
 else
-    echo "Config file not found ${FILE}"
+    echo "Config file not found ${SYSTEM_CONFIG_FILE}"
     return 1
 fi

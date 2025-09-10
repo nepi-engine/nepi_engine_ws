@@ -13,16 +13,19 @@
 # This file installs the NEPI Engine File System installation
 
 echo "########################"
-echo "STARTING NEPI CONFIG SETUP"
+echo "NEPI CONFIG SETUP"
 echo "########################"
 
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
-source $(pwd)/load_system_config.sh
+# Load System Config File
+SCRIPT_FOLDER=$(pwd)
+cd $(dirname $(pwd))/config
+source load_system_config.sh
 wait
+cd $SCRIPT_FOLDER
 
 if [ $? -eq 1 ]; then
-    echo "Failed to load ${CONFIG_SOURCE}"
+    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
 fi
 
@@ -53,8 +56,8 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
 
 # Update Deployed Config
 
-NEPI_CONFIG_SOURCE=${CONFIG_SOURCE}
-echo $NEPI_CONFIG_SOURCE
+NEPI_SYSTEM_CONFIG_FILE=${SYSTEM_CONFIG_FILE}
+echo $NEPI_SYSTEM_CONFIG_FILE
 
 NEPI_CONFIG_DEST=${ETC_DEST_PATH}/nepi_system_config.yaml
 echo $NEPI_CONFIG_DEST
@@ -62,7 +65,7 @@ if [ ! -d "${ETC_DEST_PATH}" ]; then
     sudo mkdir -p ${ETC_DEST_PATH}
 fi
 if [ ! -f "${NEPI_CONFIG_DEST}" ]; then
-    sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
+    sudo cp ${NEPI_SYSTEM_CONFIG_FILE} ${NEPI_CONFIG_DEST}
 fi
 
 ## Check Selection
@@ -72,7 +75,7 @@ echo "Do You Want to OverWrite System Config: ${OP_SELECTION}"
 select ovw in "View_Original" "View_New" "Yes" "No" "Quit"; do
     case $ovw in
         View_Original ) print_config_file $NEPI_CONFIG_DEST;;
-        View_New )  print_config_file $NEPI_CONFIG_SOURCE;;
+        View_New )  print_config_file $NEPI_SYSTEM_CONFIG_FILE;;
         Yes ) OVERWRITE=1; break;;
         No ) OVERWRITE=0; break;;
         Quit ) exit 1
@@ -82,7 +85,7 @@ done
 
 if [ "$OVERWRITE" -eq 1 ]; then
   echo "Updating NEPI CONFIG ${NEPI_CONFIG_DEST} "
-  sudo cp ${NEPI_CONFIG_SOURCE} ${NEPI_CONFIG_DEST}
+  sudo cp ${NEPI_SYSTEM_CONFIG_FILE} ${NEPI_CONFIG_DEST}
 fi
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH

@@ -57,7 +57,8 @@ NEPI_HW_MODEL: ORIN
 # NEPI FS PARTITION SETINGS  
 NEPI_AB_FS: 1
 NEPI_IN_CONTAINER: 1
-NEPI_CT_USER: nepihost
+NEPI_HOST_USER: nepihost
+NEPI_HOST_PW: nepi
 # Set to partition path if running directly on device's file system
 # Or "CONTAINER" if running in a docker container
 NEPI_BOOT_DEVICE: CONTAINER

@@ -38,7 +38,42 @@ fi
 . ./nepi_docker_stop.sh
 wait
 
+#################################
+# Create Nepi Required Folders
+#################################
+echo "Checking NEPI Required Folders"
+rfolder=/opt/nepi
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${USER}:${USER} $rfolder
+fi
 
+rfolder=/mnt/nepi_storage
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${USER}:${USER} $rfolder
+fi
+rfolder=/mnt/nepi_config/docker_cfg
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${USER}:${USER} $rfolder
+fi
+rfolder=/mnt/nepi_config/factory_cfg
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${USER}:${USER} $rfolder
+fi
+rfolder=/mnt/nepi_config/system_cfg
+if [ ! -f "$rfolder" ]; then
+    echo "Creating NEPI Folder: ${rfolder}"
+    sudo mkdir -p $rfolder
+    sudo chown -R ${USER}:${USER} $rfolder
+fi
+#################################
 
 
 #######################

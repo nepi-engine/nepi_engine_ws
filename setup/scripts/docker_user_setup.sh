@@ -14,7 +14,7 @@
 
 
 echo "########################"
-echo "NEPI USER SETUP"
+echo "NEPI DOCKER USER SETUP"
 echo "########################"
 
 if ! [ $(id -u) = 0 ]; then
@@ -85,6 +85,4 @@ function new_nepi_user(){
 
 
 
-new_nepi_user $NEPI_ADMIN $NEPI_ADMIN_PW
-new_nepi_user $NEPI_USER $NEPI_USER_PW
-
+new_nepi_user $NEPI_HOST_USER $NEPI_HOST_PW

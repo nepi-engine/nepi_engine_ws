@@ -12,12 +12,19 @@
 
 # This file installs the NEPI Engine File System installation
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
-source $(pwd)/load_system_config.sh
-wait
+echo "########################"
+echo "NEPI ENGINE SETUP"
+echo "########################"
 
-if [ ! -v NEPI_USER ]; then
-    echo "Failed to load ${CONFIG_SOURCE}"
+# Load System Config File
+SCRIPT_FOLDER=$(pwd)
+cd $(dirname $(pwd))/config
+source load_system_config.sh
+wait
+cd $SCRIPT_FOLDER
+
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
 fi
 

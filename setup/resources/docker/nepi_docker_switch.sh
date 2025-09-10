@@ -37,6 +37,8 @@ fi
 NEPI_DOCKER_CONFIG_PATH=$(pwd)/nepi_docker_config.yaml
 #echo $NEPI_DOCKER_CONFIG_PATH
 
+echo "Switcing NEPI ACTIVE CONTAINER from ${NEPI_ACTIVE_FS} to ${NEPI_INACTIVE_FS}"
+
 ### SET INACTIVE DATA AS ACTIVE DATA
 update_yaml_value "NEPI_ACTUVE_FS" "${NEPI_INACTIVE_FS}" "${NEPI_DOCKER_CONFIG_PATH}"
 update_yaml_value "NEPI_INACTIVE_FS" "${NEPI_ACTUVE_FS}" "${NEPI_DOCKER_CONFIG_PATH}"
@@ -45,6 +47,12 @@ update_yaml_value "NEPI_FS_SWITCH" 0 "${NEPI_DOCKER_CONFIG_PATH}"
 
 source $(pwd)/load_docker_config.sh
 
+
+echo "Clearing NEPI Volume /opt/nepi"
+rfolder=/opt/nepi
+if [ -f "$rfolder" ]; then
+    sudo rm -r ${rfolder}/*
+fi
 
 ########################
 # Update NEPI Docker Variables from nepi_docker_config.yaml

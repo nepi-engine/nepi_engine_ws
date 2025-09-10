@@ -11,17 +11,17 @@
 
 # This script Updates NEPI ETC Files
 
+echo ""
+echo "########################"
+echo "STARTING NEPI ETC UPDATE PROCESS"
+echo "########################"
+echo ""
+
 source /home/${USER}/.nepi_bash_utils
 wait
 
-source $(pwd)/load_system_config.sh
-wait
-
-
-echo "########################"
-echo "UPDATING ETC FILES FROM NEPI CONFIG"
-echo "########################"
-
+################################################################
+# Funcions
 function update_text_value(){
   KEY=$2
   UPDATE=$3
@@ -64,42 +64,52 @@ function update_etc_files(){
   :
 }
 
+################################################################
+# Load the config file
+if [ ! -f "$(pwd)/load_system_config.sh" ]; then
+  echo  "Could not find system config file at: $(pwd)/load_system_config.sh"
+else
+  source $(pwd)/load_system_config.sh
+  wait
 
-echo "Updating NEPI Factory and System Config files"
+  echo "Updating NEPI Factory and System Config files"
 
+  #############
+  # Sync with factory config first
+  UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
+  cp nepi_system_config.yaml nepi_system_config.tmp
+  cp nepi_etc_update.sh nepi_etc_update.tmp
 
-####################################
-### SYNC WITH NEPI CONFIG FOLDERS
+  sudo mkdir -p /etc
+  sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
 
-#############
-# Sync with factory config first
-UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
-cp nepi_system_config.yaml nepi_system_config.tmp
-cp nepi_etc_update.sh nepi_etc_update.tmp
+  mv nepi_system_config.tmp nepi_system_config.yaml
+  mv nepi_etc_update.tmp nepi_etc_update.sh
 
-sudo mkdir -p /etc
-sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
+  sudo rsync -arh ./ ${UPDATE_PATH}/
 
-mv nepi_system_config.tmp nepi_system_config.yaml
-mv nepi_etc_update.tmp nepi_etc_update.sh
+  #############
+  # Sync with system config
+  UPDATE_PATH=${NEPI_CONFIG}/system_cfg
+  cp nepi_system_config.yaml nepi_system_config.tmp
+  cp nepi_etc_update.sh nepi_etc_update.tmp
 
-sudo rsync -arh ./ ${UPDATE_PATH}/
+  sudo mkdir -p /etc
+  sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
 
-#############
-# Sync with system config
-UPDATE_PATH=${NEPI_CONFIG}/system_cfg
-cp nepi_system_config.yaml nepi_system_config.tmp
-cp nepi_etc_update.sh nepi_etc_update.tmp
+  mv nepi_system_config.tmp nepi_system_config.yaml
+  mv nepi_etc_update.tmp nepi_etc_update.sh
 
-sudo mkdir -p /etc
-sudo rsync -arh ${UPDATE_PATH}/etc/ $(dirname "$(pwd)")/
+  sudo rsync -arh ./ ${UPDATE_PATH}/
 
-mv nepi_system_config.tmp nepi_system_config.yaml
-mv nepi_etc_update.tmp nepi_etc_update.sh
+  ##############################################
+  echo "NEPI ETC Update Complete"
+  ##############################################
 
-sudo rsync -arh ./ ${UPDATE_PATH}/
+fi
 
-##############################################
-echo "NEPI ETC Update Complete"
-##############################################
-
+echo ""
+echo "########################"
+echo "NEPI ETC UPDATE COMPLETE"
+echo "########################"
+echo ""

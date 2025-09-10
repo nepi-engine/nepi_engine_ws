@@ -13,12 +13,19 @@
 # This file sets up nepi bash aliases and util functions
 
 
-CONFIG_SOURCE=$(dirname "$(pwd)")/nepi_system_config.yaml
-source $(pwd)/load_system_config.sh
+echo "########################"
+echo "NEPI BASH SETUP"
+echo "########################"
+
+# Load System Config File
+SCRIPT_FOLDER=$(pwd)
+cd $(dirname $(pwd))/config
+source load_system_config.sh
 wait
+cd $SCRIPT_FOLDER
 
 if [ $? -eq 1 ]; then
-    echo "Failed to load ${CONFIG_SOURCE}"
+    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
 fi
 
