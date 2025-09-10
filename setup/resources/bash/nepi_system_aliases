@@ -232,7 +232,7 @@ function nepihelp(){
 }
 
 ##### Source the ROS environment
-source /opt/ros/*/setup.bash
+source /opt/ros/noetic/setup.bash
 
 ##### NEPI SETUP #####
 export NEPI_REMOTE_SETUP=0

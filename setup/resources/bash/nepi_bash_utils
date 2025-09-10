@@ -190,7 +190,7 @@ load_config_file = Exports all of the yaml entries to system variables given FIL
 # Git Util Functions
 ###################################
 
-head_name=$(git rev-parse --abbrev-ref HEAD) >/dev/null 2>&1
+head_name=$(git rev-parse --abbrev-ref HEAD >/dev/null 2>&1)
 if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
   export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 
@@ -231,7 +231,7 @@ fi
 # ROS Util Functions
 ###################################
 NROS=/opt/nepi/nepi_engine/setup.bash
-ROS=/opt/ros/*/setup.bash
+ROS=/opt/ros/noetic/setup.bash
 HAS_ROS=$(dpkg -l | grep ros-)
 if [ 1 ]; then # [[ -z "$HAS_ROS" ]]; then
 
