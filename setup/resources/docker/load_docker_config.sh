@@ -12,14 +12,16 @@
 
 # This file loads the nepi_system_config.yaml values
 
-cd etc
+# Load System Config File
+SCRIPT_FOLDER=$(pwd)
+cd $(dirname $(pwd))/etc
 source load_system_config.sh
-wait
 if [ $? -eq 1 ]; then
-    echo "Failed to load $(pwd)/load_system_config.sh"
+    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
+    cd $SCRIPT_FOLDER
     exit 1
 fi
-cd ..
+cd $SCRIPT_FOLDER
 
 
 FILE=$(pwd)/nepi_docker_config.yaml

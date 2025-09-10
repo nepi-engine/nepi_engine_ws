@@ -150,7 +150,7 @@ export NEPI_HOME=/home/nepi
 
 
 export NEPI_SYSTEM_CONFIG=/opt/nepi/nepi_engine/etc
-export NEPI_CONFIG=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
+export NEPI_CONFIG_FILE=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
 export NEPI_STORAGE=/mnt/nepi_storage
 
 alias nepihome="

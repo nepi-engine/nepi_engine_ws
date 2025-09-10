@@ -17,14 +17,12 @@ echo "########################"
 SCRIPT_FOLDER=$(pwd)
 cd $(dirname $(pwd))/config
 source load_system_config.sh
-wait
-cd $SCRIPT_FOLDER
-
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
+    cd $SCRIPT_FOLDER
     exit 1
 fi
-
+cd $SCRIPT_FOLDER
 echo ""
 echo "Initializing NEPI Storage Drive"
 

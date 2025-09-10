@@ -21,8 +21,7 @@ if [[ -f "$SYSTEM_CONFIG_FILE" ]]; then
         value=$(yq e '.'"$key"'' $SYSTEM_CONFIG_FILE)
         export ${key}=$value
     done
-    return 0
 else
     echo "Config file not found ${SYSTEM_CONFIG_FILE}"
-    return 1
+    exit 1
 fi
