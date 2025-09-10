@@ -86,3 +86,4 @@ function new_nepi_user(){
 
 
 new_nepi_user $NEPI_HOST_USER $NEPI_HOST_PW
+su $NEPI_HOST_USER
