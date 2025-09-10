@@ -14,8 +14,9 @@
 
 # Load System Config File
 SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/etc
+cd $(pwd)/etc
 source load_system_config.sh
+wait
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     cd $SCRIPT_FOLDER
