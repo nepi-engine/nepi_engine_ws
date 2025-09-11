@@ -31,7 +31,7 @@ echo "########################"
 ### Backup ETC folder if needed
 if [ ! -d "/etc.org" ]; then
     echo "Backing Up ETC folder to /etc.bak"
-    sudo cp -R /etc /etc.org
+    sudo cp -R -a /etc /etc.org
 fi
 
 ###################
@@ -80,38 +80,32 @@ load_config_file ${NEPI_SYSTEM_CONFIG_DEST}
 # Create Nepi Required Folders
 echo "Checking NEPI Required Folders"
 rfolder=$NEPI_BASE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=$NEPI_STORAGE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 
-# Ensure required config folder is setup
-if [ ! -d "/mnt/nepi_config" ]; then
-    sudo mkdir -p ${NEPI_STORAGE}/nepi_config
-    sudo ln -sf ${NEPI_STORAGE}/nepi_config /mnt/nepi_config
-fi
-
 rfolder=${NEPI_CONFIG}/docker_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/factory_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/system_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
@@ -127,7 +121,7 @@ if [ -d "$NEPI_DOCKER_CONFIG" ]; then
 fi
 echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
-sudo cp -r -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
+sudo cp -R -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_DOCKER_CONFIG
 
@@ -164,13 +158,13 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         echo "Updating system hostname"
 
         #sudo chmod 744 /etc/host*
-        #sudo cp -p /etc/hosts /etc/hosts.bak
+        #sudo cp -a /etc/hosts /etc/hosts.bak
         if [ ! -f /etc/hosts ]; then
             sudo rm /etc/hosts
         fi
         sudo ln -sf ${NEPI_ETC}/hosts /etc/hosts
 
-        #sudo cp -p /etc/hostname /etc/hostname.bak
+        #sudo cp -a /etc/hostname /etc/hostname.bak
         if [ ! -f "/etc/hostname" ]; then
             sudo rm /etc/hostname
         fi
@@ -180,14 +174,14 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         # Set up static IP addr.
         echo "Updating Network interfaces.d"
         if [ ! -f "/etc/network/interfaces.d" ]; then
-            #sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
+            #sudo cp -a -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
             sudo rm -r /etc/network/interfaces.d
         fi
         sudo ln -sf ${NEPI_ETC}/network/interfaces.d /etc/network/interfaces.d
 
         echo "Updating Network interfaces"
         if [ ! -f "/etc/network/interfaces" ]; then
-            #sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
+            #sudo cp -a -r /etc/network/interfaces /etc/network/interfaces.bak
             sudo rm /etc/network/interfaces
         fi
         sudo cp ${NEPI_ETC}/network/interfaces /etc/network/interfaces
@@ -195,7 +189,7 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
         # Set up DHCP
         echo "Updating Network dhclient.conf"
         if [ ! -f "/etc/dhcp/dhclient.conf" ]; then
-            #sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
+            #sudo cp -a -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
             sudo rm /etc/dhcp/dhclient.conf
         fi
         sudo ln -sf ${NEPI_ETC}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
@@ -207,17 +201,18 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
             sudo mkdir /etc/wpa_supplicant
         fi
         if [ -f "/etc/wpa_supplicant/wpa_supplicant.conf" ]; then
-            sudo cp -p -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
+            sudo cp -a -r /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf.bak
         fi
         sudo ln -sf ${NEPI_ETC}/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
     #
-    sudo systemctl stop networking.service
-    sudo ip addr flush eth0 && 
-    sudo systemctl enable networking.service
-    sudo systemctl restart networking.service
-    sudo ifdown --force --verbose eth0
-    sudo ifup --force --verbose eth0
+    # sudo systemctl enable networking.service
+    # sudo systemctl stop networking.service
+    # sudo ip addr flush eth0 && 
+ 
+    # sudo systemctl restart networking.service
+    # sudo ifdown --force --verbose eth0
+    # sudo ifup --force --verbose eth0
 
 
     ###########################################
@@ -240,7 +235,7 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
 
 
     if [ ! -f "/etc/ssh/sshd_config" ]; then
-        sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+        sudo cp -a -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
         sudo rm -r /etc/ssh/sshd_config
     fi
     sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
@@ -252,11 +247,14 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
     # Set up Chrony
     echo " "
     echo "Configuring Chrony"
-    sudo cp -p /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+    if [ ! -f "/etc/fstab" ]; then
+        sudo cp -a -r /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+        sudo rm -r /etc/chrony/chrony.conf.bak
+    fi 
     sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
 
-    sudo systemctl enable nepi_engine
-    sudo systemctl restart nepi_engine
+    sudo systemctl enable chrony
+    sudo systemctl restart chrony
 
 
     #########################################
@@ -276,7 +274,7 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
     if [ ! -f "/etc/fstab" ]; then
         sudo mv /etc/fstab /etc/fstab.bak
     fi
-    sudo cp -p ${NEPI_ETC}/fstab /etc/fstab
+    sudo cp -a ${NEPI_ETC}/fstab /etc/fstab
     sudo chown root:root /etc/fstab
 
     ###########################################
@@ -285,7 +283,7 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
     echo "Configuring nepi_modprobe.conf"
     etc_path=modprobe.d/nepi_modprobe.conf
     if [ -f "/etc/${etc_path}" ]; then
-        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
+        sudo cp -a -r /etc/${etc_path} /etc/${etc_path}.bak
     fi
     sudo ln -sf ${NEPI_ETC}/${etc_path} /etc/${etc_path}
 
@@ -323,7 +321,7 @@ else
 
     if [ -d "/etc/supervisor" ]; then
         if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
-            sudo cp -p -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
+            sudo cp -a -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
             sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
         fi
         sudo ln -sf ${NEPI_ETC}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
@@ -356,15 +354,13 @@ fi
     # Set up Samba
     echo "Configuring nepi storage Samba share drive"
     if [ ! -f "/etc/samba/smb.conf" ]; then
-        sudo cp -p -r /etc/samba/smb.conf /etc/samba/smb.conf.bak
+        sudo cp -a -r /etc/samba/smb.conf /etc/samba/smb.conf.bak
         sudo rm -r /etc/samba/smb.conf
     fi
     sudo ln -sf ${NEPI_ETC}/samba/smb.conf /etc/samba/smb.conf
 
-    if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
-        sudo systemctl enable smbd
-        sudo systemctl restart smbd
-    fi
+    sudo systemctl enable smbd
+    sudo systemctl restart smbd
 
     
     #printf "nepi\nepi\n" | sudo smbpasswd -a nepi
@@ -384,7 +380,7 @@ fi
     # Set up the NEPI sys env bash file
     echo "Updating system env bash file"
     sudo chmod +x ${NEPI_ETC}/sys_env.bash
-    sudo cp -p ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
+    sudo cp -a ${NEPI_ETC}/sys_env.bash ${NEPI_ETC}/sys_env.bash.bak
     if [ ! -f "${NEPI_BASE}/sys_env.bash" ]; then
         sudo rm ${NEPI_BASE}/sys_env.bash
     fi
@@ -396,8 +392,8 @@ fi
 
 
 if [ ! -d "/etc.nepi" ]; then
-    echo "Backing Up ETC folder to /etc.bak"
-    sudo cp -R /etc /etc.nepi
+    echo "Backing Up ETC folder to /etc.nepi"
+    sudo cp -R -a /etc /etc.nepi
 fi
 
 ##############################################

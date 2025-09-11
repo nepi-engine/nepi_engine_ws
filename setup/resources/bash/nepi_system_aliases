@@ -35,7 +35,7 @@ export NEPI_STORAGE=/mnt/nepi_storage
 
 
   ## NEPI deploy complete
-  alias nepihomeNEPI_HOME="
+  alias nepihome="
   cd ${NEPI_HOME}"
 
 
@@ -58,7 +58,7 @@ export NEPI_STORAGE=/mnt/nepi_storage
   }
 
   function nepistart(){
-      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
+      source ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
   }
 
   # copy arvhived images to install folder

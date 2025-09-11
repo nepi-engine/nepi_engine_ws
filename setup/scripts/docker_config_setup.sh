@@ -30,7 +30,7 @@ echo "########################"
 ### Backup ETC folder if needed
 if [ ! -d "/etc.bak" ]; then
     echo "Backing Up ETC folder to /etc.bak"
-    sudo cp -R /etc /etc.bak
+    sudo cp -R -a /etc /etc.bak
 fi
 #############################################
 
@@ -75,13 +75,13 @@ load_config_file ${NEPI_SYSTEM_CONFIG_DEST}
 # Create Nepi Required Folders
 echo "Checking NEPI Required Folders"
 rfolder=$NEPI_BASE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=$NEPI_STORAGE
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
@@ -94,13 +94,13 @@ if [ ! -f "$rfolder" ]; then
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/factory_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 rfolder=${NEPI_CONFIG}/system_cfg/etc
-if [ ! -f "$rfolder" ]; then
+if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
     sudo mkdir -p $rfolder
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
@@ -116,7 +116,7 @@ if [ -d "$NEPI_DOCKER_CONFIG" ]; then
 fi
 echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
 sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
-sudo cp -r -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
+sudo cp -R -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_DOCKER_CONFIG
 
@@ -184,13 +184,13 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${etc_source}/lsyncd
 
 ### Update hosts file
 if [ ! -f "/etc/hosts.bak" ]; then
-    sudo cp -p /etc/hosts /etc/hosts.bak
+    sudo cp -a /etc/hosts /etc/hosts.bak
 fi
 sudo copy ${etc_source}/hosts ${etc_dest}/
 
 ### Update hostname file
 if [ ! -f "/etc/hostname.bak" ]; then
-    sudo cp -p /etc/hostname /etc/hostname.bak
+    sudo cp -a /etc/hostname /etc/hostname.bak
 fi
 sudo copy ${etc_source}/hostname ${etc_dest}/
 
@@ -204,22 +204,22 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     # Set up static IP addr.
     echo "Updating Network interfaces.d"
     if [ -d "/etc/network/interfaces.d" -a ! -d "/etc/network/interfaces.d.bak" ]; then
-        sudo cp -p -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
+        sudo cp -a -r /etc/network/interfaces.d /etc/network/interfaces.d.bak
     fi
-    sudo cp -p -r ${etc_source}/network/interfaces.d /etc/network/
+    sudo cp -a -r ${etc_source}/network/interfaces.d /etc/network/
 
     echo "Updating Network interfaces"
     if [ -f "/etc/network/interfaces" -a ! -f "/etc/network/interfaces.bak" ]; then
-        sudo cp -p -r /etc/network/interfaces /etc/network/interfaces.bak
+        sudo cp -a -r /etc/network/interfaces /etc/network/interfaces.bak
     fi
-    sudo cp -p -r ${etc_source}/network/interfaces /etc/network/interfaces
+    sudo cp -a -r ${etc_source}/network/interfaces /etc/network/interfaces
 
     # Set up DHCP
     echo "Updating Network dhclient.conf"
     if [ -f "/etc/dhcp/dhclient.conf" -a ! -f "/etc/dhcp/dhclient.conf.bak" ]; then
-        sudo cp -p -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
+        sudo cp -a -r /etc/dhcp/dhclient.conf /etc/dhcp/dhclient.conf.bak
     fi
-    sudo cp -p -r ${etc_source}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
+    sudo cp -a -r ${etc_source}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
 
     # Set up WIFI
     if [ ! -d "etc/wpa_supplicant" ]; then
@@ -227,9 +227,9 @@ if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
     fi
     
     if [ -d "/etc/wpa_supplicant.bak" ]; then
-        sudo cp -p -r /etc/wpa_supplicant /etc/wpa_supplicant.bak
+        sudo cp -a -r /etc/wpa_supplicant /etc/wpa_supplicant.bak
     fi
-    sudo cp -p -r ${etc_source}/wpa_supplicant /etc/
+    sudo cp -a -r ${etc_source}/wpa_supplicant /etc/
 
 
     #sudo systemctl start NetworkManager
@@ -258,13 +258,13 @@ if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
     echo "Configuring chrony.conf"
     etc_path=chrony/chrony.conf
     if [ -f "/etc/${etc_path}" ]; then
-        sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
+        sudo cp -a -r /etc/${etc_path} /etc/${etc_path}.bak
     fi
     sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
     ###
     sudo timedatectl set-ntp false
-    sudo systemctl enable chronyd
-    sudo systemctl restart chronyd
+    sudo systemctl enable chrony
+    sudo systemctl restart chrony
 fi
 
 
@@ -292,7 +292,7 @@ if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
 
 
     if [ ! -f "/etc/ssh/sshd_config" ]; then
-        sudo cp -p -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+        sudo cp -a -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
         sudo rm -r /etc/ssh/sshd_config
     fi
     sudo cp ${DOCKER_ETC_FOLDER}/ssh/sshd_config /etc/ssh/sshd_config
@@ -309,7 +309,7 @@ echo " "
 echo "Configuring nepi_modprobe.conf"
 etc_path=modprobe.d/nepi_modprobe.conf
 if [ -f "/etc/${etc_path}" ]; then
-    sudo cp -p -r /etc/${etc_path} /etc/${etc_path}.bak
+    sudo cp -a -r /etc/${etc_path} /etc/${etc_path}.bak
 fi
 sudo cp ${etc_source}/${etc_path} /etc/${etc_path}
 
@@ -324,6 +324,10 @@ sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/92-usb-input-no-powersave.rules /etc/u
 sudo cp ${DOCKER_ETC_FOLDER}/udev/rules.d/100-microstrain.rules /etc/udev/rules.d/100-microstrain.rules
 
 
+if [ ! -d "/etc.nepi" ]; then
+    echo "Backing Up ETC folder to /etc.nepi"
+    sudo cp -R -a /etc /etc.nepi
+fi
 
 
 

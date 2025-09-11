@@ -49,7 +49,8 @@ echo $INSTALL_IMAGE
 #1) Stop any processes for INACTIVE_CONT
 #docker stop ${RUNNING_CONT}
 #2) Import INSTALL_IMAGE to STAGING_CONT
-res=$(sudo docker import $INSTALL_IMAGE)
+res=$(sudo docker import $INSTALL_IMAGE import_staging:temp)
+wait
 echo $res
 #3) Remove INACTIVE_CONT
 #docker stop ${ACTIVE_CONT}
@@ -67,11 +68,19 @@ update_yaml_value "NEPI_FSA_ID" "$ID" "$CONFIG_SOURCE"
 [[ -n $IMAGE_NAME ]] && update_yaml_value "NEPI_FSA_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
 [[ -n $IMAGE_TAG ]] && update_yaml_value "NEPI_FSA_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
 [[ -n $IMAGE_DATE ]] && update_yaml_value "NEPI_FSA_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
+source $(pwd)/load_docker_config.sh
+wait
+
+sudo docker tag "$NEPI_FSA_ID" "${NEPI_FSA_NAME}:${NEPI_FSA_TAG}"
 else
-update_yaml_value "NEPI_FSA_ID" "$ID" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSB_ID" "$ID" "$CONFIG_SOURCE"
 [[ -n $IMAGE_NAME ]] && update_yaml_value "NEPI_FSB_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
 [[ -n $IMAGE_TAG ]] && update_yaml_value "NEPI_FSB_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
 [[ -n $IMAGE_DATE ]] && update_yaml_value "NEPI_FSB_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
+source $(pwd)/load_docker_config.sh
+wait
+
+sudo docker tag "$NEPI_FSB_ID" "${NEPI_FSB_NAME}:${NEPI_FSB_TAG}"
 fi
 
 #echo "  ADD SOME PRINT OUTS  "
