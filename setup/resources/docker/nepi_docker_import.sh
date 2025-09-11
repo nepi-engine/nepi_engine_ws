@@ -34,23 +34,17 @@ if [ $? -eq 1 ]; then
 fi
 
 ####################################
-NEPI_IMPORT_PATH=$NEPI_IMPORT_PATH
-echo $NEPI_IMPORT_PATH
 ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
 #IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
 IMAGE_FILE=$1
 echo $IMAGE_FILE
+IMAGE_NAME=$2
+IMAGE_TAG=$3
+IMAGE_DATE=$4
 ######  NEED TO: Update from NEPI_IMPORT_PATH tar file
-if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
-IMAGE_VERSION=$NEPI_FSA_VERSION
-echo $IMAGE_VERSION
-else
-IMAGE_VERSION=$NEPI_FSB_VERSION
-echo $IMAGE_VERSION
-fi
 ######
 #INSTALL_IMAGE=${NEPI_IMPORT_PATH}/${IMAGE_FILE}
-INSTALL_IMAGE=${NEPI_IMPORT_PATH}/''${IMAGE_FILE}
+INSTALL_IMAGE=${NEPI_IMPORT_FILE_PATH}/''${IMAGE_FILE}
 echo $INSTALL_IMAGE
 #1) Stop any processes for INACTIVE_CONT
 #docker stop ${RUNNING_CONT}
@@ -64,63 +58,20 @@ hash=${res##*sha256:}
 echo $hash
 ID=${hash:0:12}
 echo $ID
-NEW_DATE=$(date +%Y-%m-%d)
-echo $NEW_DATE
-if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
-NEW_NAME=$NEPI_FSA_NAME
-echo $NEW_NAME
-else
-NEW_NAME=$NEPI_FSB_NAME
-echo $NEW_NAME
-fi
-if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
-NEW_TAG=$NEPI_FSA_TAG
-echo $NEW_TAG
-else
-NEW_TAG=$NEPI_FSB_TAG
-echo $NEW_TAG
-fi
 
 
-printf 'Create a Custom Tag (y/n)? '
-read answer
-if [ "$answer" != "${answer#[Yy]}" ] ;then 
-    echo 'Enter Custom Tag: ' 
-    read CUSTOM_TAG
-    NEW_TAG=$CUSTOM_TAG
-    echo $CUSTOM_TAG
-    echo ''
-else
-    echo ''
-fi
-NEW_VERSION=$IMAGE_VERSION
-printf 'Create a Custom Version (y/n)? '
-read answer
-if [ "$answer" != "${answer#[Yy]}" ] ;then 
-    echo 'Enter Custom Version: ' 
-    read CUSTOM_VERSION
-    NEW_VERSION=$CUSTOM_VERSION
-    echo ''
-else
-    echo ''
-fi
-
-
-sudo docker tag $ID ${NEW_NAME}:${NEW_TAG}
 #6) Update inactive version,tags,ids in nepi_docker_config.yaml
 
 if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
-update_yaml_value "NEPI_FSA_NAME" "$NEW_NAME" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSA_TAG" "$NEW_TAG" "$CONFIG_SOURCE"
 update_yaml_value "NEPI_FSA_ID" "$ID" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSA_VERSION" "$NEW_VERSION" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSA_BUILD_DATE" "$NEW_DATE" "$CONFIG_SOURCE"
+[[ -n $IMAGE_NAME ]] && update_yaml_value "NEPI_FSA_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
+[[ -n $IMAGE_TAG ]] && update_yaml_value "NEPI_FSA_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
+[[ -n $IMAGE_DATE ]] && update_yaml_value "NEPI_FSA_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
 else
-update_yaml_value "NEPI_FSB_NAME" "$NEW_NAME" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSB_TAG" "$NEW_TAG" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSB_ID" "$ID" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSB_VERSION" "$NEW_VERSION" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_FSB_BUILD_DATE" "$NEW_DATE" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_FSA_ID" "$ID" "$CONFIG_SOURCE"
+[[ -n $IMAGE_NAME ]] && update_yaml_value "NEPI_FSB_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
+[[ -n $IMAGE_TAG ]] && update_yaml_value "NEPI_FSB_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
+[[ -n $IMAGE_DATE ]] && update_yaml_value "NEPI_FSB_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
 fi
 
 #echo "  ADD SOME PRINT OUTS  "
