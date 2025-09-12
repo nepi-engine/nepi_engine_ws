@@ -83,4 +83,9 @@ function new_nepi_user(){
 
 
 new_nepi_user $NEPI_HOST_USER $NEPI_HOST_PW
+wait
+new_nepi_user $NEPI_ADMIN $NEPI_ADMIN_PW
+wait
+new_nepi_user $NEPI_USER $NEPI_USER_PW
+wait
 su $NEPI_HOST_USER

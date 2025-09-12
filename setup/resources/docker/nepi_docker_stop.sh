@@ -71,10 +71,10 @@ echo $NEPI_RUNNING_FS
 # fi
 echo "Stopping Running NEPI Docker Process ${NEPI_RUNNING_FS}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
 sudo docker stop $NEPI_RUNNING_ID
-update_yaml_value "NEPI_RUNNING" 0 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS" "unknown" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_ID" 0 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_FS" "unknown" "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_ID" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "${CONFIG_SOURCE}"
 
 #fi 
 
