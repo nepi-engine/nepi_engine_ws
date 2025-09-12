@@ -4,9 +4,9 @@
 # NEPI FILE SYSTEM A
 # Conatiner Info Updated at Import-Time
 NEPI_FSA: nepi_fs_a
-NEPI_FSA_NAME: nepi_fs_a
-NEPI_FSA_TAG: 3p2p3-jetson-orin-5-5
-NEPI_FSA_ID: c16f90b19340
+NEPI_FSA_NAME: nepi
+NEPI_FSA_TAG: unknown
+NEPI_FSA_ID: unknown
 NEPI_FSA_VERSION: 0
 NEPI_FSA_SIZE_MB: 0
 NEPI_FSA_HW_TYPE: unknown
@@ -16,7 +16,7 @@ NEPI_FSA_DESCRIPTION: unknown
 # NEPI FILE SYSTEM B
 # Conatiner Info Updated at Import-Time
 NEPI_FSB: nepi_fs_b
-NEPI_FSB_NAME: nepi_fs_b
+NEPI_FSB_NAME: nepi
 NEPI_FSB_TAG: unknown
 NEPI_FSB_ID: unknown
 NEPI_FSB_VERSION: 0
