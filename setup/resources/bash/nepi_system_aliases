@@ -58,14 +58,14 @@ export NEPI_STORAGE=/mnt/nepi_storage
   }
 
   function nepistart(){
-      source ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
+      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
   }
 
   # copy arvhived images to install folder
   function ndhcp(){
       if [[ -f "/opt/nepi/scripts/nepi_dhcp_start" ]]; then
         export ENABLE_NEPI_DHCP=1
-        source /opt/nepi/scripts/nepi_dhcp_start
+        sudo /opt/nepi/scripts/nepi_dhcp_start
       fi
   }
 
@@ -232,7 +232,9 @@ function nepihelp(){
 }
 
 ##### Source the ROS environment
-source /opt/ros/noetic/setup.bash
+#source /opt/ros/noetic/setup.bash
+source /opt/nepi/nepi_engine/setup.bash
+export NEEDS_ROS=0
 
 ##### NEPI SETUP #####
 export NEPI_REMOTE_SETUP=0

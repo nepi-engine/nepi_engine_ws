@@ -92,6 +92,12 @@ if [ ! -d "$rfolder" ]; then
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rfolder
 fi
 
+# Ensure required config folder is setup
+if [ ! -d "/mnt/nepi_config" ]; then
+    sudo mkdir -p ${NEPI_STORAGE}/nepi_config
+    sudo ln -sf ${NEPI_STORAGE}/nepi_config /mnt/nepi_config
+fi
+
 rfolder=${NEPI_CONFIG}/docker_cfg/etc
 if [ ! -d "$rfolder" ]; then
     echo "Creating NEPI Folder: ${rfolder}"
