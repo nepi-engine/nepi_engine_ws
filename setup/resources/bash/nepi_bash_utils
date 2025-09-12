@@ -116,6 +116,12 @@ function update_yaml_value(){
     #echo $UPDATE_YAML_VAL
     export UPDATE_YAML_FILE=$3
     #echo $UPDATE_YAML_FILE
+    if [ -z "$my_variable" ]; then
+      echo "my_variable is empty or unset."
+    else
+      echo "my_variable is not empty."
+    fi
+
     yq e -i '.'"$UPDATE_YAML_KEY"' = env(UPDATE_YAML_VAL)' $UPDATE_YAML_FILE
 }
 export -f update_yaml_value

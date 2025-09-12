@@ -18,7 +18,7 @@ cd etc
 source load_system_config.sh
 wait
 if [ $? -eq 1 ]; then
-    echo "Failed to load $(pwd)/load_system_config.sh"
+    echo "Failed to load load_system_config.sh"
     exit 1
 fi
 cd ..
@@ -81,47 +81,47 @@ fi
 #######################
 
 # Update Etc
-source $(pwd)/etc/update_etc_files.sh
+cd etc
+source update_etc_files.sh
 wait
-
-sudo rsync -arh ${NEPI_CONFIG}/docker_cfg/etc/ ${NEPI_CONFIG}/system_cfg/
+cd ..
 
 ########################################
 # Update NEPI ETC to OS Host ETC Linked files
 ########################################
-sudo systemctl stop lsyncd
-sudo cp -r ${etc_source}/lsyncd /etc/
-lsyncd_file=/etc/lsyncd/lsyncd.conf
-function add_etc_sync(){
-    etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
-    etc_dest=/etc/${1}
-    echo "" | sudo tee -a $lsyncd_file
-    echo "sync {" | sudo tee -a $lsyncd_file
-    echo "    default.rsync," | sudo tee -a $lsyncd_file
-    echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
-    echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
-    echo "}" | sudo tee -a $lsyncd_file
-    echo " " | sudo tee -a $lsyncd_file
-}
-sudo chown -R ${USER}:${USER} ${lsyncd_file}
+# sudo systemctl stop lsyncd
+# sudo cp -r ${etc_source}/lsyncd /etc/
+# lsyncd_file=$(pwd)/etc/lsyncd/lsyncd.conf
+# function add_etc_sync(){
+#     etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
+#     etc_dest=/etc/${1}
+#     echo "" | sudo tee -a $lsyncd_file
+#     echo "sync {" | sudo tee -a $lsyncd_file
+#     echo "    default.rsync," | sudo tee -a $lsyncd_file
+#     echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+#     echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+#     echo "}" | sudo tee -a $lsyncd_file
+#     echo " " | sudo tee -a $lsyncd_file
+# }
+# sudo chown -R ${USER}:${USER} ${lsyncd_file}
 
-add_etc_sync hosts
-add_etc_sync hostname
-if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-    add_etc_sync /network/interfaces.d
-    add_etc_sync network/interfaces
-    add_etc_sync dhcp/dhclient.conf
-    add_etc_sync wpa_supplicant
-fi
+# add_etc_sync hosts
+# add_etc_sync hostname
+# if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+#     add_etc_sync /network/interfaces.d
+#     add_etc_sync network/interfaces
+#     add_etc_sync dhcp/dhclient.conf
+#     add_etc_sync wpa_supplicant
+# fi
 
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    add_etc_sync ${etc_path}
+# if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+#     add_etc_sync ${etc_path}
     
-fi
+# fi
 
-if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
-    add_etc_sync ssh/sshd_config
-fi
+# if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+#     add_etc_sync ssh/sshd_config
+# fi
 
 
 #############################
@@ -130,35 +130,40 @@ fi
 ########################
 # Configure NEPI Host Services
 ########################
-echo "Updating NEPI Managed Serices"
-if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-    # sudo systemctl stop NetworkManager
-    # sudo ip addr flush eth0 && \
-    # sudo systemctl start networking.service && \
-    # sudo ifdown --force --verbose eth0 && \
-    # sudo ifup --force --verbose eth0
-    # sleep 2
+# echo "Updating NEPI Managed Services"
+# if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+#     # sudo systemctl stop NetworkManager
+#     # sudo ip addr flush eth0 && \
+#     # sudo systemctl start networking.service && \
+#     # sudo ifdown --force --verbose eth0 && \
+#     # sudo ifup --force --verbose eth0
+#     # sleep 2
 
-    if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
-        # # Remove and restart dhclient
-        # sudo dhclient -r
-        # sudo dhclient
-        # sudo dhclient -nw
-        # #ps aux | grep dhcp
-        :
-    fi
-fi
+#     if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
+#         # # Remove and restart dhclient
+#         # sudo dhclient -r
+#         # sudo dhclient
+#         # sudo dhclient -nw
+#         # #ps aux | grep dhcp
+#         :
+#     fi
+# fi
 
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    #sudo timedatectl set-ntp false
-    #sudo systemctl start chronyd
-fi
+# if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+#     #sudo timedatectl set-ntp false
+#     #sudo systemctl start chronyd
+# fi
 
 
-if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
-    #sudo systemctl restart sshd
-    :
-fi
+# if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+#     #sudo systemctl restart sshd
+#     :
+# fi
+
+
+# start the sync service
+#sudo systemctl start lsyncd
+
 
 
 # start the sync service

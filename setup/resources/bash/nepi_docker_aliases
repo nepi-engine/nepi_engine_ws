@@ -204,12 +204,37 @@ export -f nepiswitch
 
 
 function nepiimport(){
-  . ${NEPI_DOCKER_CONFIG}/nepi_docker_import.sh
+  IMAGE_FILE=$1
+  delimiter="_"
+  IFS="$delimiter"
+  read -ra IMAGE_ARRAY <<< "$IMAGE_FILE"
+
+  IMAGE_NAME=${IMAGE_ARRAY[0]}
+  echo $IMAGE_NAME
+  IMAGE_TAG=${IMAGE_ARRAY[1]}
+  echo $IMAGE_TAG
+  IMAGE_DATE=${IMAGE_ARRAY[2]}
+  IMAGE_DATE="${IMAGE_DATE%.*}"
+  echo $IMAGE_DATE
+
+  printf "Current Image ${IMAGE_FILE} "
+  printf 'Create a Custom Tag (y/n)? '
+  read answer
+  if [ "$answer" != "${answer#[Yy]}" ] ;then 
+      echo 'Enter Custom Tag: ' 
+      read CUSTOM_TAG
+      IMAGE_TAG=$CUSTOM_TAG
+      echo $IMAGE_TAG
+  else
+      echo ''
+  fi
+  . ${NEPI_DOCKER_CONFIG}/nepi_docker_import.sh $IMAGE_FILE $IMAGE_NAME $IMAGE_TAG $IMAGE_DATE
 }
 export -f nepiimport
 
 
 function nepiexport(){
+  ### ADD USER INPUTS
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_export.sh
 }
 export -f nepiexport

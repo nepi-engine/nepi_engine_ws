@@ -37,18 +37,30 @@ fi
 ####################################
 CONFIG_SOURCE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
 
-if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
-EXPORT_NAME="${NEPI_RUNNING_FS}-${NEPI_FSA_TAG}"
-echo $EXPORT_NAME
-else
-EXPORT_NAME="${NEPI_RUNNING_FS}-${NEPI_FSB_TAG}"
-echo $EXPORT_NAME
-fi
+# EXPORT_NAME=nepi_export_staging-temp-tag
 
-if [[ $NEPI_RUNNING_FS_ID != 0 ]]; then
+# sudo docker commit $NEPI_RUNNING_ID nepi_labeling_staging:temp-tag
+# wait
+
+# STAGING_CONTAINER_ID=$(sudo docker run -d --name nepi_labeling_staging --label "NEPI_TAG=$NEPI_EXPORT_TAG" --label "NEPI_SIZE_MB=$NEPI_EXPORT_SIZE_MB" \
+#  --label "NEPI_HW_TYPE=$NEPI_EXPORT_HW_TYPE" --label "NEPI_HW_MODEL=$NEPI_EXPORT_HW_MODEL" --label "NEPI_BUILD_DATE=$NEPI_EXPORT_BUILD_DATE" \
+#  --label "NEPI_DESCRIPTION=$NEPI_EXPORT_DESCRIPTION" nepi_labeling_staging:temp-tag)
+# wait
+
+# sudo docker commit $STAGING_CONTAINER_ID nepi_export_staging:temp-tag
+# wait
+
+# EXPORT_CONTAINER_ID=$(sudo docker run -d --name nepi_export_staging nepi_export_staging:temp-tag)
+# wait
+
+EXPORT_CONTAINER_ID=$NEPI_RUNNING_ID
+DATE=$(date +"%Y-%m-%d")
+EXPORT_NAME=$NEPI_RUNNING_FS'_'$NEPI_RUNNING_TAG'_'$DATE
+
+if [[ $EXPORT_CONTAINER_ID != 0 ]]; then
     TAR_EXPORT_PATH=${NEPI_EXPORT_PATH}/''${EXPORT_NAME}.tar
     #echo $TAR_EXPORT_PATH
-    sudo docker export $NEPI_RUNNING_FS_ID > $TAR_EXPORT_PATH
+    sudo docker export $EXPORT_CONTAINER_ID > $TAR_EXPORT_PATH
 else
     echo "No Running NEPI Container to Export"
 fi
