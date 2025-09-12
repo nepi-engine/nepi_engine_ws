@@ -33,6 +33,16 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
+if [[ $NEPI_IMPORTING == 0 ]]; then
+    update_yaml_value "NEPI_IMPORTING" 1 "${CONFIG_SOURCE}"
+else
+    echo "You can only import one image at a time"
+    exit 1
+fi
+
+source $(pwd)/load_docker_config.sh
+wait
+
 ####################################
 ###### NEED TO GET LIST OF AVAILABLE TARS and Select Image
 #IMAGE_FILE=nepi-jetson-3p2p0-rc2.tar
@@ -65,26 +75,27 @@ echo $ID
 
 if [[ "$NEPI_INACTIVE_FS" == "nepi_fs_a" ]]; then
 update_yaml_value "NEPI_FSA_ID" "$ID" "$CONFIG_SOURCE"
-[[ -n $IMAGE_NAME ]] && update_yaml_value "NEPI_FSA_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
-[[ -n $IMAGE_TAG ]] && update_yaml_value "NEPI_FSA_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
-[[ -n $IMAGE_DATE ]] && update_yaml_value "NEPI_FSA_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
+[[ -v $IMAGE_NAME ]] && update_yaml_value "NEPI_FSA_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
+[[ -v $IMAGE_TAG ]] && update_yaml_value "NEPI_FSA_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
+[[ -v $IMAGE_DATE ]] && update_yaml_value "NEPI_FSA_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
 source $(pwd)/load_docker_config.sh
 wait
 
 sudo docker tag "$NEPI_FSA_ID" "${NEPI_FSA_NAME}:${NEPI_FSA_TAG}"
 else
 update_yaml_value "NEPI_FSB_ID" "$ID" "$CONFIG_SOURCE"
-[[ -n $IMAGE_NAME ]] && update_yaml_value "NEPI_FSB_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
-[[ -n $IMAGE_TAG ]] && update_yaml_value "NEPI_FSB_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
-[[ -n $IMAGE_DATE ]] && update_yaml_value "NEPI_FSB_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
+[[ -v $IMAGE_NAME ]] && update_yaml_value "NEPI_FSB_NAME" "$IMAGE_NAME" "$CONFIG_SOURCE"
+[[ -v $IMAGE_TAG ]] && update_yaml_value "NEPI_FSB_TAG" "$IMAGE_TAG" "$CONFIG_SOURCE"
+[[ -v $IMAGE_DATE ]] && update_yaml_value "NEPI_FSB_BUILD_DATE" "$IMAGE_DATE" "$CONFIG_SOURCE"
 source $(pwd)/load_docker_config.sh
 wait
 
 sudo docker tag "$NEPI_FSB_ID" "${NEPI_FSB_NAME}:${NEPI_FSB_TAG}"
+sudo docker rmi "$NEPI_FSB_ID" "import_staging:temp"
 fi
 
-#echo "  ADD SOME PRINT OUTS  "
 update_yaml_value "NEPI_FS_IMPORT" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_IMPORTING" 0 "${CONFIG_SOURCE}"
 
 
 ########################

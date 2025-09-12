@@ -46,7 +46,7 @@ vim --version | grep clipboard
 sudo apt install nmap -y
 sudo apt-get install -y lsyncd rsync
 
-sudo add-apt-repository ppa:rmescandon/yq
+sudo add-apt-repository ppa:rmescandon/yq -y
 sudo apt update
 sudo apt install yq -y
 
@@ -197,8 +197,30 @@ if [[ "$NEPI_MANAGES_TIME" -eq 1 ]]; then
     sudo apt-get install chrony -y
 fi
 if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
-    echo "Installing NEPI SSH Management Software"
-    apt-get install openssh-server -y
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Permissions 0644 for '/etc/ssh/ssh_host_rsa_key' are too open.
+# It is required that your private key files are NOT accessible by others.
+# This private key will be ignored.
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Permissions 0644 for '/etc/ssh/ssh_host_ecdsa_key' are too open.
+# It is required that your private key files are NOT accessible by others.
+# This private key will be ignored.
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Permissions 0644 for '/etc/ssh/ssh_host_ed25519_key' are too open.
+# It is required that your private key files are NOT accessible by others.
+# This private key will be ignored.
+# sshd: no hostkeys available -- exiting.
+
+
+
+    #echo "Installing NEPI SSH Management Software"
+    #sudo apt install --reinstall openssh-server
 
 fi
 

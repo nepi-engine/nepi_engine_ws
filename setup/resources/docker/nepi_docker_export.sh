@@ -35,7 +35,16 @@ if [ $? -eq 1 ]; then
 fi
 
 ####################################
-CONFIG_SOURCE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+if [[ $NEPI_EXPORTING == 0 ]]; then
+    update_yaml_value "NEPI_EXPORTING" 1 "${CONFIG_SOURCE}"
+
+else
+    echo "You can only export one image at a time"
+    exit 1
+fi
+
+source $(pwd)/load_docker_config.sh
+wait
 
 # EXPORT_NAME=nepi_export_staging-temp-tag
 
@@ -66,6 +75,7 @@ else
 fi
 
 update_yaml_value "NEPI_FS_EXPORT" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_EXPORTING" 0 "${CONFIG_SOURCE}"
 
 source $(pwd)/load_docker_config.sh
 wait
