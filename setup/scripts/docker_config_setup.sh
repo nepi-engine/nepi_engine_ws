@@ -297,8 +297,20 @@ if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
     fi
     sudo cp ${DOCKER_ETC_FOLDER}/ssh/sshd_config /etc/ssh/sshd_config
     ###
-    sudo systemctl enable sshd
-    sudo systemctl restart sshd
+
+    # Unmask if needed  https://www.baeldung.com/linux/systemd-unmask-services
+    service_name=sshd
+
+    #service_file=$(sudo find /etc /usr/lib -name "${service_name}.service*")
+    #if [[ "$service_file" != "" ]]; then
+    #    sudo systemctl unmask ${service_name}
+    #    sudo rm ${service_file}
+    #    sudo systemctl daemon-reload
+    #fi
+    sudo systemctl status ${service_name}
+    sudo systemctl enable ${service_name}
+    sudo systemctl restart ${service_name}
+    sudo systemctl status ${service_name}
 fi
 
 

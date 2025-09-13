@@ -1,0 +1,23 @@
+#! /bin/bash
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
+# Start NEPI Network Processes
+source /opt/nepi/etc/load_nepi_config.sh
+if [[ -v NEPI_MAGAGES_NETWORK ]]; then
+  if [[ "$NEPI_MAGAGES_NETWORK" -eq 1 ]]; then
+    echo "Starting NEPI Network Management Services."
+    # Nothing to Do
+  else
+    echo "NEPI Network Management Disabled."
+  fi
+
+else
+  echo "NEPI Network Management Disabled."
+fi

@@ -32,11 +32,21 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
+if [[ $NEPI_RESTARTING == 0 ]]; then
+    update_yaml_value "NEPI_RESTARTING" 1 "${CONFIG_SOURCE}"
+
+else
+    echo "You can only restart one image at a time"
+    exit 1
+fi
+
 ########################
 # Stop Any Running NEPI Containers
 ########################
-. ./nepi_docker_stop.sh
-wait
+if [[ $NEPI_RUNNING_ID != "unknown" ]]; then
+    ./nepi_docker_stop.sh
+    wait
+fi
 
 #################################
 # Create Nepi Required Folders
@@ -177,7 +187,6 @@ echo $NEPI_STORAGE
 ########
 # Initialize Run Command
 DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
---mount type=bind,source=${NEPI_BASE},target=${NEPI_BASE} \
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
 --mount type=bind,source=/dev,target=/dev \
@@ -185,6 +194,7 @@ DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
 -v /tmp/.X11-unix/:/tmp/.X11-unix \
 --net=host"
 
+# -v ${NEPI_BASE}:${NEPI_BASE} \
 
 # Set Clock Settings
 
@@ -225,16 +235,24 @@ echo "Launching NEPI Docker Container with Command"
 echo "${DOCKER_RUN_COMMAND}"
 eval "$DOCKER_RUN_COMMAND"
 
-if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
-CONTAINER_ID=$(sudo docker ps -aqf "name=${NEPI_FSA_NAME}")
+if [[ "$NEPI_ACTIVE_FS" == "nepi_fs_a" ]]; then
+update_yaml_value "NEPI_RUNNING_TAG" "$NEPI_FSA_TAG" "${CONFIG_SOURCE}"
 else
-CONTAINER_ID=$(sudo docker ps -aqf "name=${NEPI_FSB_NAME}")
+update_yaml_value "NEPI_RUNNING_TAG" "$NEPI_FSB_TAG" "${CONFIG_SOURCE}"
 fi
 
 update_yaml_value "NEPI_RUNNING" 1 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS" "$NEPI_ACTUVE_FS" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS_ID" "$CONTAINER_ID" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" "$(date +%Y-%m-%d)" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_FS" "$NEPI_ACTIVE_FS" "$CONFIG_SOURCE"
+
+source $(pwd)/load_docker_config.sh
+wait
+
+CONTAINER_ID=$(sudo docker ps -aqf "ancestor=${NEPI_RUNNING_FS}:${NEPI_RUNNING_TAG}")
+echo $CONTAINER_ID
+update_yaml_value "NEPI_RUNNING_ID" $CONTAINER_ID "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" "$(date +%Y-%m-%d)" "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_FS_RESTART" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RESTARTING" 0 "${CONFIG_SOURCE}"
 
 source $(pwd)/load_docker_config.sh
 wait

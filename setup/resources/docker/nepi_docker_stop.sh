@@ -60,19 +60,21 @@ sudo systemctl stop lsyncd
 ########################
 echo $NEPI_RUNNING_FS
 #if [[ ( -v NEPI_RUNNING_FS && "$NEPI_RUNNING_FS" -eq 1 ) ]]; then
-if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
-echo "Stopping Running NEPI Docker Process ${NEPI_FSA_NAME}:${NEPI_FSA_TAG} ID:${RUNNING_ID}"
-sudo docker stop $NEPI_RUNNING_FS_ID
-sudo docker rm $NEPI_RUNNING_FS_ID
-else
-echo "Stopping Running NEPI Docker Process ${NEPI_FSB_NAME}:${NEPI_FSB_TAG} ID:${RUNNING_ID}"
-sudo docker stop $NEPI_RUNNING_FS_ID
-sudo docker rm $NEPI_RUNNING_FS_ID
-fi
-update_yaml_value "NEPI_RUNNING" 0 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS" "unknown" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS_ID" 0 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "$CONFIG_SOURCE"
+# if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
+# echo "Stopping Running NEPI Docker Process ${NEPI_FSA_NAME}:${NEPI_FSA_TAG} ID:${RUNNING_ID}"
+# sudo docker stop $NEPI_RUNNING_FS_ID
+# #sudo docker rm $NEPI_RUNNING_FS_ID
+# else
+# echo "Stopping Running NEPI Docker Process ${NEPI_FSB_NAME}:${NEPI_FSB_TAG} ID:${RUNNING_ID}"
+# sudo docker stop $NEPI_RUNNING_FS_ID
+# #sudo docker rm $NEPI_RUNNING_FS_ID
+# fi
+echo "Stopping Running NEPI Docker Process ${NEPI_RUNNING_FS}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
+sudo docker stop $NEPI_RUNNING_ID
+update_yaml_value "NEPI_RUNNING" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_FS" "unknown" "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_ID" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "${CONFIG_SOURCE}"
 
 #fi 
 

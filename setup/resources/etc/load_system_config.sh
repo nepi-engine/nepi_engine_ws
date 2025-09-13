@@ -15,7 +15,7 @@
 export SYSTEM_CONFIG_FILE=$(pwd)/nepi_system_config.yaml
  
 if [[ -f "$SYSTEM_CONFIG_FILE" ]]; then
-    sudo echo "Updating NEPI Config file from: ${SYSTEM_CONFIG_FILE}"
+    #sudo echo "Updating NEPI Config file from: ${SYSTEM_CONFIG_FILE}"
     keys=($(yq e 'keys | .[]' ${SYSTEM_CONFIG_FILE}))
     for key in "${keys[@]}"; do
         value=$(yq e '.'"$key"'' $SYSTEM_CONFIG_FILE)
