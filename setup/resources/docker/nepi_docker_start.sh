@@ -187,7 +187,6 @@ echo $NEPI_STORAGE
 ########
 # Initialize Run Command
 DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
--v ${NEPI_BASE}:${NEPI_BASE} \
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
 --mount type=bind,source=/dev,target=/dev \
@@ -195,6 +194,7 @@ DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
 -v /tmp/.X11-unix/:/tmp/.X11-unix \
 --net=host"
 
+# -v ${NEPI_BASE}:${NEPI_BASE} \
 
 # Set Clock Settings
 

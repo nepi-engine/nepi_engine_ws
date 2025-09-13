@@ -15,12 +15,12 @@ NEPI_CONFIG=/mnt/nepi_config
 NEPI_BASE=/opt/nepi
 export NEPI_USER=nepi
 export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
-
+d
 export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
 
 export NEPI_ACTIVE_NAME=nepi_fs_b
-export NEPI_ACTIVE_TAG=unkown #3p2p3-jetson-orin-5-4
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-5b
 export NEPI_IP=192.168.179.103
 
 
@@ -28,7 +28,6 @@ export NEPI_IP=192.168.179.103
 sudo docker run -d --privileged -it -e UDEV=1 --gpus all \
     --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
     --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
-    -v source=${NEPI_BASE}:${NEPI_BASE} \
     --mount type=bind,source=/dev,target=/dev \
     --cap-add=SYS_TIME --volume=/var/empty:/var/empty -v /etc/ntpd.conf:/etc/ntpd.conf \
     --net=host \

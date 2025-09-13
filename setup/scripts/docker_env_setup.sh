@@ -39,6 +39,9 @@ cd $TMP
 
 echo ""
 echo "Installing NEPI required software packages"
+
+sudo apt update
+
 sudo apt install vim-gtk3 -y
 #sudo update-alternatives --config vim
 vim --version | grep clipboard
@@ -56,7 +59,11 @@ sudo apt install gitk -y
 # Visual Code?
 sudo snap install code --channel=edge --classic
 
+sudo apt install htop -y
 
+sudo apt install snap -y
+
+sudo apt install chromium-browser
 
 
 #################################
@@ -221,6 +228,11 @@ if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
 
     #echo "Installing NEPI SSH Management Software"
     #sudo apt install --reinstall openssh-server
+
+    # sudo apt-get remove --purge openssh-server
+    # sudo apt-get autoclean 
+    # sudo apt --fix-broken install
+    # sudo apt-get install openssh-server
 
 fi
 
