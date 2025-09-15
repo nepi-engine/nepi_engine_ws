@@ -139,12 +139,6 @@ pushn = Add,commit,push repo changes with provided comment"
 # NEPI SYSTEM Util Functions
 ###################################
 
-
-
-#############################
-# NEPI DOCKER FUNCTIONS
-#############################
-
 export NEPI_USER=nepi
 export NEPI_HOME=/home/nepi
 
@@ -155,6 +149,36 @@ export NEPI_STORAGE=/mnt/nepi_storage
 
 alias nepihome="
 cd ${USER}"
+
+function nepienable(){
+    . ${NEPI_DOCKER_CONFIG}/nepi_docker_enable.sh
+}
+export -f nepienable
+
+function nepidisable(){
+    . ${NEPI_DOCKER_CONFIG}/nepi_docker_disable.sh   
+}
+export -f nepidisable
+
+
+HELPN="${HELPN}
+################################
+## NEPI System Functions ##
+################################
+nepihome = Switch to Home folder
+nepienable = Switch to NEPI ETC Folder and enable NEPI docker service on startup - REBOOT REQUIRED.
+nepidisable = Disable NEPI Docker Service and switch to Original ETC Folder- REBOOT REQUIRED."
+
+#############################
+# NEPI DOCKER FUNCTIONS
+#############################
+
+export NEPI_USER=nepi
+
+export NEPI_SYSTEM_CONFIG=/opt/nepi/nepi_engine/etc
+export NEPI_CONFIG_FILE=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
+export NEPI_STORAGE=/mnt/nepi_storage
+
 
 function nepienable(){
     . ${NEPI_DOCKER_CONFIG}/nepi_docker_stop.sh
@@ -199,6 +223,12 @@ export -f nepicommit
 
 function nepiswitch(){
   . ${NEPI_DOCKER_CONFIG}/nepi_docker_switch.sh
+  if [ "$?" -eq 0 ]; then
+    . ${NEPI_DOCKER_CONFIG}/nepi_docker_start.sh
+    echo "NEPI container switch complete. NEPI restarting"
+  else
+    echo "Failed to switch NEPI container"
+  fi
 }
 export -f nepiswitch
 
@@ -240,15 +270,18 @@ function nepiexport(){
 export -f nepiexport
 
 
-
+function nepiremove(){
+    . ${NEPI_DOCKER_CONFIG}/nepi_remove_complete.sh
+    wait
+    sleep 3
+    sudo systemctl disable nepi_docker
+}
+export -f nepidisable
 
 HELPN="${HELPN}
 ################################
 ## NEPI Docker Functions ##
 ################################
-nepihome = Switch to Home folder
-nepienable = Enable NEPI Docker Service on Startup
-nepidisable = Disable NEPI Docker Service on Startup
 nepistart = Start the nepi docker container
 nepistop = Stop the running nepi docker container
 nepilogin = Log into the running nepi container

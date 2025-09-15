@@ -1,5 +1,5 @@
 ####################################################
-### INTERFACE SETTINGS
+### NEPI SYSTEM SETTINGS
 ####################################################
 # NEPI USER
 NEPI_USER: nepi
@@ -20,6 +20,41 @@ NEPI_HW_TYPE: JETSON
 # NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
 NEPI_HW_MODEL: ORIN
 
+
+
+
+
+####################################################
+# NEPI MANAGED SERVICES Config for Docker Container Deployments
+####################################################
+NEPI_IN_CONTAINER: 1
+NEPI_MANAGES_ETC: 1
+# Note, The following settings will be ignored for direct file system installations -> NEPI_IN_CONTIANER=0.
+#   Or if NEPI_MANAGES_ETC=0.
+# Note, if both settings are enabled:
+#   Any of the enabled service management settings below will be managed updated and managed by NEPI.
+#   Current Host /etc folder will be backed up as /etc.org 
+#   HOST OS /etc files will be udpated based on settings below then moved to /etc.nepi
+#   An /etc symlink will be created pointing to /etc.nepi
+#   Set NEPI_MANAGES_XXX service values to 0 to turn off NEPI management of that service
+#   Switch between NEPI system and Orginal system service configurations
+#      using the terminal commands: "nepienable"/"nepidisable"
+# If ETC management not enabled and Managed service below is set to 0, 
+#    that system service configuration must be done manually.
+#   -DOCKER-If enabled, the Hoset OS's docker config will be update to use the NEPI_DOCKER path set below.
+#   -HOSTNAME-Configure the HOST OS etc/hostname file with desired network hostname -> NEPI_DEVICE_ID.
+#   -HOSTNAME-Configure the HOST OS etc/hosts file with nepi ip alias -> NEPI_DEVICE_ID.
+#   -NETWORK-Ensure on the Host OS that the NEPI_IP address enabled as a static ip address -> NEPI_IP nepi.
+#   -NETWORK-Setup and Enable DHCP Client for internet connections if needed.
+#   -TIME-Setup and configure Chrony time management service.
+#   -TIME-Configure Chrony's NTP service to listen for -> NEPI_NTP_IP address.
+#   -SSH-Configure Host OS ssh setup for on port 22 with desired login credetials and keys. NEPI will still be availbe on ssh port 2222.
+NEPI_MANAGES_DOCKER: 1
+NEPI_MANAGES_HOSTNAME: 1
+NEPI_MANAGES_NETWORK: 1
+NEPI_MANAGES_TIME: 1
+NEPI_MANAGES_SSH: 1 
+
 ####################################################
 ### NEPI Partition SETTINGS
 ####################################################
@@ -29,10 +64,6 @@ NEPI_HW_MODEL: ORIN
 NEPI_BOOT_DEVICE: CONTAINER
 NEPI_FS_DEVICE: CONTAINER
 NEPI_STORAGE_DEVICE: CONTAINER
-
-# NEPI FS PARTITION SETINGS  
-NEPI_AB_FS: 1
-NEPI_IN_CONTAINER: 1
 
 # NEPI STORAGE CONFIG
 # It is recommended that these folders be create as their own partitions
@@ -48,29 +79,12 @@ STORAGE_MIN_GB: 250
 NEPI_CONFIG: /mnt/nepi_config
 CONFIG_MIN_GB: 1
 
-
-
-####################################################
-# NEPI MANAGED SERVICES Config for Docker Container Deployments
-####################################################
-# Note, ignored for direct file system installations
-# Note, if enabled for a docker deployment (NEPI_IN_CONTAINER=1), 
-# these system services will be managed in the NEPI HOST OS environment,
-# and HOST OS /etc files will be overwitten.
-# NEPI Managed Resources. Set to 0 to turn off NEPI management of this resource
-NEPI_MANAGES_HOSTNAME: 1
-NEPI_MANAGES_NETWORK: 1
-NEPI_MANAGES_TIME: 1
-NEPI_MANAGES_SSH: 1 # 
-# If not enabled, proper HOST service configurations must be done manually.
-# -HOSTNAME-Configure the HOST OS hostname file with desired network hostname
-# -NETWORK-Ensure on the Host OS that the NEPI_IP address enabled as a static ip address
-# -NETWORK-Setup and Enable DHCP Client for internet connections if needed
-# -TIME-Setup and configure Chrony time management service
-# -TIME-Configure Chrony's NTP service to listen for the NEPI_NTP_IP address
-# -SSH-Configure Host OS ssh setup. NEPI will still be availbe on ssh port 2222
-# -If either NEPI managed HOSTNAME or SSH is disabl
-
+# NEPI FS PARTITION SETINGS  
+# If NEPI_AB_FS is enabled, NEPI docker service will manage an Active NEPI container image,
+# and an Inactive Image used for backup and recovery purposes.  
+# If NEPI_AB_FS is enabled, you can switch the current Active and Inactive containers
+# with the terminal command "nepiswitch".
+NEPI_AB_FS: 1
 
 ####################################################
 # NEPI SOFTWARE Config

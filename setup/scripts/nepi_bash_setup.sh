@@ -38,7 +38,16 @@ sudo python${NEPI_PYTHON} -m pip --version
 #####################################
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
+BASHRC=/home/${NEPI_USER}/.bashrc
+RBASHRC=/root/.bashrc
 
+### Backup USER BASHRC file if needed
+file=$BASHRC
+create_nepi_path_link $file
+
+### Backup ROOT BASHRC file if needed
+file=$RBASHRC
+create_nepi_path_link $file
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=/home/${NEPI_USER}/.nepi_bash_utils
@@ -64,8 +73,6 @@ sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_ALIASES_DEST
 #sudo ln -sfn ${NEPI_ALIASES_DEST} /root/.nepi_system_aliases
 
 #############
-BASHRC=/home/${NEPI_USER}/.bashrc
-RBASHRC=/root/.bashrc
 echo "Updating userbashrc files"
 
 sudo cp -n $RBASHRC ${RBASHRC}.bak

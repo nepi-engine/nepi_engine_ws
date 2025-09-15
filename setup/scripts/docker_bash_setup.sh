@@ -27,10 +27,17 @@ if [ $? -eq 1 ]; then
 fi
 cd $SCRIPT_FOLDER
 
+
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
-BASHRC=~/.bashrc
+BASHRC=/home/${USER}/.bashrc
+
+### Backup USER BASHRC file if needed
+file=$BASHRC
+org_path_backup $file
+create_nepi_path_link $file
+
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils

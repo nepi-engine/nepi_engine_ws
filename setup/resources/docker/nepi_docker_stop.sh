@@ -35,25 +35,12 @@ fi
 ########################
 # Configure NEPI Host Services
 ########################
-echo "Updating NEPI Managed Serices"
-if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-    #sudo systemctl restart NetworkManager
-    :
+if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
+    # start the sync service
+    echo "Stopping NEPI ETC Sycn service"
+    sudo systemctl stop lsyncd
 fi
 
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    # sudo systemctl stop chrony
-    # sudo timedatectl set-ntp true
-    :
-fi
-
-if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
-    #sudo systemctl restart sshd
-    :
-fi
-
-# stop the sync service
-sudo systemctl stop lsyncd
 
 ########################
 # Stop Running Command

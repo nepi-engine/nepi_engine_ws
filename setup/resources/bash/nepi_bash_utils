@@ -174,6 +174,141 @@ function print_config_file(){
 
 export -f print_config_file
 
+
+function replace_path(){
+    path=$1
+    new_path=$2
+    if [ -v "${path}" && -v "${new_path}"]; then
+      if [ ! -d "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up Original ${path} path to ${path}.bak"
+          sudo mkdir ${path}.bak
+          sudo cp -R -a ${path}/* ${path}.bak/
+      elif[ ! -f "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up Original ${path} path to ${path}.bak"
+          sudo cp -R -a ${path} ${path}.bak
+      fi
+      echo "Deleting path ${path}"
+      sudo rm -r ${path}
+      echo "Copying ${new_path} to ${path}"
+      sudo cp -R -a ${new_path} ${path}
+    else
+      echo "Path not found: ${path}"
+    fi
+}
+export -f replace_path
+
+function org_path_backup(){
+    path=$1
+    if [ ! -d "${path}.bak" && ! -L "${path}" ]; then
+        echo "Backing Up Original ${path} path to ${path}.bak"
+        sudo mkdir ${path}.bak
+        sudo cp -R -a ${path}/* ${path}.bak/
+    elif[ ! -f "${path}.bak" && ! -L "${path}" ]; then
+        echo "Backing Up Original ${path} path to ${path}.bak"
+        sudo cp -R -a ${path} ${path}.bak
+    fi
+    if [ ! -d "${path}.org" ]; then
+        echo "Ceating Original ${path} path copy at ${path}.org"
+        sudo mkdir ${path}.org
+        sudo cp -R -a ${path}/* ${path}.org/
+    elif[ ! -f "${path}.org" ]; then
+        echo "Ceating Original ${path} path copy at ${path}.org"
+        sudo cp -R -a ${path} ${path}.org
+    fi
+}
+export -f org_path_backup
+
+function org_path_restore(){
+    path=$1
+    if [ -v "${path}.org" ]; then
+      if [ ! -d "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up Original ${path} path to ${path}.bak"
+          sudo mkdir ${path}.bak
+          sudo cp -R -a ${path}/* ${path}.bak/
+      elif[ ! -f "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up Original ${path} path to ${path}.bak"
+          sudo cp -R -a ${path} ${path}.bak
+      fi
+      if [ -v ${path} ]; then
+        sudo rm -r ${path}
+      fi
+      sudo ln -sf ${path}.org ${path}
+    else 
+      echo "Original path folder not found: ${path}.org"
+}
+export -f org_path_restore
+
+
+function create_nepi_path_link(){
+    path=$1
+    if [ -v "${path}" ]; then
+      echo "Copying path from ${path} to ${path}.nepi"
+      if [ -v "${path}.nepi" ]; then
+          sudo rm -r ${path}.nepi
+      fi
+      sudo cp -R -a ${path}/* ${path}.nepi/
+      echo "Deleting path ${path}"
+      sudo rm -r ${path}
+      echo "Linking ${path} to ${path}.nepi"
+      sudo ln -sf ${path}.nepi ${path}
+    else
+      echo "Path not found: ${path}"
+    fi
+}
+export -f create_nepi_path_link
+
+
+
+
+function nepi_path_restore(){
+    path=$1
+    if [ -v "${path}.nepi" ]; then
+      if [ ! -d "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up NEPI ${path} path to ${path}.bak"
+          sudo mkdir ${path}.bak
+          sudo cp -R -a ${path}/* ${path}.bak/
+      elif[ ! -f "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up NEPI ${path} path to ${path}.bak"
+          sudo cp -R -a ${path} ${path}.bak
+      fi
+      if [ -v ${path} ]; then
+        sudo rm -r ${path}
+      fi
+      sudo ln -sf ${path}.nepi ${path}
+    else 
+      echo "NEPI path folder not found: ${path}.nepi"
+}
+export -f nepi_path_restore
+
+
+function nepi_path_remove(){
+    path=$1
+    if [ v $2 ]; then
+      del_nepi=$2
+    else
+      del_nepi=1
+    fi 
+    if [ -v "${path}.org" ]; then
+      if [ ! -d "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up Original ${path} path to ${path}.bak"
+          sudo mkdir ${path}.bak
+          sudo cp -R -a ${path}/* ${path}.bak/
+      elif[ ! -f "${path}.bak" && ! -L "${path}" ]; then
+          echo "Backing Up Original ${path} path to ${path}.bak"
+          sudo cp -R -a ${path} ${path}.bak
+      fi
+      if [ -v ${path} ]; then
+        sudo rm -r ${path}
+      fi
+      sudo cp -r -a ${path}.org ${path}
+      if [[ "$del_nepi" -eq 1 && -v "${path}.nepi" ]]; then
+        sudo rm -r ${path}.nepi
+      fi
+    else 
+      echo "Original path folder not found: ${path}.org"
+}
+export -f nepi_path_remove
+
 #### Update Help Test
 utilsn="${utilsn}
 ################################
@@ -189,20 +324,32 @@ load_config_file = Exports all of the yaml entries to system variables given FIL
 
 
 ###################################
-# Git Util Functions
+# Command Line Confi Util Functions
 ###################################
+
+user_color=01;32m
+if [[ "$USER" == "nepi" ]]; then
+  user_color=01;33m # Green
+elif [[ "$USER" == "nepi_admin" ]]; then
+  user_color=01;35m # Purple
+elif [[ "$USER" == "nepi_host" ]]; then
+  user_color=01;34m # Blue
+fi
+export USER_COLOR=$user_color
+
 
 head_name=$(git rev-parse --abbrev-ref HEAD >/dev/null 2>&1)
 if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
-  export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+
+  export PS1='${debian_chroot:+($debian_chroot)}\[\033[${USER_COLOR\}]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ '
 
   #GIT Command Line Branch Display
   parse_git_branch() {
       git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
   }
+else
+  export PS1='${debian_chroot:+($debian_chroot)}\[\033[${USER_COLOR\}]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 fi
-
-
 
 ###################################
 # Docker Util Functions
