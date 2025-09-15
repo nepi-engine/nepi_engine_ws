@@ -34,9 +34,14 @@ export NEPI_SSH_KEY=~/ssh_keys/nepi_engine_default_private_ssh_key
 export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
 
 # Setup Connection Shortcuts
-alias sshn="ssh -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
-alias scpn="scp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
-alias sftpn="sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias sshn="ssh -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias scpn="scp -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias sftpn="sftp -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+
+# Setup Connection Shortcuts
+alias sshnh="ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
+alias scpnh="scp -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihosti"
+alias sftpnh="sftp -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
 
 
 SSH_ENV="$HOME/.ssh/environment"

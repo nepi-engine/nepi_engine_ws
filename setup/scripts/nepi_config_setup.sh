@@ -302,23 +302,21 @@ sudo chown root:root /etc/fstab
   
   
 
-    ###########################################
-    # Set up SSH
-    echo " "
-    echo "Configuring SSH Keys"
 
-    # And link default public key - Make sure all ownership and permissions are as required by SSH
-    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_ETC}/ssh/authorized_keys
-    sudo chmod 0600 ${NEPI_ETC}/ssh/authorized_keys
+#####################################
+# Set up SSH
+echo " "
+echo "Configuring SSH Keys"
+
+# And link default public key - Make sure all ownership and permissions are as required by SSH
+sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_ETC}/ssh/authorized_keys
+sudo chmod 0600 ${NEPI_ETC}/ssh/authorized_keys
 
 
-    sudo rm ${NEPI_HOME}/.ssh/authorized_keys
-    sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
-    sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh/authorized_keys
-    sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
-
-    sudo chmod 0700 ${NEPI_HOME}.ssh
-    sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}.ssh
+sudo rm ${NEPI_HOME}/.ssh/authorized_keys
+sudo cp ${NEPI_ETC}/ssh/authorized_keys ${NEPI_HOME}/.ssh/authorized_keys
+sudo chown ${NEPI_USER}:${NEPI_USER} ${NEPI_HOME}/.ssh/authorized_keys
+sudo chmod 0600 ${NEPI_HOME}/.ssh/authorized_keys
 
     if [ -d "$/home/${NEPI_ADMIN}/.ssh" ]; then
         sudo rm -r /home/${NEPI_ADMIN}/.ssh
@@ -331,24 +329,16 @@ sudo chown root:root /etc/fstab
     sudo cp -R -a /home/${NEPI_USER}/.ssh /home/${NEPI_HOST}/.ssh
 
 
-    if [ ! -f "/etc/ssh/sshd_config" ]; then
-        sudo cp -a -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
-        sudo rm -r /etc/ssh/sshd_config
-    fi
-    sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
+if [ ! -f "/etc/ssh/sshd_config" ]; then
+    sudo cp -a -r /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    sudo rm -r /etc/ssh/sshd_config
+fi
+sudo ln -sf ${NEPI_ETC}/ssh/sshd_config /etc/ssh/sshd_config
 
-    sudo systemctl enable sshd.service
-    sudo systemctl restart sshd.service
+${NEPI_ETC}/ssh/sshd_config
 
-    ###########################################
-    # Set up Chrony
-    echo " "
-    echo "Configuring Chrony"
-    if [ ! -f "/etc/fstab" ]; then
-        sudo cp -a -r /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
-        sudo rm -r /etc/chrony/chrony.conf.bak
-    fi 
-    sudo ln -sf ${NEPI_ETC}/chrony/chrony.conf /etc/chrony/chrony.conf
+sudo systemctl enable sshd.service
+sudo systemctl restart sshd.service
 
 
     ###########################################
@@ -378,7 +368,6 @@ sudo chown root:root /etc/fstab
     ##########################################
 
 
-if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
     echo "Restarting NEPI Engine Services"
 
     sudo systemctl enable networking.service
@@ -393,7 +382,16 @@ if [ "$NEPI_IN_CONTAINER" -eq 0 ]; then
     sudo systemctl enable chrony
     sudo systemctl restart chrony
 
-else
+# Create the mountpoint for samba shares (now that sambashare group exists)
+#sudo chown -R nepi:sambashare ${NEPI_STORAGE}
+#sudo chmod -R 0775 ${NEPI_STORAGE}
+
+#sudo chown -R ${NEPI_USER}:${NEPI_USER} ${NEPI_STORAGE}
+#sudo chown nepi:sambashare ${NEPI_STORAGE}
+#sudo chmod -R 0775 ${NEPI_STORAGE}
+
+
+if [[ "$NEPI_IN_CONTAINER" -eq 1 ]; then]
 
     #########################################
     # Setup supervisor
