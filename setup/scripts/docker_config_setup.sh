@@ -357,10 +357,10 @@ if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
         #    sudo rm ${service_file}
         #    sudo systemctl daemon-reload
         #fi
-        sudo systemctl status ${service_name}
+        #sudo systemctl status ${service_name}
         sudo systemctl enable ${service_name}
         sudo systemctl restart ${service_name}
-        sudo systemctl status ${service_name}
+        #sudo systemctl status ${service_name}
     fi
 
 
