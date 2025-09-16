@@ -20,9 +20,10 @@ echo "########################"
 
 ###################
 
-
+CONFIG_USER=nepi
 NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
-NEPI_SYSTEM_CONFIG_DEST_PATH=/opt/nepi/etc
+NEPI_SYSTEM_PATH=/opt/nepi
+NEPI_SYSTEM_CONFIG_DEST_PATH=${NEPI_SYSTEM_PATH}/etc
 NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
 
 
@@ -37,7 +38,17 @@ echo "Populating System ETC Folder from ${ETC_SOURCE_PATH} to ${ETC_DEST_PATH}"
 sudo mkdir -p $ETC_DEST_PATH
 sudo cp -R ${ETC_SOURCE_PATH}/* ${ETC_DEST_PATH}/
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
+sudo chmod -R 775 $ETC_DEST_PATH
 
+
+SCRIPTS_SOURCE_PATH=$(dirname "$(pwd)")/resources/scripts
+SCRIPTS_DEST_PATH=${NEPI_SYSTEM_PATH}/scripts
+echo ""
+echo "Populating System Scripts Folder from ${SCRIPTS_SOURCE_PATH} to ${SCRIPTS_DEST_PATH}"
+sudo mkdir -p $SCRIPTS_DEST_PATH
+sudo cp -R ${SCRIPTS_SOURCE_PATH}/* ${SCRIPTS_DEST_PATH}/
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $SCRIPTS_DEST_PATH
+sudo chmod -R 775 $SCRIPTS_DEST_PATH
 
 if [ -f "$NEPI_SYSTEM_CONFIG_DEST" ]; then
     ## Check Selection
@@ -199,6 +210,7 @@ if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
     path_backup $folder $folder_back $overwrite
 fi
 
+sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_SYSTEM_PATH
 ##############################################
 echo "NEPI Config Setup Complete"
 ##############################################

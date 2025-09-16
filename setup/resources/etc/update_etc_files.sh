@@ -50,6 +50,8 @@ else
   cp ${SCRIPT_FOLDER}/hostname ${SCRIPT_FOLDER}/hostname.tmp
 
   sudo mkdir -p ${UPDATE_PATH}/etc
+  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}
+  sudo chmod -R 775 ${UPDATE_PATH}
   sudo rsync -arh ${UPDATE_PATH}/etc/ ${SOURCE_PATH}/
 
   mv ${SCRIPT_FOLDER}/nepi_system_config.tmp ${SCRIPT_FOLDER}/nepi_system_config.yaml
@@ -73,6 +75,8 @@ else
   cp ${SCRIPT_FOLDER}/hostname ${SCRIPT_FOLDER}/hostname.tmp
 
   sudo mkdir -p ${UPDATE_PATH}/etc
+  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}
+  sudo chmod -R 775 ${UPDATE_PATH}
   sudo rsync -arh ${UPDATE_PATH}/etc/ ${SOURCE_PATH}/
 
   mv ${SCRIPT_FOLDER}/nepi_system_config.tmp ${SCRIPT_FOLDER}/nepi_system_config.yaml
@@ -86,6 +90,9 @@ else
   UPDATE_PATH=${NEPI_CONFIG}/system_cfg
   sudo rsync -arh ${SOURCE_PATH}/ ${UPDATE_PATH}/etc/
   sudo chown -R ${USER}:${USER} $UPDATE_PATH
+  
+  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${SOURCE_PATH}
+  sudo chmod -R 775 ${SOURCE_PATH}
   ########################
   # Configure NEPI Host Services
   ########################
@@ -131,9 +138,8 @@ else
         echo "Setting Up NEPI Managed Serices"
         etc_source=$SCRIPT_FOLDER
 
-
         ###########################################
-        if [ "$NEPI_MANAGES_HOSTNAME" -eq 1 ]; then
+        if [[ ( "$NEPI_MANAGES_HOSTNAME" -eq 1 && ( "$USER" == "$NEPI_HOST_USER"  || ( "$USER" == "$NEPI_USER" && "$NEPI_IN_CONTAINER" -eq 0 ))) ]]; then
 
             #########################################
             # Update ETC HOSTS File
@@ -282,7 +288,7 @@ else
                 sudo cp ${etc_source}/ssh/sshd_config /etc/ssh/sshd_config
             fi
 
-            if [ "$USER" == "nepi" ]; then
+            if [ "$USER" == "nepihost" ]; then
                 sudo rm -r /etc/ssh/sshd_config
                 sudo cp ${etc_source}/docker/ssh/sshd_config /etc/ssh/sshd_config
             fi

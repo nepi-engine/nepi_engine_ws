@@ -15,12 +15,12 @@ NEPI_CONFIG=/mnt/nepi_config
 NEPI_BASE=/opt/nepi
 export NEPI_USER=nepi
 export NEPI_DEVICE_ID=$NEPI_DEVICE_ID
-d
+
 export NEPI_MANAGES_NETWORK=$NEPI_MANAGES_NETWORK
 export NEPI_IP=$NEPI_IP
 
 export NEPI_ACTIVE_NAME=nepi_fs_b
-export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-5b
+export NEPI_ACTIVE_TAG=3p2p3-jetson-orin-5-5c
 export NEPI_IP=192.168.179.103
 
 
@@ -41,6 +41,8 @@ export NEPI_RUNNING_ID=$(sudo docker container ls  | grep $NEPI_RUNNING_NAME | a
 echo "NEPI Container Running with ID ${NEPI_RUNNING_ID}"
 
 sudo docker exec -it -u $NEPI_USER $NEPI_RUNNING_ID /bin/bash -c "su ${NEPI_USER}"
+
+
 
 
 
