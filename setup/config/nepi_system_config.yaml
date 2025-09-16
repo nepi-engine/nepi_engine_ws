@@ -4,7 +4,7 @@
 # NEPI USER
 NEPI_USER: nepi
 NEPI_USER_PW: nepi
-NEPI_ADMIN: nepiadmin
+NEPI_ADMIN_USER: nepiadmin
 NEPI_ADMIN_PW: nepiadmin
 NEPI_HOST_USER: nepihost
 NEPI_HOST_PW: nepi

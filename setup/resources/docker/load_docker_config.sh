@@ -13,16 +13,22 @@
 # This file loads the nepi_system_config.yaml values
 
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(pwd)/etc
-source load_system_config.sh
+source /home/${USER}/.nepi_bash_utils
 wait
-if [ $? -eq 1 ]; then
-    echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
+
+# Load NEPI SYSTEM CONFIG
+SCRIPT_FOLDER=$(dirname "$(readlink -f "$0")")
+ETC_FOLDER=${SCRIPT_FOLDER}/etc
+if [ -d "$ETC_FOLDER" ]; then
+    echo "Failed to find ETC folder at ${ETC_FOLDER}"
     exit 1
 fi
-cd $SCRIPT_FOLDER
+source ${ETC_FOLDER}/load_system_config.sh
+wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${ETC_FOLDER}/load_system_config.sh"
+    exit 1
+fi
 
 
 FILE=$(pwd)/nepi_docker_config.yaml

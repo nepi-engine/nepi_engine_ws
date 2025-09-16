@@ -14,19 +14,24 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-cd etc
-source load_system_config.sh
-wait
-if [ $? -eq 1 ]; then
-    echo "Failed to load $(pwd)/load_system_config.sh"
+# Load NEPI SYSTEM CONFIG
+SCRIPT_FOLDER=$(dirname "$(readlink -f "$0")")
+ETC_FOLDER=${SCRIPT_FOLDER}/etc
+if [ -d "$ETC_FOLDER" ]; then
+    echo "Failed to find ETC folder at ${ETC_FOLDER}"
     exit 1
 fi
-cd ..
+source ${ETC_FOLDER}/load_system_config.sh
+wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${ETC_FOLDER}/load_system_config.sh"
+    exit 1
+fi
 
+# Load NEPI DOCKER
 CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
 wait
-
 if [ $? -eq 1 ]; then
     echo "Failed to load ${CONFIG_SOURCE}"
     exit 1
@@ -42,25 +47,65 @@ sudo systemctl disable nepi_docker
 if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
 
     ########################
-    # Link ETC folder
-    folder=/etc
-    nepi_path_remove $folder
 
-    # Link USR LIB SYSTEMD folder
-    folder=/usr/lib/systemd/system
-    nepi_path_remove $folder
+    target_path=/etc
+    path_sync ${target_path}.org $target_path
+    if [ "$?" -eq 0 ]; then
+        path_delete ${target_path}.nepi
+        path_delete ${target_path}.org
+    else
+      echo "Failed to remove NEPI config for path ${target_path}"
+    fi
 
-    # Link RUN SYSTEMD SYSfolder
-    folder=/run/systemd/system
-    nepi_path_remove $folder
+    # Sync USR LIB SYSTEMD folder
+    target_path=/usr/lib/systemd/system
+    target_path=/etc
+    path_sync ${target_path}.org $target_path
+    if [ "$?" -eq 0 ]; then
+        path_delete ${target_path}.nepi
+        path_delete ${target_path}.org
+    else
+      echo "Failed to remove NEPI config for path ${target_path}"
+    fi
 
-    # Link USR SYSTEMD USER folder
-    folder=/usr/lib/systemd/user
-    nepi_path_remove $folder
+    # Sync RUN SYSTEMD SYSfolder
+
+    target_path=/run/systemd/system
+    target_path=/etc
+    path_sync ${target_path}.org $target_path
+    if [ "$?" -eq 0 ]; then
+        path_delete ${target_path}.nepi
+        path_delete ${target_path}.org
+    else
+      echo "Failed to remove NEPI config for path ${target_path}"
+    fi
+
+    # Sync USR SYSTEMD USER folder
+    target_path=/usr/lib/systemd/user
+    target_path=/etc
+    path_sync ${target_path}.org $target_path
+    if [ "$?" -eq 0 ]; then
+        path_delete ${target_path}.nepi
+        path_delete ${target_path}.org
+    else
+      echo "Failed to remove NEPI config for path ${target_path}"
+    fi
 
 fi
+# Restore BASHRC files
+home_folder=/home/${USER}
+target_path=${home_folder}/.bashrc
+path_sync ${target_path}.org $target_path
+if [ "$?" -eq 0 ]; then
+    path_delete ${target_path}.nepi
+    path_delete ${target_path}.org
+else
+    echo "Failed to remove NEPI config for path ${target_path}"
+fi
 
-#ToDo: Remove NEPI Users
+path_delete ${home_folder}/.nepi_docker_aliases
+path_delete ${home_folder}/.nepi_bash_aliases
+
 #ToDo: Remove NEPI Storage Folders
 
 

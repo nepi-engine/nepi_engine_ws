@@ -17,23 +17,22 @@ echo "########################"
 echo "NEPI BASH SETUP"
 echo "########################"
 
+source $(dirname "$(pwd)")/resources/bash/nepi_bash_utils 
+
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
+source $(dirname $(pwd))/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
     exit 1
 fi
-cd $SCRIPT_FOLDER
 
-mkdir -p /home/${NEPI_USER}/.local/lib/python${NEPI_PYTHON}/site-packages
-
-sudo ln -sfn /usr/bin/python${NEPI_PYTHON} /usr/bin/python3
-sudo ln -sfn /usr/bin/python3 /usr/bin/python
-sudo python${NEPI_PYTHON} -m pip --version
-
+# Check User Account
+CONFIG_USER=$NEPI_USER
+if [[ "$USER" != "$CONFIG_USER" ]]; then
+    echo "This script must be run by user account ${CONFIG_USER}."
+    echo "Log in as ${CONFIG_USER} and run again"
+    exit 2
+fi
 
 #####################################
 # Add nepi aliases to bashrc
@@ -41,14 +40,12 @@ echo "Updating NEPI aliases file"
 BASHRC=/home/${NEPI_USER}/.bashrc
 RBASHRC=/root/.bashrc
 
-### Backup USER BASHRC file if needed
-file=$BASHRC
-create_nepi_path_link $file
+### Backup USER BASHRC
+source_path=$BASHRC
+overwrite=0
+path_backup $source_path ${source_path}.org $overwrite
 
-### Backup ROOT BASHRC file if needed
-file=$RBASHRC
-create_nepi_path_link $file
-
+# Update Bashrc and Nepi bash files
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=/home/${NEPI_USER}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
@@ -137,7 +134,10 @@ sudo chmod 755 /home/${NEPI_USER}/.*
 # Copy files to nepiadmin home
 sudo cp /home/${NEPI_USER}/.* /home/${NEPI_ADMIN}/ >/dev/null 2>&1
 
-
+### Backup NEPI BASHRC
+source_path=$BASHRC
+overwrite=1
+path_backup $source_path ${source_path}.nepi $overwrite
 
 #################################
 sleep 1 & source $BASHRC

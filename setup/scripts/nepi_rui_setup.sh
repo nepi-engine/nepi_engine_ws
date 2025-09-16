@@ -18,15 +18,20 @@ echo "NEPI RUI Setup"
 echo "########################"
 
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
+source $(dirname $(pwd))/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
     exit 1
 fi
-cd $SCRIPT_FOLDER
+
+# Check User Account
+CONFIG_USER=$NEPI_USER
+if [[ "$USER" != "$CONFIG_USER" ]]; then
+    echo "This script must be run by user account ${CONFIG_USER}."
+    echo "Log in as ${CONFIG_USER} and run again"
+    exit 2
+fi
+
 
 
 
@@ -71,13 +76,10 @@ npm install --save react-zoom-pan-pinch
 deactivate
 
 #########################################
-# Setup system services
+# Enable NEPI RUI Service
 echo ""
-echo "Setting up NEPI RUI Service"
+echo "Enabling NEPI RUI Service"
 
-sudo chmod +x ${NEPI_ETC}/services/*
-
-sudo cp ${NEPI_ETC}/services/nepi_rui.service ${SYSTEMD_SERVICE_PATH}/nepi_rui.service
 sudo systemctl enable nepi_rui
 
 ###########################################
