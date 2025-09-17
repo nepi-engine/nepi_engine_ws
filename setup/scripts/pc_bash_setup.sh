@@ -33,7 +33,13 @@ cd $SCRIPT_FOLDER
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
-BASHRC=~/.bashrc
+echo "Updating NEPI aliases file"
+BASHRC=/home/${USER}/.bashrc
+
+### Backup USER BASHRC file if needed
+file=$BASHRC
+org_path_backup $file
+create_nepi_path_link $file
 
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
@@ -67,39 +73,6 @@ fi
 
 sudo chmod 755 ${HOME}/.*
 
-###################################
-# SSH Setup
-
-NEPI_SSH_DIR=~/ssh_keys
-NEPI_SSH_FILE=nepi_engine_default_private_ssh_key
-
-# Add nepi ip to /etc/hosts if not there
-HOST_FILE=/etc/hosts
-NEPI_HOST="${NEPI_IP} ${NEPI_USER}"
-echo "Updating NEPI IP in ${HOST_FILE}"
-if grep -qnw $HOST_FILE -e ${NEPI_HOST}; then
-    echo "Found NEPI IP in ${HOST_FILE} ${NEPI_HOST} "
-else
-    echo "Adding NEPI IP in ${HOST_FILE}"
-    echo $NEPI_HOST | sudo tee -a $HOST_FILE
-    echo "${NEPI_HOST}-${NEPI_DEVICE_ID}" | sudo tee -a $HOST_FILE
-fi
-
-
-# Add nepi ssh key if not there
-echo "Checking nepi ssh key file"
-NEPI_SSH_PATH=${NEPI_SSH_DIR}/${NEPI_SSH_FILE}
-NEPI_SSH_SOURCE=./resources/ssh_keys/${NEPI_SSH_FILE}
-if [ -e $NEPI_SSH_PATH ]; then
-    echo "Found NEPI ssh private key ${NEPI_SSH_PATH} "
-else
-    echo "Installing NEPI ssh private key ${NEPI_SSH_PATH} "
-    mkdir $NEPI_SSH_DIR
-    cp $NEPI_SSH_SOURCE $NEPI_SSH_PATH
-fi
-sudo chmod 600 $NEPI_SSH_PATH
-sudo chmod 700 $NEPI_SSH_DIR
-sudo chown -R ${USER}:${USER} $NEPI_SSH_DIR
 
 
 #################################

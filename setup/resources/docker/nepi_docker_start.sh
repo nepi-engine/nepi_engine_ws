@@ -14,32 +14,49 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-cd etc
-source load_system_config.sh
-wait
-if [ $? -eq 1 ]; then
-    echo "Failed to load load_system_config.sh"
+# Load NEPI SYSTEM CONFIG
+SCRIPT_FOLDER=$(dirname "$(readlink -f "$0")")
+ETC_FOLDER=${SCRIPT_FOLDER}/etc
+if [ -d "$ETC_FOLDER" ]; then
+    echo "Failed to find ETC folder at ${ETC_FOLDER}"
     exit 1
 fi
-cd ..
+source ${ETC_FOLDER}/load_system_config.sh
+wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${ETC_FOLDER}/load_system_config.sh"
+    exit 1
+fi
 
+# Load NEPI DOCKER
 CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
 wait
-
 if [ $? -eq 1 ]; then
     echo "Failed to load ${CONFIG_SOURCE}"
+    exit 1
+fi
+
+##########################
+
+if [[ $NEPI_RESTARTING == 0 ]]; then
+    update_yaml_value "NEPI_RESTARTING" 1 "${CONFIG_SOURCE}"
+
+else
+    echo "You can only restart one image at a time"
     exit 1
 fi
 
 ########################
 # Stop Any Running NEPI Containers
 ########################
-. ./nepi_docker_stop.sh
-wait
+if [[ $NEPI_RUNNING_ID != "unknown" && "$NEPI_RUNNING" -e 1 ]]; then
+    ./nepi_docker_stop.sh
+    wait
+fi
 
 #################################
-# Create Nepi Required Folders
+# Create Nepi Required Folders if missing
 #################################
 echo "Checking NEPI Required Folders"
 rfolder=/opt/nepi
@@ -86,88 +103,106 @@ source update_etc_files.sh
 wait
 cd ..
 
-########################################
-# Update NEPI ETC to OS Host ETC Linked files
-########################################
-# sudo systemctl stop lsyncd
-# sudo cp -r ${etc_source}/lsyncd /etc/
-# lsyncd_file=$(pwd)/etc/lsyncd/lsyncd.conf
-# function add_etc_sync(){
-#     etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
-#     etc_dest=/etc/${1}
-#     echo "" | sudo tee -a $lsyncd_file
-#     echo "sync {" | sudo tee -a $lsyncd_file
-#     echo "    default.rsync," | sudo tee -a $lsyncd_file
-#     echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
-#     echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
-#     echo "}" | sudo tee -a $lsyncd_file
-#     echo " " | sudo tee -a $lsyncd_file
-# }
-# sudo chown -R ${USER}:${USER} ${lsyncd_file}
-
-# add_etc_sync hosts
-# add_etc_sync hostname
-# if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-#     add_etc_sync /network/interfaces.d
-#     add_etc_sync network/interfaces
-#     add_etc_sync dhcp/dhclient.conf
-#     add_etc_sync wpa_supplicant
-# fi
-
-# if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-#     add_etc_sync ${etc_path}
-    
-# fi
-
-# if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
-#     add_etc_sync ssh/sshd_config
-# fi
-
-
-#############################
-
-
 ########################
 # Configure NEPI Host Services
 ########################
-# echo "Updating NEPI Managed Services"
-# if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-#     # sudo systemctl stop NetworkManager
-#     # sudo ip addr flush eth0 && \
-#     # sudo systemctl start networking.service && \
-#     # sudo ifdown --force --verbose eth0 && \
-#     # sudo ifup --force --verbose eth0
-#     # sleep 2
-
-#     if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
-#         # # Remove and restart dhclient
-#         # sudo dhclient -r
-#         # sudo dhclient
-#         # sudo dhclient -nw
-#         # #ps aux | grep dhcp
-#         :
-#     fi
-# fi
-
-# if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-#     #sudo timedatectl set-ntp false
-#     #sudo systemctl start chronyd
-# fi
-
-
-# if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
-#     #sudo systemctl restart sshd
-#     :
-# fi
-
-
-# start the sync service
-#sudo systemctl start lsyncd
+if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
+    echo "Updating NEPI Managed Services"
 
 
 
-# start the sync service
-sudo systemctl start lsyncd
+    #######################################
+    # Update NEPI ETC to OS Host ETC Linked files
+    #######################################
+    sudo systemctl stop lsyncd
+    sudo cp -r ${etc_source}/lsyncd /etc/
+    lsyncd_file=$(pwd)/etc/lsyncd/lsyncd.conf
+    function add_etc_sync(){
+        etc_sync=${NEPI_CONFIG}/docker_cfg/etc/${1}
+        etc_dest=/etc/${1}
+        echo "" | sudo tee -a $lsyncd_file
+        echo "sync {" | sudo tee -a $lsyncd_file
+        echo "    default.rsync," | sudo tee -a $lsyncd_file
+        echo '    source = "'${etc_sync}'/",' | sudo tee -a $lsyncd_file
+        echo '    target = "'${etc_dest}'/",' | sudo tee -a $lsyncd_file
+        echo "}" | sudo tee -a $lsyncd_file
+        echo " " | sudo tee -a $lsyncd_file
+    }
+    sudo chown -R ${USER}:${USER} ${lsyncd_file}
+
+    if [ "$NEPI_MANAGES_HOSTNAME" -eq 1 ]; then
+        add_etc_sync hosts
+        add_etc_sync hostname
+    fi
+
+    if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+        add_etc_sync /network/interfaces.d
+        add_etc_sync network/interfaces
+        add_etc_sync dhcp/dhclient.conf
+        add_etc_sync wpa_supplicant
+    fi
+    
+    if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+        add_etc_sync ${etc_path}
+        
+    fi
+
+    if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+        add_etc_sync ssh/sshd_config
+    fi
+
+
+    # start the sync service
+    echo "Starting NEPI ETC Sycn service"
+    sudo systemctl start lsyncd    
+
+
+    ###########
+    if [ "$NEPI_MANAGES_HOSTNAME" -eq 1 ]; then
+        echo "Restarting hostnamed service"
+        sudo systemctl restart systemd-hostnamed
+    fi
+
+    ###############
+    if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+        echo "Restarting network services"
+        sudo systemctl stop NetworkManager
+        sudo systemctl start networking.service
+        # sudo ip addr flush eth0 && \
+        # sudo systemctl start networking.service && \
+        # sudo ifdown --force --verbose eth0 && \
+        # sudo ifup --force --verbose eth0
+        # sleep 2
+        # Restart network service
+        sudo systemctl start networking.service
+        if [ "$NEPI_DHCP_ON_STARTUP" -eq 1 ]; then
+            echo "Restarting dhcp service"
+            # Remove any current dhcp clients and restart dhclient
+            sudo dhclient -r
+            sudo dhclient
+            sudo dhclient -nw
+            # #ps aux | grep dhcp
+            :
+        fi
+    fi
+
+    # if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+        echo "Restarting time and ntp services"
+        sudo timedatectl set-ntp false
+        sudo systemctl restart chronyd
+    # fi
+
+
+    if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+        # Restart sshd service
+        echo "Restarting ssh services"
+        sudo systemctl restart sshd
+        : # Nothing to do
+    fi
+
+
+fi
+
 
 ########################
 # Build Run Command
@@ -177,14 +212,15 @@ echo $NEPI_STORAGE
 ########
 # Initialize Run Command
 DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
---mount type=bind,source=${NEPI_BASE},target=${NEPI_BASE} \
 --mount type=bind,source=${NEPI_STORAGE},target=${NEPI_STORAGE} \
 --mount type=bind,source=${NEPI_CONFIG},target=${NEPI_CONFIG} \
 --mount type=bind,source=/dev,target=/dev \
 -e DISPLAY=${DISPLAY} \
 -v /tmp/.X11-unix/:/tmp/.X11-unix \
---net=host"
+--net=host \
+-p 2222:22 "
 
+# -v ${NEPI_BASE}:${NEPI_BASE} \
 
 # Set Clock Settings
 
@@ -225,16 +261,24 @@ echo "Launching NEPI Docker Container with Command"
 echo "${DOCKER_RUN_COMMAND}"
 eval "$DOCKER_RUN_COMMAND"
 
-if [[ "$NEPI_ACTUVE_FS" == "nepi_fs_a" ]]; then
-CONTAINER_ID=$(sudo docker ps -aqf "name=${NEPI_FSA_NAME}")
+if [[ "$NEPI_ACTIVE_FS" == "nepi_fs_a" ]]; then
+update_yaml_value "NEPI_RUNNING_TAG" "$NEPI_FSA_TAG" "${CONFIG_SOURCE}"
 else
-CONTAINER_ID=$(sudo docker ps -aqf "name=${NEPI_FSB_NAME}")
+update_yaml_value "NEPI_RUNNING_TAG" "$NEPI_FSB_TAG" "${CONFIG_SOURCE}"
 fi
 
 update_yaml_value "NEPI_RUNNING" 1 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS" "$NEPI_ACTUVE_FS" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS_ID" "$CONTAINER_ID" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" "$(date +%Y-%m-%d)" "$CONFIG_SOURCE"
+update_yaml_value "NEPI_RUNNING_FS" "$NEPI_ACTIVE_FS" "$CONFIG_SOURCE"
+
+source $(pwd)/load_docker_config.sh
+wait
+
+CONTAINER_ID=$(sudo docker ps -aqf "ancestor=${NEPI_RUNNING_FS}:${NEPI_RUNNING_TAG}")
+echo $CONTAINER_ID
+update_yaml_value "NEPI_RUNNING_ID" $CONTAINER_ID "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" "$(date +%Y-%m-%d)" "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_FS_RESTART" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RESTARTING" 0 "${CONFIG_SOURCE}"
 
 source $(pwd)/load_docker_config.sh
 wait

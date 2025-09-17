@@ -16,22 +16,39 @@ echo "########################"
 echo "NEPI DOCKER BASH SETUP"
 echo "########################"
 
+
+source $(dirname "$(pwd)")/resources/bash/nepi_bash_utils 
+
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
+source $(dirname $(pwd))/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
     exit 1
 fi
-cd $SCRIPT_FOLDER
+
+# Check User Account
+CONFIG_USER=$NEPI_HOST_USER
+if [[ "$USER" != "$CONFIG_USER" ]]; then
+    echo "This script must be run by user account ${CONFIG_USER}."
+    echo "Log in as ${CONFIG_USER} and run again"
+    exit 2
+fi
+
+
 
 #############
 # Add nepi aliases to bashrc
 echo "Updating NEPI aliases file"
-BASHRC=~/.bashrc
+BASHRC=/home/${USER}/.bashrc
 
+### Backup USER BASHRC file if needed
+echo "Backing Up Bashrc file "
+source_path=$BASHRC
+overwrite=0
+path_backup $source_path "${source_path}.org" $overwrite
+
+
+echo "Installing NEPI utils file"
 NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
@@ -64,7 +81,10 @@ fi
 
 sudo chmod 755 ${HOME}/.*
 
-
+### Backup NEPI BASHRC
+source_path=$BASHRC
+overwrite=1
+path_backup $source_path ${source_path}.nepi $overwrite
 
 #################################
 sleep 1 & source $BASHRC

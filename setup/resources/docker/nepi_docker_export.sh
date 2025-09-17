@@ -16,26 +16,40 @@
 source /home/${USER}/.nepi_bash_utils
 wait
 
-cd etc
-source load_system_config.sh
-wait
-if [ $? -eq 1 ]; then
-    echo "Failed to load $(pwd)/load_system_config.sh"
+# Load NEPI SYSTEM CONFIG
+SCRIPT_FOLDER=$(dirname "$(readlink -f "$0")")
+ETC_FOLDER=${SCRIPT_FOLDER}/etc
+if [ -d "$ETC_FOLDER" ]; then
+    echo "Failed to find ETC folder at ${ETC_FOLDER}"
     exit 1
 fi
-cd ..
+source ${ETC_FOLDER}/load_system_config.sh
+wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${ETC_FOLDER}/load_system_config.sh"
+    exit 1
+fi
 
+# Load NEPI DOCKER
 CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
 wait
-
 if [ $? -eq 1 ]; then
     echo "Failed to load ${CONFIG_SOURCE}"
     exit 1
 fi
 
 ####################################
-CONFIG_SOURCE=${NEPI_CONFIG}/docker_cfg/nepi_docker_config.yaml
+if [[ $NEPI_EXPORTING == 0 ]]; then
+    update_yaml_value "NEPI_EXPORTING" 1 "${CONFIG_SOURCE}"
+
+else
+    echo "You can only export one image at a time"
+    exit 1
+fi
+
+source $(pwd)/load_docker_config.sh
+wait
 
 # EXPORT_NAME=nepi_export_staging-temp-tag
 
@@ -66,6 +80,7 @@ else
 fi
 
 update_yaml_value "NEPI_FS_EXPORT" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_EXPORTING" 0 "${CONFIG_SOURCE}"
 
 source $(pwd)/load_docker_config.sh
 wait

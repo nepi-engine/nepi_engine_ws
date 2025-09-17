@@ -60,22 +60,7 @@ export NEPI_STORAGE=/mnt/nepi_storage
   function nepistart(){
       sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
   }
-
-  # copy arvhived images to install folder
-  function ndhcp(){
-      if [[ -f "/opt/nepi/scripts/nepi_dhcp_start" ]]; then
-        export ENABLE_NEPI_DHCP=1
-        sudo /opt/nepi/scripts/nepi_dhcp_start
-      fi
-  }
-
-  function snvm(){
-    echo ' ' | sudo tee -a $BASHRC
-    echo '##### NVM Config #####' | sudo tee -a $BASHRC
-    echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
-    echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
-    echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
-  }
+  
 
   BUILD=${NEPI_STORAGE}/nepi_src/nepi_engine_ws
   ## NEPI build shortcuts
@@ -100,8 +85,6 @@ HELPN="${HELPN}
 nepihome = change to nepi home dir
 nepistart = start the nepi processes
 nepistop = stop the nepi processe
-mvimg = Move archived nepi images to nepi image install folder
-snvm = Sources NVM (Node Version Manager) nmv.sh
 nepibld = build/deploy all nepi repos and RUI
 codebld = build/deploy all nepi repos
 ruibld = build/deploy rui system"

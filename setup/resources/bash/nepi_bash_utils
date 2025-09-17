@@ -17,9 +17,7 @@
 #echo "########################"
 
 
-utilsn="#############################
-## NEPI Util Functions ##
-#############################"
+utilsn=""
 
 
 ###################################
@@ -65,13 +63,23 @@ function sdhcp(){
 }
 export -f sdhcp
 
+function snvm(){
+  echo ' ' | sudo tee -a $BASHRC
+  echo '##### NVM Config #####' | sudo tee -a $BASHRC
+  echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
+  echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
+  echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
+}
+export -f snvm
+
 utilsn="${utilsn}
 ################################
 ### SYSTEM UTIL FUNCTIONS
 ################################
 pingi = Check for internet
 sbrc = Source the current users bashrc file
-sdhcp = Start DHCP Internet Client"
+sdhcp = Start DHCP Internet Client
+snvm = Sources NVM (Node Version Manager) nmv.sh"
 
 
 ###################################
@@ -116,11 +124,6 @@ function update_yaml_value(){
     #echo $UPDATE_YAML_VAL
     export UPDATE_YAML_FILE=$3
     #echo $UPDATE_YAML_FILE
-    if [ -z "$my_variable" ]; then
-      echo "my_variable is empty or unset."
-    else
-      echo "my_variable is not empty."
-    fi
 
     yq e -i '.'"$UPDATE_YAML_KEY"' = env(UPDATE_YAML_VAL)' $UPDATE_YAML_FILE
 }
@@ -157,7 +160,7 @@ export -f load_config_file
 
 function print_config_file(){
     echo $1
-    config_file=${1}
+    config_file=$1
     if [ -f "$config_file" ]; then
         CONFIGN="#############################
         ## NEPI Config Settings ##
@@ -179,6 +182,138 @@ function print_config_file(){
 
 export -f print_config_file
 
+
+function path_backup(){
+    source_path=$1
+    #echo $source_path
+    backup_path=${1}.bak
+    if [[ -n "$2" ]]; then
+      backup_path=$2
+    fi  
+    #echo $backup_path
+
+    overwrite=0
+    if [[ -n "$3" ]]; then
+      overwrite=$3
+    fi
+    #echo $overwrite
+
+    if [[ -d "$source_path" || -f "$source_path" ]]; then
+        if [[ -d "$source_path" ]]; then
+          if find "$source_path" -maxdepth 0 -empty | read; then
+            echo "Source folder is empty, nothing to backup ${source_path}"
+            return 3
+          elif [[ ! -d "${backup_path}" ]]; then
+              echo "Creating  ${source_path} path copy at ${backup_path}"
+              sudo mkdir -p ${backup_path}
+              sudo cp -R -a ${source_path} ${backup_path}
+          elif [[ -d "${backup_path}" && "overwrite" -eq 1 ]]; then
+              echo "Copying ${source_path} to ${backup_path}"
+              sudo rm -r $backup_path
+              sudo cp -R -a $source_path $backup_path
+          fi
+        elif [[ -f "$source_path" ]]; then
+          if [ ! -f "${backup_path}" ]; then
+              echo "Creating  ${source_path} path copy at ${backup_path}"
+              sudo cp -R -a ${source_path} ${backup_path}
+          elif [[ -f "${backup_path}"  && "overwrite" -eq 1 ]]; then
+            echo "Copying ${source_path} to ${backup_path}"
+            sudo rm -r ${backup_path}
+            sudo cp -R -a ${source_path} ${backup_path}
+          fi
+    
+        else
+          echo "Failed to backup path ${backup_path}"
+          return 2
+        fi
+    else
+      echo "Failed to find source path ${source_path}"
+      return 1
+    fi
+    if [[ -d "$backup_path" || -f "$backup_path" ]]; then
+        echo "Created ${source_path} path copy at ${backup_path}"
+    else
+        echo "Failed to backup path ${backup_path}"
+        return 1
+    fi
+}
+export -f path_backup
+
+function path_sync(){
+    source_path=$1
+    target_path=$2
+    if [[ -d "$source_path" ]]; then
+      if find "$source_folder" -maxdepth 0 -empty | read; then
+          echo "Source folder is empty, nothing to sync ${source_folder}"
+          return 3
+      else
+        if [[ ! -d "${target_path}" ]]; then
+          echo "Creating target path ${target_path}"
+          sudo mkdir -p ${target_path}
+        fi
+        if [[ -d "${target_path}" ]]; then
+          echo "Syncing Folder ${source_path} to ${target_path}"
+          sudo rsync -avhr ${source_path}/* ${target_path}/ --delete
+        else
+          echo "Failed to create target path ${target_path}"
+          return 2
+        fi
+      fi
+    elif [[ -f "$source_path" ]]; then
+      echo "Syncing File ${source_path} to ${target_path}"
+      sudo rsync -avhr ${source_path} ${target_path}
+    elif [[ -L "$source_path" ]]; then
+      echo "Syncing Symlink ${source_path} to ${target_path}"
+      if [[ -d "${target_path}" ]]; then
+          echo "Deleting existing target file ${target_path}"
+          sudo rm ${target_path}
+      fi
+      echo "Copying Symlink ${source_path} to ${target_path}"
+      sudo cp -a ${source_path} ${target_path}
+    else
+      echo "Failed to find source path ${source_path}"
+      return 1
+    fi
+    echo echo "Sync complete ${source_path} to ${target_path}"
+}
+export -f path_sync
+
+function path_delete(){
+    source_path=$1
+    if [[ -d "$source_path" || -f "$source_path" || -L "$source_path" ]]; then
+          echo "Deleting path ${source_folder}"
+          sudo rm -r $source_path
+    else
+      echo "Path not found: ${source_path}"
+      return 1
+    fi
+}
+export -f path_delete
+
+
+
+
+function create_nepi_path_link(){
+    path=$1
+    if [[ -d "${path}" || -f "${path}" ]]; then
+      echo "Copying path from ${path} to ${path}.nepi"
+      if [[ -d "${path}.nepi" || -f "${path}.nepi" ]]; then
+          sudo rm -r ${path}.nepi
+      fi
+      sudo cp -R -a ${path} ${path}.nepi
+      if [[ -d "${path}.nepi" || -f "${path}.nepi" ]]; then
+        echo "Deleting path ${path}"
+        sudo rm -r ${path}
+        echo "Linking ${path} to ${path}.nepi"
+        sudo ln -sf ${path}.nepi ${path}
+        fi
+    else
+      echo "Path not found: ${path}"
+    fi
+}
+export -f create_nepi_path_link
+
+
 #### Update Help Test
 utilsn="${utilsn}
 ################################
@@ -194,8 +329,19 @@ load_config_file = Exports all of the yaml entries to system variables given FIL
 
 
 ###################################
-# Git Util Functions
+# Command Line Confi Util Functions
 ###################################
+
+# user_color=01;32m
+# if [[ "$USER" == "nepi" ]]; then
+#   user_color=01;33m # Green
+# elif [[ "$USER" == "nepi_admin" ]]; then
+#   user_color=01;35m # Purple
+# elif [[ "$USER" == "nepi_host" ]]; then
+#   user_color=01;34m # Blue
+# fi
+# export USER_COLOR=$user_color
+
 
 head_name=$(git rev-parse --abbrev-ref HEAD >/dev/null 2>&1)
 if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
@@ -206,8 +352,6 @@ if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
       git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
   }
 fi
-
-
 
 ###################################
 # Docker Util Functions

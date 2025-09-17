@@ -9,7 +9,6 @@
 ##
 
 # Start NEPI ssh service
-# source /opt/nepi/etc/load_nepi_config.sh
-echo "Starting NEPI Sync Processes"
-sudo /usr/bin/supervisord -c /etc/supervisor/conf.d/nepi.conf
+sudo /usr/sbin/sshd
+
 

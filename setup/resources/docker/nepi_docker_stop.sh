@@ -10,23 +10,27 @@
 ##
 
 # This script Stops a Running NEPI Container
-
 source /home/${USER}/.nepi_bash_utils
 wait
 
-cd etc
-source load_system_config.sh
-wait
-if [ $? -eq 1 ]; then
-    echo "Failed to load $(pwd)/load_system_config.sh"
+# Load NEPI SYSTEM CONFIG
+SCRIPT_FOLDER=$(dirname "$(readlink -f "$0")")
+ETC_FOLDER=${SCRIPT_FOLDER}/etc
+if [ -d "$ETC_FOLDER" ]; then
+    echo "Failed to find ETC folder at ${ETC_FOLDER}"
     exit 1
 fi
-cd ..
+source ${ETC_FOLDER}/load_system_config.sh
+wait
+if [ $? -eq 1 ]; then
+    echo "Failed to load ${ETC_FOLDER}/load_system_config.sh"
+    exit 1
+fi
 
+# Load NEPI DOCKER
 CONFIG_SOURCE=$(pwd)/nepi_docker_config.yaml
 source $(pwd)/load_docker_config.sh
 wait
-
 if [ $? -eq 1 ]; then
     echo "Failed to load ${CONFIG_SOURCE}"
     exit 1
@@ -35,44 +39,33 @@ fi
 ########################
 # Configure NEPI Host Services
 ########################
-echo "Updating NEPI Managed Serices"
-if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
-    #sudo systemctl restart NetworkManager
-    :
+if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
+    # start the sync service
+    echo "Stopping NEPI ETC Sycn service"
+    sudo systemctl stop lsyncd
 fi
 
-if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
-    # sudo systemctl stop chrony
-    # sudo timedatectl set-ntp true
-    :
-fi
-
-if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
-    #sudo systemctl restart sshd
-    :
-fi
-
-# stop the sync service
-sudo systemctl stop lsyncd
 
 ########################
 # Stop Running Command
 ########################
 echo $NEPI_RUNNING_FS
 #if [[ ( -v NEPI_RUNNING_FS && "$NEPI_RUNNING_FS" -eq 1 ) ]]; then
-if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
-echo "Stopping Running NEPI Docker Process ${NEPI_FSA_NAME}:${NEPI_FSA_TAG} ID:${RUNNING_ID}"
-sudo docker stop $NEPI_RUNNING_FS_ID
-sudo docker rm $NEPI_RUNNING_FS_ID
-else
-echo "Stopping Running NEPI Docker Process ${NEPI_FSB_NAME}:${NEPI_FSB_TAG} ID:${RUNNING_ID}"
-sudo docker stop $NEPI_RUNNING_FS_ID
-sudo docker rm $NEPI_RUNNING_FS_ID
-fi
-update_yaml_value "NEPI_RUNNING" 0 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS" "unknown" "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_FS_ID" 0 "$CONFIG_SOURCE"
-update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "$CONFIG_SOURCE"
+# if [[ "$NEPI_RUNNING_FS" == "nepi_fs_a" ]]; then
+# echo "Stopping Running NEPI Docker Process ${NEPI_FSA_NAME}:${NEPI_FSA_TAG} ID:${RUNNING_ID}"
+# sudo docker stop $NEPI_RUNNING_FS_ID
+# #sudo docker rm $NEPI_RUNNING_FS_ID
+# else
+# echo "Stopping Running NEPI Docker Process ${NEPI_FSB_NAME}:${NEPI_FSB_TAG} ID:${RUNNING_ID}"
+# sudo docker stop $NEPI_RUNNING_FS_ID
+# #sudo docker rm $NEPI_RUNNING_FS_ID
+# fi
+echo "Stopping Running NEPI Docker Process ${NEPI_RUNNING_FS}:${NEPI_RUNNING_TAG} ID:${NEPI_RUNNING_ID}"
+sudo docker stop $NEPI_RUNNING_ID
+update_yaml_value "NEPI_RUNNING" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_FS" "unknown" "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_ID" 0 "${CONFIG_SOURCE}"
+update_yaml_value "NEPI_RUNNING_LAUNCH_TIME" 0 "${CONFIG_SOURCE}"
 
 #fi 
 

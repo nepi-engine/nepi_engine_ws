@@ -10,8 +10,7 @@
 # possible, but leave them commented.  Uncommented options override the
 # default value.
 
-Port 22
-Port 2222
+#Port 22
 #AddressFamily any
 #ListenAddress 0.0.0.0
 #ListenAddress ::
@@ -125,6 +124,6 @@ Subsystem	sftp	/usr/lib/openssh/sftp-server
 ### NEPI Settings ###
 PermitRootLogin no
 PasswordAuthentication no
-AllowUsers nepi
+AllowUsers nepihost
 ############################
 

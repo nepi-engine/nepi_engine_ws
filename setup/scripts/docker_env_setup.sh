@@ -18,15 +18,19 @@ echo "NEPI DOCKER ENVIRONMENT SETUP"
 echo "########################"
 
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
+source $(dirname $(pwd))/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
     exit 1
 fi
-cd $SCRIPT_FOLDER
+
+# Check User Account
+CONFIG_USER=$NEPI_HOST_USER
+if [[ "$USER" != "$CONFIG_USER" ]]; then
+    echo "This script must be run by user account ${CONFIG_USER}."
+    echo "Log in as ${CONFIG_USER} and run again"
+    exit 2
+fi
 
 # Change to tmp install folder
 TMP=${STORAGE["tmp"]}
@@ -34,11 +38,15 @@ mkdir $TMP
 cd $TMP
 
 
+
 #################################
 # Install Software Requirments
 
 echo ""
 echo "Installing NEPI required software packages"
+
+sudo apt update
+
 sudo apt install vim-gtk3 -y
 #sudo update-alternatives --config vim
 vim --version | grep clipboard
@@ -46,7 +54,7 @@ vim --version | grep clipboard
 sudo apt install nmap -y
 sudo apt-get install -y lsyncd rsync
 
-sudo add-apt-repository ppa:rmescandon/yq
+sudo add-apt-repository ppa:rmescandon/yq -y
 sudo apt update
 sudo apt install yq -y
 
@@ -56,7 +64,11 @@ sudo apt install gitk -y
 # Visual Code?
 sudo snap install code --channel=edge --classic
 
+sudo apt install htop -y
 
+sudo apt install snap -y
+
+sudo apt install chromium-browser
 
 
 #################################
@@ -197,8 +209,35 @@ if [[ "$NEPI_MANAGES_TIME" -eq 1 ]]; then
     sudo apt-get install chrony -y
 fi
 if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
-    echo "Installing NEPI SSH Management Software"
-    apt-get install openssh-server -y
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Permissions 0644 for '/etc/ssh/ssh_host_rsa_key' are too open.
+# It is required that your private key files are NOT accessible by others.
+# This private key will be ignored.
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Permissions 0644 for '/etc/ssh/ssh_host_ecdsa_key' are too open.
+# It is required that your private key files are NOT accessible by others.
+# This private key will be ignored.
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Permissions 0644 for '/etc/ssh/ssh_host_ed25519_key' are too open.
+# It is required that your private key files are NOT accessible by others.
+# This private key will be ignored.
+# sshd: no hostkeys available -- exiting.
+
+
+
+    #echo "Installing NEPI SSH Management Software"
+    #sudo apt install --reinstall openssh-server
+
+    # sudo apt-get remove --purge openssh-server
+    # sudo apt-get autoclean 
+    # sudo apt --fix-broken install
+    # sudo apt-get install openssh-server
 
 fi
 
