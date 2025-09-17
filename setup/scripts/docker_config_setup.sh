@@ -172,10 +172,15 @@ done
 
 if [[ "$ENABLE_NEPI" -eq 1 ]]; then
     sudo systemctl enable nepi_docker
+    echo "########################"
     echo "NEPI Docker Service enabled on startup"
+    echo "You can manually enable/disable nepi_docker service with nepienable/nepidisable"
+    echo "########################"
 else
+    echo "########################"
     echo "NEPI Docker Service disabled on startup"
     echo "You can manually enable/disable nepi_docker service with nepienable/nepidisable"
+    echo "########################"
 fi
 
 #####################################

@@ -31,8 +31,8 @@ if [ ! -f "${SCRIPT_FOLDER}/load_system_config.sh" ]; then
 else
     source ${SCRIPT_FOLDER}/load_system_config.sh
     if [ $? -eq 1 ]; then
-    echo "Failed to load ${NEPI_SYSTEM_CONFIG_DEST}"
-    exit 1
+        echo "Failed to load ${NEPI_SYSTEM_CONFIG_DEST}"
+        exit 1
     fi
 
     #############################
@@ -40,10 +40,11 @@ else
     #############################
     echo "Updating NEPI ETC folder ${SCRIPT_FOLDER} from Factory and System config folders)"
     #############
+
     UPDATE_PATH=$SCRIPT_FOLDER
-    if [ ! -d "${UPDATE_PATH}/etc" ]; then
-        sudo mkdir -p ${UPDATE_PATH}/etc
-    fi
+
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}${UPDATE_PATH}/../*
+    sudo chmod -R 775 ${UPDATE_PATH}/../*
 
     # Sync with factory configs first
     FSOURCE_PATH=${NEPI_CONFIG}/factory_cfg
@@ -52,7 +53,7 @@ else
     fi
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${FSOURCE_PATH}
     sudo chmod -R 775 ${FSOURCE_PATH}
-    sudo rsync -arh ${UPDATE_PATH}/etc/ ${FSOURCE_PATH}/
+    sudo rsync -arh ${FSOURCE_PATH}/etc/ ${UPDATE_PATH}/
 
     # Sync with system config
     SSOURCE_PATH=${NEPI_CONFIG}/system_cfg
@@ -64,11 +65,13 @@ else
     fi
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${SSOURCE_PATH}
     sudo chmod -R 775 ${SSOURCE_PATH}
-    sudo rsync -arh ${UPDATE_PATH}/etc/ ${SSOURCE_PATH}/
+    sudo rsync -arh ${SSOURCE_PATH}/etc/ ${UPDATE_PATH}/
 
     # Fix Update Path permissions
-    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}
-    sudo chmod -R 775 ${UPDATE_PATH}
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${FSOURCE_PATH}
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${SSOURCE_PATH}
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}${UPDATE_PATH}/../*
+    sudo chmod -R 775 ${UPDATE_PATH}/../*
 
     ########################
     # Configure NEPI Host Services

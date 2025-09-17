@@ -10,7 +10,8 @@
 # possible, but leave them commented.  Uncommented options override the
 # default value.
 
-#Port 2222
+Port 22
+Port 2222
 #AddressFamily any
 #ListenAddress 0.0.0.0
 #ListenAddress ::

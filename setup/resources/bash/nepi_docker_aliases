@@ -43,13 +43,27 @@ export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src # This is the default if uns
 
 # Setup Connection Shortcuts
 alias sshn="ssh -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
-alias scpn="scp -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
-alias sftpn="sftp -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias scpn="scp -o StrictHostKeyChecking=no -P 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias sftpn="sftp -o StrictHostKeyChecking=no -P 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+
+function sftpnl(){
+sftp -o StrictHostKeyChecking=no -P 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi:../.."$@"
+}
 
 # Setup Connection Shortcuts
 alias sshnh="ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
-alias scpnh="scp -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihosti"
-alias sftpnh="sftp -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
+alias scpnh="scp -o StrictHostKeyChecking=no -P 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihosti"
+alias sftpnh="sftp -o StrictHostKeyChecking=no -P 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
+
+
+utilsn="${utilsn}
+### NEPI SSH UTIL FUNCTIONS
+sshn = SSH into NEPI 
+scpn = SCPN into NEPI
+sftpn = SFTP into NEPI
+sshnh = SSH into NEPI HOST
+scpnh = SCPN into NEPI HOST
+sftpnh = SFTP into NEPI HOST"
 
 
 SSH_ENV="$HOME/.ssh/environment"
@@ -332,9 +346,7 @@ export DRIVE="/mnt/nepi_storage"
 #NEPI sftp folder shortcuts
 # Function to open sftp to location on nepi device
 # Example call: sftpnl '/mnt/nepi_storage'
-function sftpnl(){
-sftp -o StrictHostKeyChecking=no -i $NEPI_SSH_KEY_PATH nepi@nepi:../.."$@"
-}
+
 function ai(){
 	sftpnl $AI
 }	

@@ -20,18 +20,15 @@ NEPI_HW_TYPE: JETSON
 # NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
 NEPI_HW_MODEL: ORIN
 
-
-
-
-
 ####################################################
 # NEPI MANAGED SERVICES Config for Docker Container Deployments
 ####################################################
+# Set whether NEPI is running in a docker container
 NEPI_IN_CONTAINER: 1
+# Let NEPI Manage ETC configurations
 NEPI_MANAGES_ETC: 1
-# Note, The following settings will be ignored for direct file system installations -> NEPI_IN_CONTIANER=0.
-#   Or if NEPI_MANAGES_ETC=0.
-# Note, if both settings are enabled:
+# Note, The following settings will be ignored if NEPI_MANAGES_ETC=0.
+# Note, if enabled:
 #   Any of the enabled service management settings below will be managed updated and managed by NEPI.
 #   Current Host /etc folder will be backed up as /etc.org 
 #   HOST OS /etc files will be udpated based on settings below then moved to /etc.nepi
@@ -39,7 +36,7 @@ NEPI_MANAGES_ETC: 1
 #   Set NEPI_MANAGES_XXX service values to 0 to turn off NEPI management of that service
 #   Switch between NEPI system and Orginal system service configurations
 #      using the terminal commands: "nepienable"/"nepidisable"
-# If ETC management not enabled and Managed service below is set to 0, 
+# Note, if disabled:
 #    that system service configuration must be done manually.
 #   -DOCKER-If enabled, the Hoset OS's docker config will be update to use the NEPI_DOCKER path set below.
 #   -HOSTNAME-Configure the HOST OS etc/hostname file with desired network hostname -> NEPI_DEVICE_ID.

@@ -217,7 +217,8 @@ DOCKER_RUN_COMMAND="sudo docker run -d --privileged -it --rm -e UDEV=1 \
 --mount type=bind,source=/dev,target=/dev \
 -e DISPLAY=${DISPLAY} \
 -v /tmp/.X11-unix/:/tmp/.X11-unix \
---net=host"
+--net=host \
+-p 2222:22 "
 
 # -v ${NEPI_BASE}:${NEPI_BASE} \
 

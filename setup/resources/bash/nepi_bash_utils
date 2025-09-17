@@ -17,9 +17,7 @@
 #echo "########################"
 
 
-utilsn="#############################
-## NEPI Util Functions ##
-#############################"
+utilsn=""
 
 
 ###################################
@@ -65,13 +63,23 @@ function sdhcp(){
 }
 export -f sdhcp
 
+function snvm(){
+  echo ' ' | sudo tee -a $BASHRC
+  echo '##### NVM Config #####' | sudo tee -a $BASHRC
+  echo 'export NVM_DIR='/home/${NEPI_USER}'/.nvm' | sudo tee -a $BASHRC
+  echo '[ -s ${NVM_DIR}/nvm.sh ] && \. ${NVM_DIR}/nvm.sh' | sudo tee -a $BASHRC
+  echo '[ -s ${NVM_DIR}/bash_completion ] && \. ${NVM_DIR}/bash_completion' | sudo tee -a $BASHRC
+}
+export -f snvm
+
 utilsn="${utilsn}
 ################################
 ### SYSTEM UTIL FUNCTIONS
 ################################
 pingi = Check for internet
 sbrc = Source the current users bashrc file
-sdhcp = Start DHCP Internet Client"
+sdhcp = Start DHCP Internet Client
+snvm = Sources NVM (Node Version Manager) nmv.sh"
 
 
 ###################################
@@ -200,7 +208,7 @@ function path_backup(){
               sudo mkdir -p ${backup_path}
               sudo cp -R -a ${source_path} ${backup_path}
           elif [[ -d "${backup_path}" && "overwrite" -eq 1 ]]; then
-              echo "Replacing  ${source_path} path copy at ${backup_path}"
+              echo "Copying ${source_path} to ${backup_path}"
               sudo rm -r $backup_path
               sudo cp -R -a $source_path $backup_path
           fi
@@ -209,7 +217,7 @@ function path_backup(){
               echo "Creating  ${source_path} path copy at ${backup_path}"
               sudo cp -R -a ${source_path} ${backup_path}
           elif [[ -f "${backup_path}"  && "overwrite" -eq 1 ]]; then
-            echo "Replacing  ${source_path} path copy at ${backup_path}"
+            echo "Copying ${source_path} to ${backup_path}"
             sudo rm -r ${backup_path}
             sudo cp -R -a ${source_path} ${backup_path}
           fi
@@ -223,7 +231,7 @@ function path_backup(){
       return 1
     fi
     if [[ -d "$backup_path" || -f "$backup_path" ]]; then
-        echo "Ceated ${source_path} path copy at ${backup_path}"
+        echo "Created ${source_path} path copy at ${backup_path}"
     else
         echo "Failed to backup path ${backup_path}"
         return 1

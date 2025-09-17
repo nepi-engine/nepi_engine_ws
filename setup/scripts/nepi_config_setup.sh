@@ -158,8 +158,10 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_SSH_DIR
 ###############
 echo "Updating NEPI Config files in ${ETC_DEST_PATH}"
 source ${ETC_DEST_PATH}/update_etc_files.sh
-wait
-
+if [ $? -eq 1 ]; then
+    echo "Failed to update ETC folder ${ETC_DEST_PATH}"
+    exit 1
+fi
 ##################################################
 # Set up the NEPI sys env bash file
 NEPI_ETC=${NEPI_BASE}/etc
@@ -210,7 +212,7 @@ if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
     path_backup $folder $folder_back $overwrite
 fi
 
-sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_SYSTEM_PATH
+#sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_SYSTEM_PATH
 ##############################################
 echo "NEPI Config Setup Complete"
 ##############################################
