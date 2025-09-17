@@ -29,73 +29,68 @@ SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
 if [ ! -f "${SCRIPT_FOLDER}/load_system_config.sh" ]; then
   echo  "Could not find system config file at: ${SCRIPT_FOLDER}/load_system_config.sh"
 else
-  source ${SCRIPT_FOLDER}/load_system_config.sh
-  if [ $? -eq 1 ]; then
+    source ${SCRIPT_FOLDER}/load_system_config.sh
+    if [ $? -eq 1 ]; then
     echo "Failed to load ${NEPI_SYSTEM_CONFIG_DEST}"
     exit 1
-  fi
+    fi
 
-  #############################
-  # Sync with existing configs
-  #############################
-  echo "Updating NEPI Factory and System Config files from etc folder ${SCRIPT_FOLDER})"
-  #############
+    #############################
+    # Sync with existing configs
+    #############################
+    echo "Updating NEPI ETC folder ${SCRIPT_FOLDER} from Factory and System config folders)"
+    #############
+    UPDATE_PATH=$SCRIPT_FOLDER
+    if [ ! -d "${UPDATE_PATH}/etc" ]; then
+        sudo mkdir -p ${UPDATE_PATH}/etc
+    fi
 
-  # Sync with factory configs first
-  SOURCE_PATH=$SCRIPT_FOLDER
-  UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
-  cp ${SCRIPT_FOLDER}/nepi_system_config.yaml ${SCRIPT_FOLDER}/nepi_system_config.tmp
-  cp ${SCRIPT_FOLDER}/update_etc_files.sh ${SCRIPT_FOLDER}/update_etc_files.tmp
-  cp ${SCRIPT_FOLDER}/hosts ${SCRIPT_FOLDER}/hosts.tmp
-  cp ${SCRIPT_FOLDER}/hostname ${SCRIPT_FOLDER}/hostname.tmp
+    # Sync with factory configs first
+    FSOURCE_PATH=${NEPI_CONFIG}/factory_cfg
+    if [ ! -d "${FSOURCE_PATH}/etc" ]; then
+        sudo mkdir -p ${FSOURCE_PATH}/etc
+    fi
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${FSOURCE_PATH}
+    sudo chmod -R 775 ${FSOURCE_PATH}
+    sudo rsync -arh ${UPDATE_PATH}/etc/ ${FSOURCE_PATH}/
 
-  sudo mkdir -p ${UPDATE_PATH}/etc
-  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}
-  sudo chmod -R 775 ${UPDATE_PATH}
-  sudo rsync -arh ${UPDATE_PATH}/etc/ ${SOURCE_PATH}/
+    # Sync with system config
+    SSOURCE_PATH=${NEPI_CONFIG}/system_cfg
+    if [ ! -d "${SSOURCE_PATH}/etc" ]; then
+        sudo mkdir -p ${SSOURCE_PATH}/etc
+    fi
+    if find "$SSOURCE_PATH" -maxdepth 0 -empty | read; then
+      sudo rsync -arh ${FSOURCE_PATH}/etc/ ${SSOURCE_PATH}/  
+    fi
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${SSOURCE_PATH}
+    sudo chmod -R 775 ${SSOURCE_PATH}
+    sudo rsync -arh ${UPDATE_PATH}/etc/ ${SSOURCE_PATH}/
 
-  mv ${SCRIPT_FOLDER}/nepi_system_config.tmp ${SCRIPT_FOLDER}/nepi_system_config.yaml
-  mv ${SCRIPT_FOLDER}/update_etc_files.tmp ${SCRIPT_FOLDER}/update_etc_files.sh
-  mv ${SCRIPT_FOLDER}/hosts.tmp ${SCRIPT_FOLDER}/hosts
-  mv ${SCRIPT_FOLDER}/hostname.tmp ${SCRIPT_FOLDER}/hostname
-  #update_etc_files
-  
-  SOURCE_PATH=$SCRIPT_FOLDER
-  UPDATE_PATH=${NEPI_CONFIG}/factory_cfg
-  sudo rsync -arh ${SOURCE_PATH}/ ${UPDATE_PATH}/etc/
-  sudo chown -R ${USER}:${USER} $UPDATE_PATH
+    # Fix Update Path permissions
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}
+    sudo chmod -R 775 ${UPDATE_PATH}
 
-  #############
-  # Sync with system config
-  SOURCE_PATH=$SCRIPT_FOLDER
-  UPDATE_PATH=${NEPI_CONFIG}/system_cfg
-  cp ${SCRIPT_FOLDER}/nepi_system_config.yaml ${SCRIPT_FOLDER}/nepi_system_config.tmp
-  cp ${SCRIPT_FOLDER}/update_etc_files.sh ${SCRIPT_FOLDER}/update_etc_files.tmp
-  cp ${SCRIPT_FOLDER}/hosts ${SCRIPT_FOLDER}/hosts.tmp
-  cp ${SCRIPT_FOLDER}/hostname ${SCRIPT_FOLDER}/hostname.tmp
+    ########################
+    # Configure NEPI Host Services
+    ########################
 
-  sudo mkdir -p ${UPDATE_PATH}/etc
-  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${UPDATE_PATH}
-  sudo chmod -R 775 ${UPDATE_PATH}
-  sudo rsync -arh ${UPDATE_PATH}/etc/ ${SOURCE_PATH}/
+    systemctl_active=0
+    check=$(systemctl is-active --quiet your_script_name.service >/dev/null 2>&1)
+    if [[ "$?" -eq 0 ]]; then
+        echo "Systemctl daemon is running."
+        systemctl_active=1
+    else
+        echo "Systemctl daemon not running."
+    fi
+    
+    # supervisor_active=0
+    # if pgrep supervisord > /dev/null; then
+    #     echo "Supervisord daemon is running."
+    #     supervisor_active=0
+    # else
+    #     echo "Supervisord daemon not running."
+    # fi
 
-  mv ${SCRIPT_FOLDER}/nepi_system_config.tmp ${SCRIPT_FOLDER}/nepi_system_config.yaml
-  mv ${SCRIPT_FOLDER}/update_etc_files.tmp ${SCRIPT_FOLDER}/update_etc_files.sh
-  mv ${SCRIPT_FOLDER}/hosts.tmp ${SCRIPT_FOLDER}/hosts
-  mv ${SCRIPT_FOLDER}/hostname.tmp ${SCRIPT_FOLDER}/hostname
-  
-
-  #update_etc_files
-  SOURCE_PATH=$SCRIPT_FOLDER
-  UPDATE_PATH=${NEPI_CONFIG}/system_cfg
-  sudo rsync -arh ${SOURCE_PATH}/ ${UPDATE_PATH}/etc/
-  sudo chown -R ${USER}:${USER} $UPDATE_PATH
-  
-  sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${SOURCE_PATH}
-  sudo chmod -R 775 ${SOURCE_PATH}
-  ########################
-  # Configure NEPI Host Services
-  ########################
 
     # First Backup original if needed
     if [[ "$NEPI_MANAGES_ETC" -eq 1 ]]; then
@@ -149,26 +144,22 @@ else
             fi
             sudo cp -a ${file}.blank $file
 
-            entry="${NEPI_IP} ${NEPI_USER}"
-            echo $entry
             echo "Updating NEPI IP in ${file}"
-            if grep -qnw $file -e ${entry}; then
-                echo "Found NEPI IP in ${file} ${entry} "
-            else
-                echo "Adding NEPI IP in ${file}"
-                echo "${NEPI_IP} ${NEPI_DEVICE_ID}" | sudo tee -a $file
-                echo $entry | sudo tee -a $file
-                echo "${entry}-${NEPI_DEVICE_ID}" | sudo tee -a $file
 
-                entry="${NEPI_IP} ${NEPI_ADMIN_USER}"
-                echo $entry | sudo tee -a $file
-                echo "${entry}-${NEPI_DEVICE_ID}" | sudo tee -a $file
+            entry="${NEPI_IP} ${NEPI_USER}"
+            echo "Adding NEPI IP in ${file}"
+            echo "${NEPI_IP} ${NEPI_DEVICE_ID}" | sudo tee -a $file
+            echo $entry | sudo tee -a $file
+            echo "${entry}-${NEPI_DEVICE_ID}" | sudo tee -a $file
 
-                entry="${NEPI_IP} ${NEPI_HOST_USER}"
-                echo $entry | sudo tee -a $file
-                echo "${entry}-${NEPI_DEVICE_ID}" | sudo tee -a $file
-            fi
+            entry="${NEPI_IP} ${NEPI_ADMIN_USER}"
+            echo $entry | sudo tee -a $file
+            echo "${entry}-${NEPI_DEVICE_ID}" | sudo tee -a $file
 
+            entry="${NEPI_IP} ${NEPI_HOST_USER}"
+            echo $entry | sudo tee -a $file
+            echo "${entry}-${NEPI_DEVICE_ID}" | sudo tee -a $file
+ 
             sudo rm -r /etc/hosts
             sudo cp -R -a $file /etc/hosts
 
@@ -200,7 +191,7 @@ else
         fi
 
         ###########################################
-        if [ "$NEPI_MANAGES_TIME" -eq 1 ]; then
+        if [[ "$NEPI_MANAGES_TIME" -eq 1 ]]; then
             
             # Install NTP Sources
             echo " "
@@ -215,7 +206,7 @@ else
 
 
         ###########################################
-        if [ "$NEPI_MANAGES_NETWORK" -eq 1 ]; then
+        if [[ "$NEPI_MANAGES_NETWORK" -eq 1 ]]; then
 
             #sudo systemctl stop NetworkManager
             #sudo systemctl stop networking.service
@@ -235,10 +226,10 @@ else
             sudo rm -r /etc/dhcp/dhclient.conf
             sudo cp -a -r ${etc_source}/dhcp/dhclient.conf /etc/dhcp/dhclient.conf
 
-            # Set up WIFI
-            if [ ! -d "etc/wpa_supplicant" ]; then
-                sudo mkdir ${etc_source}/wpa_supplicant
-            fi
+            # # Set up WIFI
+            # if [[ ! -d "/etc/wpa_supplicant" ]]; then
+            #     sudo mkdir /etc/wpa_supplicant
+            # fi
             
             sudo rm -r /etc/wpa_supplicant
             sudo cp -a -r ${etc_source}/wpa_supplicant /etc/
@@ -261,7 +252,7 @@ else
 
 
         ###########################################
-        if [ "$NEPI_MANAGES_SSH" -eq 1 ]; then
+        if [[ "$NEPI_MANAGES_SSH" -eq 1 ]]; then
             # Set up SSH
 
             echo " "
@@ -281,8 +272,10 @@ else
             sudo chown ${CONFIG_USER}:${CONFIG_USER} /home/${CONFIG_USER}/.ssh/authorized_keys
             sudo chmod 0600 /home/${CONFIG_USER}/.ssh/authorized_keys
 
-            # sudo chmod 0700 /home/${CONFIG_USER}/.ssh
-            # sudo chown -R ${CONFIG_USER}:${CONFIG_USER} /home/${CONFIG_USER}/.ssh
+            sudo chmod 0700 /home/${CONFIG_USER}/.ssh
+            sudo chown -R ${CONFIG_USER}:${CONFIG_USER} /home/${CONFIG_USER}/.ssh
+
+            echo "Updating SSH service config"
             if [ "$USER" == "nepi" ]; then
                 sudo rm -r /etc/ssh/sshd_config
                 sudo cp ${etc_source}/ssh/sshd_config /etc/ssh/sshd_config
@@ -309,30 +302,19 @@ else
             #sudo systemctl status ${service_name}
         fi
 
-        #########################################
-        # Setup supervisor service
-        #########################################
-        if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
+    fi
 
-            echo ""
-            echo "Setting up NEPI Supervisord"
 
-            if [ -d "/etc/supervisor" ]; then
-                if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
-                    sudo cp -a -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
-                    sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
-                fi
-                sudo cp ${etc_source}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
-            fi
-            #sudo systemctl enable supervisor.service
-            #sudo systemctl restart supervisor.service
-        fi
 
-        ########################################
-        # Setup NEPI etc sync process service
-        ########################################
-        # sudo cp -r ${etc_source}/lsyncd/lsyncd.blank /etc/lsyncd/lsyncd.conf
-        # sudo chown -R ${USER}:${USER} /etc/lsyncd/lsyncd.conf
+    ########################################
+    # Setup NEPI etc sync process service
+    ########################################
+    # sudo cp -r ${etc_source}/lsyncd/lsyncd.blank /etc/lsyncd/lsyncd.conf
+    # sudo chown -R ${USER}:${USER} /etc/lsyncd/lsyncd.conf
+
+
+    if [[ "$USER" == "$NEPI_USER" ]]; then
+        : # pass
 
         # lsyncd_file=/etc/lsyncd/lsyncd.conf
         # etc_sync=$etc_source
@@ -359,8 +341,29 @@ else
 
         #sudo systemctl enable lsyncd
         #sudo systemctl restart lsyncd
-        
+    #elif [[ "$USER" == "$NEPI_HOST_USER"]]; then
+    #    : # pass
     fi
+
+    #########################################
+    # Setup supervisor service
+    #########################################
+    if [[ "$USER" == "$NEPI_USER" && "$NEPI_IN_CONTAINER" -eq 1 ]]; then
+
+        echo ""
+        echo "Setting up NEPI Supervisord"
+
+        if [ -d "/etc/supervisor" ]; then
+            if [ ! -f "/etc/supervisor/conf.d/supervisord_nepi.conf" ]; then
+                sudo cp -a -r /etc/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf.bak
+                sudo rm /etc/supervisor/conf.d/supervisord_nepi.conf
+            fi
+            sudo cp ${etc_source}/supervisor/conf.d/supervisord_nepi.conf /etc/supervisor/conf.d/supervisord_nepi.conf 
+        fi
+        #sudo systemctl enable supervisor.service
+        #sudo systemctl restart supervisor.service
+    fi
+
 
     ###########################################
     # Install Modeprobe Conf
@@ -414,17 +417,6 @@ else
         folder_back=${folder}.${back_ext}
         path_backup $folder $folder_back $overwrite
     fi
-
-    #########################################
-    # Sync back to system configs
-    # #########################################
-    SOURCE_PATH=$SCRIPT_FOLDER
-    UPDATE_PATH=${NEPI_CONFIG}/system_cfg
-    sudo rsync -arh ${SOURCE_PATH}/ ${UPDATE_PATH}/etc/
-    sudo chown -R ${USER}:${USER} $UPDATE_PATH
-
-    # sudo chown -R ${CONFIG_USER}:${CONFIG_USER} ${etc_source}
-    # echo ""
 
 fi
 

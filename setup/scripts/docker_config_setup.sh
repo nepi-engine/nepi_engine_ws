@@ -35,7 +35,7 @@ echo "Updating NEPI aliases file"
 
 
 NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
-NEPI_SYSTEM_CONFIG_DEST_PATH=/mnt/nepi_config/docker_cfg/etc
+NEPI_SYSTEM_CONFIG_DEST_PATH=/mnt/nepi_config/factory_cfg/etc
 NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
 
 

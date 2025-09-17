@@ -23,7 +23,7 @@ echo "########################"
 CONFIG_USER=nepi
 NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
 NEPI_SYSTEM_PATH=/opt/nepi
-NEPI_SYSTEM_CONFIG_DEST_PATH=${NEPI_SYSTEM_PATH}/etc
+NEPI_SYSTEM_CONFIG_DEST_PATH=/mnt/nepi_config/factory_cfg/etc
 NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
 
 
@@ -34,7 +34,7 @@ ETC_SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
 ETC_DEST_PATH=$NEPI_SYSTEM_CONFIG_DEST_PATH
 
 echo ""
-echo "Populating System ETC Folder from ${ETC_SOURCE_PATH} to ${ETC_DEST_PATH}"
+echo "Populating Factory ETC Folder from ${ETC_SOURCE_PATH} to ${ETC_DEST_PATH}"
 sudo mkdir -p $ETC_DEST_PATH
 sudo cp -R ${ETC_SOURCE_PATH}/* ${ETC_DEST_PATH}/
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
