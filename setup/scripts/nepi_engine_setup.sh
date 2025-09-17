@@ -17,7 +17,8 @@ echo "NEPI ENGINE SETUP"
 echo "########################"
 
 # Load System Config File
-source $(dirname $(pwd))/config/load_system_config.sh
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
@@ -128,7 +129,7 @@ sudo systemctl enable nepi_check_license
 
 #########################################
 # Setup system scripts
-NEPI_SCRIPTS_SOURCE=$(dirname "$(pwd)")/resources/scripts
+NEPI_SCRIPTS_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/scripts
 echo ""
 echo "Populating System Scripts from ${NEPI_SCRIPTS_SOURCE}"
 
@@ -151,7 +152,7 @@ echo "NEPI Script Setup Complete"
 # Install some premade python packages
 #######################
 USER_SITE_PACKAGES_PATH=$(python -m site --user-site)
-NEPI_PYTHON_SOURCE=$(dirname "$(pwd)")/resources/software/python3
+NEPI_PYTHON_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/software/python3
 
 
 sudo cp -R ${NEPI_PYTHON_SOURCE}/* ${USER_SITE_PACKAGES_PATH}/

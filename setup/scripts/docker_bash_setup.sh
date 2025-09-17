@@ -16,23 +16,23 @@ echo "########################"
 echo "NEPI DOCKER BASH SETUP"
 echo "########################"
 
-
-source $(dirname "$(pwd)")/resources/bash/nepi_bash_utils 
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+source $(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_bash_utils 
 
 # Load System Config File
-source $(dirname $(pwd))/config/load_system_config.sh
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
 fi
 
 # Check User Account
-CONFIG_USER=$NEPI_HOST_USER
-if [[ "$USER" != "$CONFIG_USER" ]]; then
-    echo "This script must be run by user account ${CONFIG_USER}."
-    echo "Log in as ${CONFIG_USER} and run again"
-    exit 2
-fi
+# CONFIG_USER=$NEPI_HOST_USER
+# if [[ "$USER" != "$CONFIG_USER" ]]; then
+#     echo "This script must be run by user account ${CONFIG_USER}."
+#     echo "Log in as ${CONFIG_USER} and run again"
+#     exit 2
+# fi
 
 
 
@@ -49,7 +49,7 @@ path_backup $source_path "${source_path}.org" $overwrite
 
 
 echo "Installing NEPI utils file"
-NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
+NEPI_UTILS_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=${HOME}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
 if [ -f "$NEPI_UTILS_DEST" ]; then
@@ -58,7 +58,7 @@ fi
 sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
 sudo chown -R ${USER}:${USER} $NEPI_UTILS_DEST
 
-NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_docker_aliases
+NEPI_ALIASES_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_docker_aliases
 NEPI_ALIASES_DEST=${HOME}/.nepi_docker_aliases
 echo "Installing NEPI aliases file ${NEPI_ALIASES_DEST} "
 if [ -f "$NEPI_ALIASES_DEST" ]; then

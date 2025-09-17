@@ -19,7 +19,8 @@ echo "NEPI ENVIRONMENT SETUP"
 echo "########################"
 
 # Load System Config File
-source $(dirname $(pwd))/config/load_system_config.sh
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
@@ -346,7 +347,7 @@ python${NEPI_PYTHON} -m pip install --no-input --user licenseheaders # For updat
 #############
 # Install additional python requirements
 # Copy the requirements files from nepi_engine/nepi_env/setup to /mnt/nepi_storage/tmp
-NEPI_REQ_SOURCE=$(dirname "$(pwd)")/resources/requirements
+NEPI_REQ_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/requirements
 sudo cp ${NEPI_REQ_SOURCE}/nepi_requirements.txt ./
 cat nepi_requirements.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 sudo python${NEPI_PYTHON} -m pip install
 

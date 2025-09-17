@@ -17,12 +17,16 @@ echo "########################"
 echo "NEPI DOCKER ENVIRONMENT SETUP"
 echo "########################"
 
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+source $(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_bash_utils 
+
 # Load System Config File
-source $(dirname $(pwd))/config/load_system_config.sh
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
 fi
+
 
 # Check User Account
 CONFIG_USER=$NEPI_HOST_USER

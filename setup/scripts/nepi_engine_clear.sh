@@ -13,7 +13,8 @@ echo "NEPI ENGINE CLEAR"
 echo "########################"
 
 # Load System Config File
-source $(dirname $(pwd))/config/load_system_config.sh
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1

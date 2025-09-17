@@ -17,10 +17,12 @@ echo "########################"
 echo "NEPI BASH SETUP"
 echo "########################"
 
-source $(dirname "$(pwd)")/resources/bash/nepi_bash_utils 
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+source $(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_bash_utils 
 
 # Load System Config File
-source $(dirname $(pwd))/config/load_system_config.sh
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
     exit 1
@@ -46,7 +48,7 @@ overwrite=0
 path_backup $source_path ${source_path}.org $overwrite
 
 # Update Bashrc and Nepi bash files
-NEPI_UTILS_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_bash_utils
+NEPI_UTILS_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_bash_utils
 NEPI_UTILS_DEST=/home/${NEPI_USER}/.nepi_bash_utils
 echo "Installing NEPI utils file ${NEPI_UTILS_DEST} "
 if [ -f "$NEPI_UTILS_DEST" ]; then
@@ -56,7 +58,7 @@ sudo cp $NEPI_UTILS_SOURCE $NEPI_UTILS_DEST
 sudo chown -R ${NEPI_USER}:${NEPI_USER} $NEPI_UTILS_DEST
 #sudo ln -sfn ${NEPI_UTILS_DEST} /root/.nepi_bash_utils
 
-NEPI_ALIASES_SOURCE=$(dirname "$(pwd)")/resources/bash/nepi_system_aliases
+NEPI_ALIASES_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_system_aliases
 NEPI_ALIASES_DEST=/home/${NEPI_USER}/.nepi_system_aliases
 echo ""
 echo "Populating System Folders from ${NEPI_ALIASES_SOURCE}"

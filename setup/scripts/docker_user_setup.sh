@@ -22,16 +22,16 @@ if ! [ $(id -u) = 0 ]; then
    exit 1
 fi
 
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+source $(dirname "${SCRIPT_FOLDER}")/resources/bash/nepi_bash_utils 
+
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
-source load_system_config.sh
+source $(dirname ${SCRIPT_FOLDER})/config/load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
-    cd $SCRIPT_FOLDER
     exit 1
 fi
-cd $SCRIPT_FOLDER
+
 
 ###################################
 function new_nepi_user(){

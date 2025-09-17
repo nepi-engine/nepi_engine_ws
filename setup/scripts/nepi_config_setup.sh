@@ -21,7 +21,8 @@ echo "########################"
 ###################
 
 CONFIG_USER=nepi
-NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "${SCRIPT_FOLDER}")/config/nepi_system_config.yaml
 NEPI_SYSTEM_PATH=/opt/nepi
 NEPI_SYSTEM_CONFIG_DEST_PATH=/mnt/nepi_config/factory_cfg/etc
 NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
@@ -30,7 +31,7 @@ NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
 ###################
 # Copy ETC Files
 ###################
-ETC_SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+ETC_SOURCE_PATH=$(dirname "${SCRIPT_FOLDER}")/resources/etc
 ETC_DEST_PATH=$NEPI_SYSTEM_CONFIG_DEST_PATH
 
 echo ""
@@ -41,7 +42,7 @@ sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $ETC_DEST_PATH
 sudo chmod -R 775 $ETC_DEST_PATH
 
 
-SCRIPTS_SOURCE_PATH=$(dirname "$(pwd)")/resources/scripts
+SCRIPTS_SOURCE_PATH=$(dirname "${SCRIPT_FOLDER}")/resources/scripts
 SCRIPTS_DEST_PATH=${NEPI_SYSTEM_PATH}/scripts
 echo ""
 echo "Populating System Scripts Folder from ${SCRIPTS_SOURCE_PATH} to ${SCRIPTS_DEST_PATH}"
@@ -139,7 +140,7 @@ NEPI_SSH_FILE=nepi_engine_default_private_ssh_key
 # Add nepi ssh key if not there
 echo "Checking nepi ssh key file"
 NEPI_SSH_PATH=${NEPI_SSH_DIR}/${NEPI_SSH_FILE}
-NEPI_SSH_SOURCE=$(dirname "$(pwd)")/resources/ssh_keys/${NEPI_SSH_FILE}
+NEPI_SSH_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/ssh_keys/${NEPI_SSH_FILE}
 if [ -e $NEPI_SSH_PATH ]; then
     echo "Found NEPI ssh private key ${NEPI_SSH_PATH} "
 else

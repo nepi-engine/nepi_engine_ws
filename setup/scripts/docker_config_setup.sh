@@ -21,8 +21,8 @@ echo "Updating NEPI aliases file"
 
 
 # # Load System Config File
-# SCRIPT_FOLDER=$(pwd)
-# cd $(dirname $(pwd))/config
+# SCRIPT_FOLDER=${SCRIPT_FOLDER}
+# cd $(dirname ${SCRIPT_FOLDER})/config
 # source load_system_config.sh
 # if [ $? -eq 1 ]; then
 #     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
@@ -33,8 +33,8 @@ echo "Updating NEPI aliases file"
 
 #############################################
 
-
-NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "$(pwd)")/config/nepi_system_config.yaml
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+NEPI_SYSTEM_CONFIG_SOURCE=$(dirname "${SCRIPT_FOLDER}")/config/nepi_system_config.yaml
 NEPI_SYSTEM_CONFIG_DEST_PATH=/mnt/nepi_config/factory_cfg/etc
 NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
 
@@ -42,7 +42,7 @@ NEPI_SYSTEM_CONFIG_DEST=${NEPI_SYSTEM_CONFIG_DEST_PATH}/nepi_system_config.yaml
 ###################
 # Copy ETC Files
 ###################
-ETC_SOURCE_PATH=$(dirname "$(pwd)")/resources/etc
+ETC_SOURCE_PATH=$(dirname "${SCRIPT_FOLDER}")/resources/etc
 ETC_DEST_PATH=$NEPI_SYSTEM_CONFIG_DEST_PATH
 sudo mkdir -p $ETC_DEST_PATH
 echo ""
@@ -99,9 +99,9 @@ fi
 #################################
 
 # Run NEPI Docker Storage Config File
-source $(pwd)/docker_storage_setup.sh
+source ${SCRIPT_FOLDER}/docker_storage_setup.sh
 if [ $? -eq 1 ]; then
-    echo "Failed to load $(pwd)/nepi_storage_setup.sh"
+    echo "Failed to load ${SCRIPT_FOLDER}/nepi_storage_setup.sh"
     exit 1
 fi
 
@@ -117,7 +117,7 @@ NEPI_SSH_FILE=nepi_engine_default_private_ssh_key
 # Add nepi ssh key if not there
 echo "Checking nepi ssh key file"
 NEPI_SSH_PATH=${NEPI_SSH_DIR}/${NEPI_SSH_FILE}
-NEPI_SSH_SOURCE=$(dirname "$(pwd)")/resources/ssh_keys/${NEPI_SSH_FILE}
+NEPI_SSH_SOURCE=$(dirname "${SCRIPT_FOLDER}")/resources/ssh_keys/${NEPI_SSH_FILE}
 if [ -e $NEPI_SSH_PATH ]; then
     echo "Found NEPI ssh private key ${NEPI_SSH_PATH} "
 else
@@ -146,8 +146,8 @@ if [ -d "$NEPI_DOCKER_CONFIG" ]; then
     sudo mkdir -p $NEPI_DOCKER_CONFIG
 fi
 echo "Copying nepi  docker config files to ${NEPI_DOCKER_CONFIG}"
-sudo cp $(dirname "$(pwd)")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
-#sudo cp -R -p $(dirname "$(pwd)")/resources/etc ${NEPI_DOCKER_CONFIG}/
+sudo cp $(dirname "${SCRIPT_FOLDER}")/resources/docker/* ${NEPI_DOCKER_CONFIG}/
+#sudo cp -R -p $(dirname "${SCRIPT_FOLDER}")/resources/etc ${NEPI_DOCKER_CONFIG}/
 
 sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $NEPI_DOCKER_CONFIG
 

@@ -19,8 +19,8 @@ echo "NEPI PC CONFIG SETUP"
 echo "########################"
 
 # Load System Config File
-SCRIPT_FOLDER=$(pwd)
-cd $(dirname $(pwd))/config
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+cd $(dirname ${SCRIPT_FOLDER})/config
 source load_system_config.sh
 if [ $? -eq 1 ]; then
     echo "Failed to load ${SYSTEM_CONFIG_FILE}"
