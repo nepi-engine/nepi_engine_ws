@@ -1,0 +1,15 @@
+port=THS0
+
+# Change Port Owner
+sudo chown nepi:dialout /dev/tty${port}
+
+
+# Test Port
+sudo fuser -k /dev/tty${port}
+
+stty -F /dev/tty${port} 115200
+
+echo -ne "A\r\n" > /dev/tty${port}
+
+# Kill processes using port
+sudo fuser -k /dev/tty${port}
