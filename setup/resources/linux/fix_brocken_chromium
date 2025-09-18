@@ -1,6 +1,0 @@
-sudo rm ~/snap/chromium
-or 
-sudo rm -rf ~/.config/chromium ~/.cache/chromium
-or
-sudo apt-get remove --purge chromium-browser
-sudo apt install chromium-browser

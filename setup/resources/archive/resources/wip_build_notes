@@ -1,4 +1,0 @@
-#MSCL Build updates
-sudo apt-get updates
-sudo apt upgrade libboost-all-dev
-
