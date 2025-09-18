@@ -1,0 +1,331 @@
+#!/bin/bash
+
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
+
+# This file contains nepi pc dev aliases and sources nepi bash utils
+
+### SOURCE NEPI UTIL FUNCTIONS
+NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
+source $NEPI_UTILS_FILE
+
+HELPN="${UTILSN}"
+
+
+###################################
+# NEPI SSH Agent Config
+###################################
+
+CURRENT_DIR=$(pwd)
+
+export NEPI_SSH_KEY_PATH=~/ssh_keys/nepi_engine_default_private_ssh_key
+
+export NEPI_REMOTE_SETUP=1
+export NEPI_TARGET_IP=192.168.179.103
+export NEPI_TARGET_USERNAME=nepi
+export NEPI_SSH_KEY=~/ssh_keys/nepi_engine_default_private_ssh_key
+export NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src # This is the default if unset
+
+# Setup Connection Shortcuts
+alias sshn="ssh -o StrictHostKeyChecking=no -p 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias scpn="scp -o StrictHostKeyChecking=no -P 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+alias sftpn="sftp -o StrictHostKeyChecking=no -P 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi"
+
+function sftpnl(){
+sftp -o StrictHostKeyChecking=no -P 2222 -i $NEPI_SSH_KEY_PATH nepi@nepi:../.."$@"
+}
+
+# Setup Connection Shortcuts
+alias sshnh="ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
+alias scpnh="scp -o StrictHostKeyChecking=no -P 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihosti"
+alias sftpnh="sftp -o StrictHostKeyChecking=no -P 22 -i $NEPI_SSH_KEY_PATH nepihost@nepihost"
+
+
+utilsn="${utilsn}
+### NEPI SSH UTIL FUNCTIONS
+sshn = SSH into NEPI 
+scpn = SCPN into NEPI
+sftpn = SFTP into NEPI
+sshnh = SSH into NEPI HOST
+scpnh = SCPN into NEPI HOST
+sftpnh = SFTP into NEPI HOST"
+
+
+
+
+SSH_ENV="$HOME/.ssh/environment"
+
+function run_ssh_env {
+  . "${SSH_ENV}" > /dev/null
+}
+
+function start_ssh_agent {
+  echo "Initializing new SSH agent..."
+  ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+  echo "succeeded"
+  chmod 600 "${SSH_ENV}"
+
+  run_ssh_env;
+
+  ssh-add ~/.ssh/id_rsa;
+}
+
+if [ -f "${SSH_ENV}" ]; then
+  run_ssh_env;
+  ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+    start_ssh_agent;
+  }
+else
+  start_ssh_agent;
+fi
+
+###################################
+# NEPI DEV Util Functions
+###################################
+export SOURCE_FOLDER=/home/${USER}/nepi_engine_ws
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+
+## NEPI deploy complete
+alias nepidpl="
+cd $SOURCE_FOLDER
+./deploy_nepi_complete.sh"
+
+# NEPI deploy repos
+alias repodpl="
+cd $SOURCE_FOLDER
+./deploy_nepi_repos.sh"
+
+utilsn="${utilsn}
+### NEPI DEV UTIL FUNCTIONS
+nepidpl = deploy nepi complete
+repodpl = deploy specific repos"
+
+function pushn(){
+  git add --all
+  git commit -m "*$@*" 
+  git push >/dev/null 2>&1
+  cur_folder=${PWD##*/}
+  par_path=$(dirname "$(pwd)")
+  par_folder=$(basename "$par_path")
+  #echo $cur_folder
+  #echo $par_folder
+  head_name=$(git rev-parse --abbrev-ref HEAD >/dev/null 2>&1)
+  if [ "$?" -eq 0 ]; then #$(is_git_repo $PWD) -eq 1 ]; then
+    if [[ "$cur_folder" == 'nepi_engine_ws' || "$par_folder" == 'nepi_engine_ws'  || "$(pwd)" == *"nepi_engine_ws/setup"* ]]; then
+        echo -e "${GREEN}Pushing to repo ${PWD##*/} Head develop"
+        git push origin HEAD:develop
+
+    else
+        echo -e "${GREEN}Pushing to repo ${PWD##*/} Head main"
+        git push origin HEAD:main
+    fi
+    if [ ! $? -eq 0 ]; then
+      echo -e "${RED}Push Failed"
+      return 1 # Failed
+    fi
+    echo -e "${GREEN}Push Successfully"
+  else
+    echo -e "${RED}Not in Git Repo"
+  fi
+}
+
+utilsn="${utilsn}
+### NEPI DEV UTIL FUNCTIONS
+nepidpl = Deploy nepi complete to nepi device
+repodpl = Deploy repos to nepi device
+pushn = Add,commit,push repo changes with provided comment"
+
+
+
+###################################
+#NEPI folder shortcuts
+###################################
+export AI="/mnt/nepi_storage/ai_models"
+export AIF="/opt/nepi/nepi_engine/share/nepi_ai_ifs"
+export API="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api"
+export APPS="/opt/nepi/nepi_engine/share/nepi_apps"
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export DATA="/mnt/nepi_storage/data"
+export DIST="/opt/nepi/nepi_engine/lib/python3/dist-packages"
+export DRIVERS="/opt/nepi/nepi_engine/lib/nepi_drivers"
+export ENGINE="/opt/nepi/nepi_engine"
+export ETC="/opt/nepi/nepi_engine/etc"
+export INSTALL="/mnt/nepi_storage/intstall"
+export LAUNCH="/opt/nepi/nepi_engine/share/nepi_env/launch"
+export LIB="/opt/nepi/nepi_engine/lib"
+export LIBSDK="/opt/nepi/nepi_engine/lib/nepi_sdk"
+export MANAGERS="/opt/nepi/nepi_engine/lib/nepi_managers"
+export NEPI="/opt/nepi"
+export NFI="/mnt/nepi_storage/nepi_full_img"
+export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
+export RUI="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
+export RUI_ENV="/opt/nepi/nepi_rui"
+export SDK="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk"
+export SHARE="/opt/nepi/nepi_engine/share"
+export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
+export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src"
+export TMP="/mnt/nepi_storage/tmp"
+export DRIVE="/mnt/nepi_storage"
+
+
+
+
+#NEPI sftp folder shortcuts
+# Function to open sftp to location on nepi device
+# Example call: sftpnl '/mnt/nepi_storage'
+
+function ai(){
+	sftpnl $AI
+}	
+function aifs(){
+	sftpnl $AIFS
+}	
+function api(){
+	sftpnl $API
+}	
+function apps(){
+	sftpnl $APPS
+}
+function auto(){
+	sftpnl $AUTO
+}
+function data(){
+	sftpnl $DATA
+}	
+function dist(){
+	sftpnl $DIST
+}	
+function drivers(){
+	sftpnl $DRIVERS
+}	
+function engine(){
+	sftpnl $ENGINE
+}
+function etc(){
+	sftpnl $ETC
+}	
+function intstall(){
+	sftpnl $INSTALL
+}	
+function lib(){
+	sftpnl $LIB
+}	
+function libsdk(){
+	sftpnl $LIBSDK
+}	
+function managers(){
+	sftpnl $MANAGERS
+}	
+function nepi(){
+	sftpnl $NEPI
+}	
+function nfi(){
+	sftpnl $NFI
+}	
+function nfia(){
+	sftpnl $NFIA
+}	
+function rui(){
+	sftpnl $RUI
+}
+function rui_env(){
+	sftpnl $RUI_ENV
+}	
+function sdk(){
+	sftpnl $SDK
+}	
+function share(){
+	sftpnl $SHARE
+}	
+function src(){
+	sftpnl $SRC
+}	
+function srcrui(){
+	sftpnl $SRCRUI
+}
+function tmp(){
+	sftpnl $TMP
+}	
+function drive(){
+	sftpnl $DRIVE
+}
+
+
+export FCFG="/mnt/nepi_config/factory_cfg"
+export SCFG="/mnt/nepi_config/system_cfg"
+export UCFG="/mnt/nepi_storage/user_cfg"
+
+function fcfg(){
+	sftpnl $FCFG
+}	
+
+function scfg(){
+	sftpnl $SCFG
+}	
+
+function ucfg(){
+	sftpnl $UCFG
+}	
+
+
+
+HELPN="${HELPN}
+################################
+## NEPI sftp folder shortcuts ##
+################################
+drive = /mnt/nepi_storage
+ai = /mnt/nepi_storage/ai_models
+aifs = /opt/nepi/nepi_engine/share/nepi_aifs
+api = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
+apps = /opt/nepi/nepi_engine/share/nepi_apps
+auto = /mnt/nepi_storage/automation_scripts
+data = /mnt/nepi_storage/data
+dist = /opt/nepi/nepi_engine/lib/python3/dist-packages/
+drivers = /opt/nepi/nepi_engine/lib/nepi_drivers
+engine = /opt/nepi/nepi_engine
+etc = /opt/nepi/nepi_engine/etc
+intstall = /mnt/nepi_storage/intstall
+lib = /opt/nepi/nepi_engine/lib
+libsdk = /opt/nepi/nepi_engine/lib/sdk
+managers = /opt/nepi/nepi_engine/lib/nepi_managers
+nepi = /opt/nepi
+nfi = /mnt/nepi_storage/nepi_full_img
+nfia = /mnt/nepi_storage/nepi_full_img_archive
+rui = /opt/nepi/rui/src/rui_webserver/rui-app/src
+rui_env = /opt/nepi/rui
+sdk = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk
+share = /opt/nepi/nepi_engine/share
+src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
+srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_rui/src/rui_webserver/rui-app/src
+tmp = /mnt/nepi_storage/tmp
+fcfg = /mnt/nepi_config/factory_cfg
+scfg = /mnt/nepi_config/system_cfg
+ucfg = /mnt/nepi_storage/user_cfg"
+
+export SETUPN="/home/${USER}/nepi_engine_ws/setup"
+alias setupn="cd ${SETUPN}"
+
+HELPN="${HELPN}
+################################
+## NEPI folder shortcuts ##
+################################
+setupn = /home/${USER}/nepi_engine_ws/setup"
+
+
+# Print out the nepi shortcuts
+function nepihelp(){
+    echo "$HELPN"
+}
+
+export -f nepihelp
+
+export NEPI_REMOTE_SETUP=1
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src

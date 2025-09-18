@@ -1,0 +1,225 @@
+#!/bin/bash
+
+##
+## Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
+##
+## This file is part of nepi-engine
+## (see https://github.com/nepi-engine).
+##
+## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+##
+
+# This file contains nepi system aliases and sources nepi bash utils
+
+#echo "########################"
+#echo "NEPI System Aliases"
+#echo "########################"
+
+
+NEPI_UTILS_FILE=/home/${USER}/.nepi_bash_utils
+source $NEPI_UTILS_FILE
+
+HELPN="${UTILSN}"
+
+#############################
+# NEPI SYSTEM FUNCTIONS
+#############################
+
+export NEPI_USER=nepi
+export NEPI_HOME=/home/nepi
+export NEPI_ENGINE=/opt/nepi/nepi_engine
+
+export NEPI_SYSTEM_CONFIG=/opt/nepi/nepi_engine/etc
+export NEPI_CONFIG_FILE=${NEPI_SYSTEM_CONFIG}/.nepi_system_config.yaml
+export NEPI_STORAGE=/mnt/nepi_storage
+
+
+  ## NEPI deploy complete
+  alias nepihome="
+  cd ${NEPI_HOME}"
+
+
+  # NEPI stop and start shortcuts
+  function nepistop(){
+
+    service_name="nepi_engine"
+    if systemctl status > /dev/null 2>&1; then
+      if systemctl is-active --quiet "$service_name.service" ; then
+        sudo systemctl stop "$service_name"
+      fi
+    elif supervisorctl status > /dev/null 2>&1; then
+      #echo "Supervisor and its managed processes appear to be running."
+      status = supervisorctl status "$service_name" 2>/dev/null
+      if echo "$status" | grep -q "RUNNING"; then
+        sudo supervisorctl stop nepi_engine
+      fi
+    fi
+
+  }
+
+  function nepistart(){
+      sudo ${NEPI_ENGINE}/etc/nepi_env/nepi_launch.sh
+  }
+  
+
+  BUILD=${NEPI_STORAGE}/nepi_src/nepi_engine_ws
+  ## NEPI build shortcuts
+  alias nepibld="
+  cd $BUILD
+  ./build_nepi_complete.sh"
+
+  # NEPI build shortcuts
+  alias codebld="
+  cd $BUILD
+  ./build_nepi_code.sh"
+
+  # NEPI build shortcuts
+  alias ruibld="
+  cd $BUILD
+  ./build_nepi_rui.sh"
+
+HELPN="${HELPN}
+################################
+### NEPI SYSTEM UTIL FUNCTIONS
+################################
+nepihome = change to nepi home dir
+nepistart = start the nepi processes
+nepistop = stop the nepi processe
+nepibld = build/deploy all nepi repos and RUI
+codebld = build/deploy all nepi repos
+ruibld = build/deploy rui system"
+
+
+
+###################################
+#NEPI folder shortcuts
+#echo "Setting up NEPI Folder Shortcuts"
+export AI="/mnt/nepi_storage/ai_models"
+export AIF="/opt/nepi/nepi_engine/share/nepi_ai_ifs"
+export API="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api"
+export APPS="/opt/nepi/nepi_engine/share/nepi_apps"
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export BUILD="/mnt/nepi_storage/nepi_src/nepi_engine_ws"
+
+export AUTO="/mnt/nepi_storage/automation_scripts"
+export DATA="/mnt/nepi_storage/data"
+export DIST="/opt/nepi/nepi_engine/lib/python3/dist-packages"
+export DRIVERS="/opt/nepi/nepi_engine/lib/nepi_drivers"
+export ETC="/opt/nepi/nepi_engine/etc"
+export INSTALL="/mnt/nepi_storage/intstall"
+export LAUNCH="/opt/nepi/nepi_engine/share/nepi_env/launch"
+export LIB="/opt/nepi/nepi_engine/lib"
+export LIBSDK="/opt/nepi/nepi_engine/lib/nepi_sdk"
+export MANAGERS="/opt/nepi/nepi_engine/lib/nepi_managers"
+export NEPI="/opt/nepi"
+export NFI="/mnt/nepi_storage/nepi_full_img"
+export NFIA="/mnt/nepi_storage/nepi_full_img_archive"
+export ENGINE="/opt/nepi/nepi_engine"
+export RUI="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src"
+export RUI_ENV="/opt/nepi/nepi_rui"
+export SCRIPTS="/opt/nepi/scripts"
+export SETUPN="/mnt/nepi_storage/nepi_src/nepi_engine_ws/setup"
+export SDK="/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk"
+export SHARE="/opt/nepi/nepi_engine/share"
+export SRC="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src"
+export SRCRUI="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src"
+export TMP="/mnt/nepi_storage/tmp"
+export TRAIN="/mnt/nepi_storage/ai_training"
+export DRIVE="/mnt/nepi_storage"
+
+export FCFG="/mnt/nepi_config/factory_cfg"
+export SCFG="/mnt/nepi_config/system_cfg"
+export UCFG="/mnt/nepi_storage/user_cfg"
+
+
+# NEPI navigation shortcuts
+
+alias ai="cd $AI"
+alias aif="cd $AIF"
+alias api="cd $API"
+alias apps="cd $APPS"
+alias auto="cd $AUTO"
+alias data="cd $DATA"
+alias dist="cd $DIST"
+alias drivers="cd $DRIVERS"
+alias etc="cd $ETC"
+alias intstall="cd $INSTALL"
+alias launch="cd $LAUNCH"
+alias lib="cd $LIB"
+alias libsdk="cd $LIBSDK"
+alias managers="cd $MANAGERS"
+alias nepi="cd $NEPI"
+alias nfi="cd $NFI"
+alias nfia="cd $NFIA"
+alias engine="cd $ENGINE"
+alias rui="cd $RUI"
+alias rui_env="cd $RUI_ENV"
+alias scripts="cd $SCRIPTS"
+alias setupn="cd $SETUPN"
+alias sdk="cd $SDK"
+alias share="cd $SHARE"
+alias src="cd $SRC"
+alias srcrui="cd $SRCRUI"
+alias tmp="cd $TMP"
+alias train="cd $TRAIN"
+alias drive="cd $DRIVE"
+
+alias fcfg="cd $FCFG"
+alias scfg="cd $SCFG"
+alias ucfg="cd $UCFG"
+
+alias nfw="cat /opt/nepi/nepi_engine/etc/fw_version.txt"
+
+HELPN="${HELPN}
+################################
+## NEPI folder shortcuts ##
+################################
+ai = /mnt/nepi_storage/ai_models
+aifs = /opt/nepi/nepi_engine/share/nepi_aifs
+api = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
+apps = /opt/nepi/nepi_engine/share/nepi_apps
+auto = /mnt/nepi_storage/automation_scripts
+data = /mnt/nepi_storage/data
+dist = /opt/nepi/nepi_engine/lib/python3/dist-packages/
+drivers = /opt/nepi/nepi_engine/lib/nepi_drivers
+engine = /opt/nepi/nepi_engine
+etc = /opt/nepi/nepi_engine/etc
+intstall = /mnt/nepi_storage/intstall
+lib = /opt/nepi/nepi_engine/lib
+libsdk = /opt/nepi/nepi_engine/lib/nepi_sdk
+managers = /opt/nepi/nepi_engine/lib/nepi_managers
+nepi = /opt/nepi
+nfi = /mnt/nepi_storage/nepi_full_img
+nfia = /mnt/nepi_storage/nepi_full_img_archive
+rui = /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
+rui_env = /opt/nepi/nepi_rui
+setupn = /mnt/nepi_storage/nepi_src/nepi_engine_ws/setup
+scripts = /opt/nepi/scripts
+sdk = /opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_sdk
+share = /opt/nepi/nepi_engine/share
+src = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src
+srcrui = /mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_engine/nepi_rui/src/rui_webserver/rui-app/src
+tmp = /mnt/nepi_storage/tmp
+train = /mnt/nepi_storage/ai_training
+drive = /mnt/nepi_storage
+
+fcfg = /mnt/nepi_config/factory_cfg
+scfg = /mnt/nepi_config/factory_cfg
+ucfg = /mnt/nepi_storage/user_cfg
+
+nfw = Show Installed NEPI FW Version"
+
+# Print out the nepi shortcuts
+function nepihelp(){
+    echo "$HELPN"
+}
+
+##### Source the ROS environment
+#source /opt/ros/noetic/setup.bash
+source /opt/nepi/nepi_engine/setup.bash
+export NEEDS_ROS=0
+
+##### NEPI SETUP #####
+export NEPI_REMOTE_SETUP=0
+export NEPI_TARGET_SRC_DIR=${NEPI_STORAGE}/nepi_src
+export PATH=${PATH}:${SCRIPTS}

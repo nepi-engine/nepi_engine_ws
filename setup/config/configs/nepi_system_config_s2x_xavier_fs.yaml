@@ -1,0 +1,117 @@
+####################################################
+### NEPI SYSTEM SETTINGS
+####################################################
+# NEPI USER
+NEPI_USER: nepi
+NEPI_USER_PW: nepi
+NEPI_ADMIN_USER: nepiadmin
+NEPI_ADMIN_PW: nepiadmin
+NEPI_HOST_USER: nepihost
+NEPI_HOST_PW: nepi
+
+NEPI_DEVICE_ID: device1
+NEPI_IP: 192.168.179.103
+NEPI_NTP_IP: 192.168.179.5
+NEPI_DHCP_ON_START: 0
+NEPI_SSH_PORT: 2222
+
+# NEPI Hardware Host Options: JETSON,RPI,ARM64,AMD64
+NEPI_HW_TYPE: JETSON
+# NEPI Hardware Host Model Options: ORIN, XAVIER, TX2, NANO, RPI4, GENERIC
+NEPI_HW_MODEL: ORIN
+
+####################################################
+# NEPI MANAGED SERVICES Config for Docker Container Deployments
+####################################################
+# Set whether NEPI is running in a docker container
+NEPI_IN_CONTAINER: 0
+# Let NEPI Manage ETC configurations
+NEPI_MANAGES_ETC: 1
+# Note, The following settings will be ignored if NEPI_MANAGES_ETC=0.
+# Note, if enabled:
+#   Any of the enabled service management settings below will be managed updated and managed by NEPI.
+#   Current Host /etc folder will be backed up as /etc.org 
+#   HOST OS /etc files will be udpated based on settings below then moved to /etc.nepi
+#   An /etc symlink will be created pointing to /etc.nepi
+#   Set NEPI_MANAGES_XXX service values to 0 to turn off NEPI management of that service
+#   Switch between NEPI system and Orginal system service configurations
+#      using the terminal commands: "nepienable"/"nepidisable"
+# Note, if disabled:
+#    that system service configuration must be done manually.
+#   -DOCKER-If enabled, the Hoset OS's docker config will be update to use the NEPI_DOCKER path set below.
+#   -HOSTNAME-Configure the HOST OS etc/hostname file with desired network hostname -> NEPI_DEVICE_ID.
+#   -HOSTNAME-Configure the HOST OS etc/hosts file with nepi ip alias -> NEPI_DEVICE_ID.
+#   -NETWORK-Ensure on the Host OS that the NEPI_IP address enabled as a static ip address -> NEPI_IP nepi.
+#   -NETWORK-Setup and Enable DHCP Client for internet connections if needed.
+#   -TIME-Setup and configure Chrony time management service.
+#   -TIME-Configure Chrony's NTP service to listen for -> NEPI_NTP_IP address.
+#   -SSH-Configure Host OS ssh setup for on port 22 with desired login credetials and keys. NEPI will still be availbe on ssh port 2222.
+NEPI_MANAGES_DOCKER: 1
+NEPI_MANAGES_HOSTNAME: 1
+NEPI_MANAGES_NETWORK: 1
+NEPI_MANAGES_TIME: 1
+NEPI_MANAGES_SSH: 1 
+
+####################################################
+### NEPI Partition SETTINGS
+####################################################
+# NEPI FS CONFIG
+# Set to partition path if running directly on device's file system
+# Or "CONTAINER" if running in a docker container
+NEPI_BOOT_DEVICE: /dev/root
+NEPI_FS_DEVICE: /dev/mmcblk0p1
+NEPI_STORAGE_DEVICE: /dev/nvme0n1p3
+
+# NEPI STORAGE CONFIG
+# It is recommended that these folders be create as their own partitions
+# so that these files are not affected by any device file system changes
+# NEPI Docker Folder
+# Set to DOCKER to use dockers native docker image storage location
+# Set to custom path to configure a custom docker image storage loacation
+NEPI_DOCKER: /mnt/nepi_docker
+DOCKER_MIN_GB: 100
+# NEPI Storage and Config Folders
+NEPI_STORAGE: /mnt/nepi_storage
+STORAGE_MIN_GB: 250
+NEPI_CONFIG: /mnt/nepi_storage/nepi_config
+CONFIG_MIN_GB: 1
+
+# NEPI FS PARTITION SETINGS  
+# If NEPI_AB_FS is enabled, NEPI docker service will manage an Active NEPI container image,
+# and an Inactive Image used for backup and recovery purposes.  
+# If NEPI_AB_FS is enabled, you can switch the current Active and Inactive containers
+# with the terminal command "nepiswitch".
+NEPI_AB_FS: 1
+
+####################################################
+# NEPI SOFTWARE Config
+####################################################
+NEPI_PYTHON: 3.8
+NEPI_ROS: NOETIC
+NEPI_HAS_CUDA: 1
+NEPI_CUDA_VERSION: 11.8
+NEPI_HAS_XPU: 0
+
+####################################################
+# NEPI FOLDERS CONFIG
+####################################################
+# NEPI Folders
+NEPI_SOURCE: /home/nepidev
+NEPI_ENV: nepi_env
+NEPI_HOME: /home/nepi
+NEPI_BASE: /opt/nepi
+NEPI_RUI: /opt/nepi/nepi_rui
+NEPI_ENGINE: /opt/nepi/nepi_engine
+NEPI_ETC: /opt/nepi/etc
+NEPI_SCRIPTS: /opt/nepi/scripts
+# NEPI Config Paths
+NEPI_DOCKER_CONFIG: /mnt/nepi_storage/nepi_config/docker_cfg
+NEPI_FACTORY_CONFIG: /mnt/nepi_storage/nepi_config/factory_cfg
+NEPI_SYSTEM_CONFIG: /mnt/nepi_storage/nepi_config/system_cfg
+NEPI_USR_CONFIG: /mnt/nepi_storage/user_cfg
+# NEPI Image Paths
+NEPI_IMPORT_PATH: /mnt/nepi_storage/nepi_full_img
+NEPI_EXPORT_PATH: /mnt/nepi_storage/nepi_full_img_archive
+
+
+
