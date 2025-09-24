@@ -22,9 +22,13 @@
 #                      (1 = Dev. Host, 0 = From Target)
 # In the case that NEPI_REMOTE_SETUP == 1, some further environment variables must be set
 #    NEPI_TARGET_IP: Target IP address/hostname
+     NEPI_TAEGET_IP=${NEPI_IP}/${NEPI_DEVICE_ID}
 #    NEPI_TARGET_USERNAME: Target username
+     NEPI_TARGET_USERNAME=nepihost
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
+     NEPI_SSH_KEY=/home/${USER}/ssh_keys/nepi_engine_default_private_ssh_key
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
+     NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
 #######################################################################################################
 
 if [[ ! -v DEPLOY_3RD_PARTY ]]; then
@@ -61,6 +65,8 @@ if [[ ! -v NEPI_ETC ]]; then
 fi
 
 
+
+
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
   exit 1
@@ -89,8 +95,6 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   fi
 fi
 
-
-NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
 
 
 git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
