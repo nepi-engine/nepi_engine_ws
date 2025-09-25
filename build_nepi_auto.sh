@@ -50,6 +50,8 @@ if [[ ! -v NEPI_ETC ]]; then
 fi
 
 # Auto Scripts build
+# Fix folder/file permisions
+sudo chown -R ${NEPI_USER}:${NEPI_USER} *
 
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`

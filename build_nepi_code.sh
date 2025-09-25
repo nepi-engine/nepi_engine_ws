@@ -61,6 +61,10 @@ if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
 
+# Fix folder/file permisions
+sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
+sudo chown -R ${NEPI_USER}:${NEPI_USER} *
+
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`

@@ -33,6 +33,7 @@
 # Repeat -s <component> for additional components to skip
 
 
+
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
     NEPI_USER=nepi
@@ -62,6 +63,10 @@ if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
 
+
+# Fix folder/file permisions
+sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
+sudo chown -R ${NEPI_USER}:${NEPI_USER} *
 
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 
