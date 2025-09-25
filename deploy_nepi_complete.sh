@@ -29,6 +29,8 @@
      NEPI_SSH_KEY=/home/${USER}/ssh_keys/nepi_engine_default_private_ssh_key
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
      NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
+#    NEPI_SETUP_SRC_DIR: Directory to deploy setup source to
+     NEPI_SETUP_SRC_DIR=/home/nepihost
 #######################################################################################################
 
 if [[ ! -v DEPLOY_3RD_PARTY ]]; then
@@ -99,10 +101,11 @@ fi
 
 git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
-echo $(pwd)
-RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
 
+RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
 echo "Excluding ${RSYNC_EXCLUDES}"
+
+echo "Deploying NEPI Engine Source from $(pwd) to ${NEPI_TARGET_SRC_DIR}"
 
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   rsync -avrh ${RSYNC_EXCLUDES} ../nepi_engine_ws/* ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
@@ -111,11 +114,19 @@ elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
 fi
 
 
+echo "Deploying NEPI Setup Source from $(pwd)/nepi_setup to ${NEPI_SETUP_SRC_DIR}"
+    # Deploy Setup Folders
+  if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+    rsync -avrh ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_SETUP_SRC_DIR}/
+  elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/
+  fi
 
-if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
+
+if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; thenNEPI_SETUP_SRC_DIR
   echo "Deploying nepi 3rd party repos"
 
-    # Push Third Party Folders
+    # Deploy Third Party Folders
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
     rsync -avrh ${RSYNC_EXCLUDES} $(pwd)/src/nepi_3rd_party ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
