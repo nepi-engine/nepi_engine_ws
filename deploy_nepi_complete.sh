@@ -22,7 +22,7 @@
 #                      (1 = Dev. Host, 0 = From Target)
 # In the case that NEPI_REMOTE_SETUP == 1, some further environment variables must be set
 #    NEPI_TARGET_IP: Target IP address/hostname
-     NEPI_TAEGET_IP=${NEPI_IP}/${NEPI_DEVICE_ID}
+     NEPI_TARGET_IP=${NEPI_IP} #/${NEPI_DEVICE_ID}
 #    NEPI_TARGET_USERNAME: Target username
     nepihost=nepi
     if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
