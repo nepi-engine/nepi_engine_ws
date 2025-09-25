@@ -37,6 +37,10 @@
 #    NEPI_SETUP_SRC_DIR: Directory to deploy setup source to
      NEPI_SETUP_SRC_DIR=/home/${nepihost}
 #######################################################################################################
+# Clear known hosts keys
+sudo rm /home/${USER}/.ssh/known*
+########################################
+
 
 REPOS="nepi_engine nepi_rui nepi_interfaces"  # nepi_ai_frameworks" #nepi_drivers nepi_apps"
 

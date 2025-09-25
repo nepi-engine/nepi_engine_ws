@@ -36,7 +36,11 @@
      NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
 #    NEPI_SETUP_SRC_DIR: Directory to deploy setup source to
      NEPI_SETUP_SRC_DIR=/home/${nepihost}
+
 #######################################################################################################
+# Clear known hosts keys
+sudo rm /home/${USER}/.ssh/known*
+########################################
 
 if [[ ! -v DEPLOY_3RD_PARTY ]]; then
   DEPLOY_3RD_PARTY=0
@@ -122,9 +126,9 @@ fi
 echo "Deploying NEPI Setup Source from $(pwd)/nepi_setup to ${NEPI_SETUP_SRC_DIR}"
   # Deploy Setup Folders
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  rsync -avrh ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_SETUP_SRC_DIR}/
+  rsync -avrh ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_SETUP_SRC_DIR}/nepi_setup
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_SETUP_SRC_DIR}/
 fi
 
 
