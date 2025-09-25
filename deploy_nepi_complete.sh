@@ -115,15 +115,15 @@ fi
 
 
 echo "Deploying NEPI Setup Source from $(pwd)/nepi_setup to ${NEPI_SETUP_SRC_DIR}"
-    # Deploy Setup Folders
-  if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    rsync -avrh ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_SETUP_SRC_DIR}/
-  elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/
-  fi
+  # Deploy Setup Folders
+if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+  rsync -avrh ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_SETUP_SRC_DIR}/
+elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/nepi_setup ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/
+fi
 
 
-if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; thenNEPI_SETUP_SRC_DIR
+if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
   echo "Deploying nepi 3rd party repos"
 
     # Deploy Third Party Folders
@@ -133,7 +133,6 @@ if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; thenNEPI_SETUP_SRC_DIR
     rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/src/nepi_3rd_party ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
   fi
 
-  
 else
   echo ""
   echo "Skipping nepi 3rd party repos"
