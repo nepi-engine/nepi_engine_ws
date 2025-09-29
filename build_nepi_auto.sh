@@ -49,9 +49,6 @@ if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
 
-# Auto Scripts build
-# Fix folder/file permisions
-sudo chown -R ${NEPI_USER}:${NEPI_USER} *
 
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`

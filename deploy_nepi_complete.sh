@@ -91,7 +91,7 @@ if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   # Generate the top-level version file
   git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
-
+  echo $NEPI_TARGET_IP
   if [[ -z "${NEPI_TARGET_IP}" ]]; then
     echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
     exit 1
