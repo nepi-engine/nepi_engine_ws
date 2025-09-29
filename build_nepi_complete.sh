@@ -64,10 +64,6 @@ if [[ ! -v NEPI_ETC ]]; then
 fi
 
 
-# Fix folder/file permisions
-sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
-sudo chown -R ${NEPI_USER}:${NEPI_USER} *
-
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 
 

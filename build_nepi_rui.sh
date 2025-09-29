@@ -57,9 +57,7 @@ fi
 
 # RUI build
 
-# Fix folder/file permisions
-sudo chown -R ${NEPI_USER}:${NEPI_USER} /opt/nepi
-sudo chown -R ${NEPI_USER}:${NEPI_USER} *
+
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
 HIGHLIGHT='\033[1;34m' # LIGHT BLUE
