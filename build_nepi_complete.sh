@@ -120,7 +120,7 @@ if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
 
   ncores=$(nproc)
-  catkin build --profile=release --env-cache -j -p$ncores #-v
+  catkin build --profile=release #--env-cache -j -p$ncores #-v
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI Engine by User Request ***${CLEAR}\n"
