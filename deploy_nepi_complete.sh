@@ -38,8 +38,8 @@
      NEPI_SETUP_SRC_DIR=/home/${nepihost}
 
 #######################################################################################################
-# Clear known hosts keys
-sudo rm /home/${USER}/.ssh/known*
+# # Clear known hosts keys
+# sudo rm /home/${USER}/.ssh/known*
 ########################################
 
 if [[ ! -v DEPLOY_3RD_PARTY ]]; then
