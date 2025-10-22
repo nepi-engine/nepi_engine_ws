@@ -119,7 +119,7 @@ echo "Deploying NEPI Engine Source from $(pwd) to ${NEPI_TARGET_SRC_DIR}"
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   rsync -avrh ${RSYNC_EXCLUDES} ../nepi_engine_ws/* ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/
 elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
-  rsync -avzhe  "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
+  rsync -avzhe   "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 fi
 
 
