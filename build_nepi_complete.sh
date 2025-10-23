@@ -113,6 +113,24 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 #sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/* ${NEPI_AUTO_TARGET_USER_DIR}/
 #printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
 
+#####################################
+######       NEPI ETC Files          #####\
+
+sudo rsync -arp ./nepi_setup/resources/etc ${NEPI_BASE}
+if [[ -d "${NEPI_CONFIG}/factory_cfg" ]]; then
+  sudo rsync -arp ./nepi_setup/resources/etc ${NEPI_CONFIG}/factory_cfg
+fi
+if [[ -d "${NEPI_CONFIG}/system_cfg" ]]; then
+  sudo rsync -arp ./nepi_setup/resources/etc ${NEPI_CONFIG}/system_cfg
+fi
+printf "\n${HIGHLIGHT}*** NEPI ETC Deploy Finished ***\n"
+
+#####################################
+######       NEPI Scripts Files          #####\
+
+sudo rsync -arp ./nepi_setup/resources/scripts ${NEPI_BASE}
+printf "\n${HIGHLIGHT}*** NEPI Scritps Deploy Finished ***\n"
+
 
 #####################################
 ###### NEPI Engine #####
