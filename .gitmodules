@@ -36,3 +36,6 @@
 	path = src/nepi_ai_frameworks
 	url = git@github.com:nepi-engine/nepi_ai_frameworks.git
 	branch = main
+[submodule "nepi_setup"]
+	path = nepi_setup
+	url = git@github.com:nepi-engine/nepi_setup.git
