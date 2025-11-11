@@ -113,7 +113,7 @@ fi
 
 
 
-git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+dev_vesion_string $(git describe) > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
 RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
