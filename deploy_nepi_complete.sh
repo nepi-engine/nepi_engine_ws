@@ -128,7 +128,7 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 fi
 
 echo "Updating NEPI Docker Config files from $(pwd)/nepi_setup/resources/docker to ${NEPI_CONFIG_DIR}/docker_cfg"
-  # Deploy Setup Folders
+  # Deploy Docker Folder
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
   rsync -avrh --delete  ${RSYNC_EXCLUDES} $(pwd)/nepi_setup/resources/docker/ ${NEPI_CONFIG_DIR}/docker_cfg/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
