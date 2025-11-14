@@ -111,8 +111,9 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   fi
 fi
 
-
-
+cur_dir=$(pwd)
+cd /home/${USER}/nepi_engine_ws
+fw_version=$(dev_vesion_string $(git tag --sort=v:refname | tail -1))
 dev_vesion_string $(git describe) > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
@@ -162,5 +163,7 @@ else
 fi
 
 echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+
+cd $cur_dir
 
 
