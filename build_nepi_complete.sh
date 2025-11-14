@@ -123,10 +123,10 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 ####################################
 # Run NEPI Bash Setup Script
 
-SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+BUILD_SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 
 script_file=nepi_bash_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+script_path=${BUILD_SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
@@ -138,7 +138,7 @@ fi
 # Run NEPI Folder Setup Script
 
 script_file=nepi_folders_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+script_path=${BUILD_SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
@@ -150,7 +150,7 @@ fi
 # Run NEPI Files Setup Script
 
 script_file=nepi_files_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+script_path=${BUILD_SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
@@ -162,7 +162,7 @@ fi
 # Run NEPI Config Setup Script
 
 script_file=nepi_setup.sh
-script_path=${SCRIPT_FOLDER}/${script_file}
+script_path=${BUILD_SCRIPT_FOLDER}/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
