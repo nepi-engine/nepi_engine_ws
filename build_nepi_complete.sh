@@ -119,20 +119,54 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 #####################################
 ######       NEPI ETC Files          #####\
 
-sudo rsync -arp ./nepi_setup/resources/etc ${NEPI_BASE}
-if [[ -d "${NEPI_CONFIG}/factory_cfg" ]]; then
-  sudo rsync -arp ./nepi_setup/resources/etc ${NEPI_CONFIG}/factory_cfg
-fi
-if [[ -d "${NEPI_CONFIG}/system_cfg" ]]; then
-  sudo rsync -arp ./nepi_setup/resources/etc ${NEPI_CONFIG}/system_cfg
-fi
-printf "\n${HIGHLIGHT}*** NEPI ETC Deploy Finished ***\n"
 
-#####################################
-######       NEPI Scripts Files          #####\
+####################################
+# Run NEPI Bash Setup Script
 
-sudo rsync -arp ./nepi_setup/resources/scripts ${NEPI_BASE}
-printf "\n${HIGHLIGHT}*** NEPI Scritps Deploy Finished ***\n"
+
+script_file=nepi_bash_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
+
+
+####################################
+# Run NEPI Folder Setup Script
+
+script_file=nepi_folders_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
+
+
+####################################
+# Run NEPI Files Setup Script
+
+script_file=nepi_files_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
+
+
+####################################
+# Run NEPI Config Setup Script
+
+script_file=nepi_setup.sh
+script_path=${SCRIPT_FOLDER}/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
 
 
 #####################################
@@ -157,19 +191,13 @@ if [ "${DO_RUI}" -eq "1" ]; then
 
   ######       NEPI RUI           #####
   printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-if ! [ -f ${NEPI_RUI}/venv/bin/activate ]; then
-  printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
-  printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
-else
-    cd $NEPI_RUI
-    source ${NEPI_HOME}/.nvm/nvm.sh
-    source ./devenv.sh
-    cd src/rui_webserver/rui-app/
-    npm run build 
-    deactivate
-    cd ${NEPI_ENGINE_SRC_ROOTDIR}
-    printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
-  fi
+  cd $NEPI_RUI
+  source ${NEPI_HOME}/.nvm/nvm.sh
+  source ./devenv.sh
+  cd src/rui_webserver/rui-app/
+  npm run build
+  cd ${NEPI_ENGINE_SRC_ROOTDIR}
+  printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
 
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"

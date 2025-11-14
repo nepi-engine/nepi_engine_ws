@@ -74,19 +74,14 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 ######       NEPI RUI           #####
 printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-if ! [ -f ${NEPI_RUI}/venv/bin/activate ]; then
-  printf "\n${ERROR}Appears preliminary RUI build setup steps have not been completed... skipping this package\n"
-  printf "See nepi_rui/README.md for setup instructions ${CLEAR}\n"
-else
-  cd $NEPI_RUI
-  source ${NEPI_HOME}/.nvm/nvm.sh
-  source ./devenv.sh
-  cd src/rui_webserver/rui-app/
-  npm run build
-  deactivate
-  cd ${NEPI_ENGINE_SRC_ROOTDIR}
-  printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
-fi
+cd $NEPI_RUI
+source ${NEPI_HOME}/.nvm/nvm.sh
+source ./devenv.sh
+cd src/rui_webserver/rui-app/
+npm run build
+cd ${NEPI_ENGINE_SRC_ROOTDIR}
+printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
+
 
 #####################################
 
