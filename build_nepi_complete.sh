@@ -123,6 +123,7 @@ printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 ####################################
 # Run NEPI Bash Setup Script
 
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 
 script_file=nepi_bash_setup.sh
 script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
