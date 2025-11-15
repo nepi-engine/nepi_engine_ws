@@ -81,12 +81,9 @@ if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
 fi
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  # Generate the top-level version file
-  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+    echo "Running in Local Mode"
 
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  # Generate the top-level version file
-  git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
   if [[ -z "${NEPI_TARGET_IP}" ]]; then
     echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
@@ -103,7 +100,12 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 fi
 
 
-git describe --dirty > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+
+cur_dir=$(pwd)
+cd /home/${USER}/nepi_engine_ws
+fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
+$fw_version > ./src/nepi_engine/nepi_env/etc/fw_version.txt
+
 
 echo $(pwd)
 RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
