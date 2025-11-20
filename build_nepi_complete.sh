@@ -67,9 +67,6 @@ fi
 export SETUPTOOLS_USE_DISTUTILS=stdlib
 
 
-
-
-
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
 HIGHLIGHT='\033[1;34m' # LIGHT BLUE
 ERROR='\033[0;31m' # RED
@@ -100,6 +97,48 @@ done
 
 printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 
+
+export CONFIG_USER=$(id -un 1000)
+
+
+
+
+
+####################################
+# Run NEPI Bash Setup Script
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+script_file=nepi_bash_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
+
+
+####################################
+# Run NEPI Folder Setup Script
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+script_file=nepi_folders_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
+
+
+####################################
+# Run NEPI Files Setup Script
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+script_file=nepi_files_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
 
 #####################################
 ######       NEPI RUI Files          #####\
