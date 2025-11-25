@@ -122,10 +122,10 @@ for REPO in $REPOS; do
   # Push everything but the EXCLUDES to the specified source folder on the target
 
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    rsync -avrh  ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+    rsync -arh  ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
 
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+    rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
 
   fi
   
