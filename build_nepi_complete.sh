@@ -45,7 +45,7 @@ if [[ ! -v NEPI_DOCKER ]]; then
     NEPI_DOCKER=/mnt/nepi_docker
 fi
 if [[ ! -v NEPI_STORAGE ]]; then
-   NEPI_STORAGE=/mnt/nepi_storage
+  NEPI_STORAGE=/mnt/nepi_storage
 fi
 if [[ ! -v NEPI_CONFIG ]]; then
     NEPI_CONFIG=/mnt/nepi_config
@@ -193,5 +193,6 @@ else
 fi
 
 #####################################
+
 
 
