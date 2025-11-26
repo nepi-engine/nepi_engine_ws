@@ -143,9 +143,11 @@ fi
 #####################################
 ######       NEPI RUI Files          #####\
 # RUI deploy
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+echo "Installing NEPI RUI Base File System "
+sudo rsync -arp ${SCRIPT_FOLDER}/src/nepi_rui/ ${NEPI_BASE}/nepi_rui/
+echo "NEPI RUI Deploy Finished"
 
-sudo rsync -arp ./src/nepi_rui ${NEPI_BASE}
-printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
 
 #####################################
 ######       NEPI Auto Scripts           #####

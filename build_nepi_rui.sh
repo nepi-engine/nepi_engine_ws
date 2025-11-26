@@ -24,7 +24,18 @@
 # Note, this script deploys the RUI to on host system and builds the components sequentially. It may be more efficient for you to
 # run these steps in parallel in different terminals. Similarly, once everything has been built
 # once for a system, it will be more efficient to build individual components that are modified.
+sudo -v
 
+CONFIG_USER=nepi
+bfile=/home/${CONFIG_USER}/.bashrc
+ufile=/home/${CONFIG_USER}/.nepi_bash_utils
+
+if [[ -f "$ufile" ]]; then
+    source $ufile
+else
+    echo "NEPI Utils bash file not found at: ${ufile}"
+    exit 1
+fi
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
@@ -66,25 +77,71 @@ CLEAR='\033[0m'
 
 
 #####################################
-######       NEPI RUI Files          #####\
-# RUI deploy
+######  NEPI RUI Install and Build
+echo ""
 
-sudo rsync -arp ./src/nepi_rui ${NEPI_BASE}
-printf "\n${HIGHLIGHT}*** NEPI RUI Deploy Finished ***\n"
-
-######       NEPI RUI           #####
-printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-cd $NEPI_RUI
-${NEPI_RUI}/venv/bin/activate 2>/dev/null
-source ${NEPI_HOME}/.nvm/nvm.sh
-source ./devenv.sh
-cd src/rui_webserver/rui-app/
-npm run build
-deactivate 2>/dev/null
-cd ${NEPI_ENGINE_SRC_ROOTDIR}
-printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+echo "Installing NEPI RUI Base File System "
+sudo rsync -arp ${SCRIPT_FOLDER}/src/nepi_rui/ ${NEPI_BASE}/nepi_rui/
+echo "NEPI RUI Deploy Finished"
 
 
-#####################################
+echo ""
+echo "Updating NEPI RUI App File System"
+NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
+NEPI_RUI_APPS_IF=${NEPI_RUI}/src/rui_webserver/rui-app/src/Nepi_IF_Apps.js
+cd $NEPI_RUI_APPS
+directory=$NEPI_RUI_APPS
+import_sting=''
+map_string=''
+
+for file in "$directory"/*; do
+  if [ -f "$file" ]; then
+    echo "Processing file: $file"
+    rui_main_file=''
+    rui_main_class=''
+    load_yaml_file $file
+    if [[ -n "$rui_main_file" && -n "$rui_main_class" ]]; then
+        echo $rui_main_file
+        echo $rui_main_class
+        import_sting="${import_sting} \n import ${rui_main_class} from \"./${rui_main_file%.*}\"" 
+        map_string="${map_string} \n [\"${rui_main_class}\", ${rui_main_class}]," 
+    else
+        echo "RUI info not found in file ${file}"
+    fi
+  fi
+done
+echo ""
+echo "Updating App Import Lines in file ${NEPI_RUI_APPS_IF} with:"
+echo ""
+echo -e $import_sting
+key='import EmptyClass from "./EmptyClass"'
+update_text_value $NEPI_RUI_APPS_IF $key $import_sting
+
+echo "Updating App Map Lines in file ${NEPI_RUI_APPS_IF} with:"
+echo ""
+echo -e $map_string
+key='["EmptyClass", EmptyClass]'
+update_text_value $NEPI_RUI_APPS_IF $key $map_string
+echo ""
+
+echo "NEPI RUI Setup Finished"
+
+
+# ######       NEPI RUI           #####
+# echo ""
+# echo "Starting NEPI RUI Build"
+# cd $NEPI_RUI
+# ${NEPI_RUI}/venv/bin/activate 2>/dev/null
+# source ${NEPI_HOME}/.nvm/nvm.sh
+# source ./devenv.sh
+# cd src/rui_webserver/rui-app/
+# npm run build
+# deactivate 2>/dev/null
+# cd ${NEPI_ENGINE_SRC_ROOTDIR}
+# printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
+
+
+# #####################################
 
 
