@@ -118,9 +118,17 @@ echo -e $import_sting
 key='import EmptyClass from "./EmptyClass"'
 update_text_value $NEPI_RUI_APPS_IF $key $import_sting
 
+echo ""
 echo "Updating App Map Lines in file ${NEPI_RUI_APPS_IF} with:"
 echo ""
+if [[ "${map_string: -1}" == "," ]]; then
+  map_string="${map_string%,}"
+fi
+echo ""
+echo  $map_string
+echo ""
 echo -e $map_string
+echo ""
 key='["EmptyClass", EmptyClass]'
 update_text_value $NEPI_RUI_APPS_IF $key $map_string
 echo ""

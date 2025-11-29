@@ -140,24 +140,6 @@ if ! source_script $script_path; then
     exit 1
 fi
 
-#####################################
-######       NEPI RUI Files          #####\
-# RUI deploy
-SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
-echo "Installing NEPI RUI Base File System "
-sudo rsync -arp ${SCRIPT_FOLDER}/src/nepi_rui/ ${NEPI_BASE}/nepi_rui/
-echo "NEPI RUI Deploy Finished"
-
-
-#####################################
-######       NEPI Auto Scripts           #####
-# Auto Scripts deploy
-#printf "\n${HIGHLIGHT}*** Copying NEPI Auto Scripts to NEPI Storage ***${CLEAR}\n"
-#NEPI_AUTO_TARGET_USER_DIR="${NEPI_STORAGE}/automation_scripts"
-#sudo cp -R -p ./src/nepi_engine/nepi_auto_scripts/* ${NEPI_AUTO_TARGET_USER_DIR}/
-#printf "\n${HIGHLIGHT}*** NEPI Auto Scripts Deploy Finished ***\n"
-
-
 
 #####################################
 ###### NEPI Engine #####
@@ -178,17 +160,14 @@ fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
 
-  ######       NEPI RUI           #####
-  printf "\n${HIGHLIGHT}*** Starting NEPI RUI Build ***${CLEAR}\n"
-  cd $NEPI_RUI
-  ${NEPI_RUI}/venv/bin/activate 2>/dev/null
-  source ${NEPI_HOME}/.nvm/nvm.sh
-  source ./devenv.sh
-  cd src/rui_webserver/rui-app/
-  npm run build
-  deactivate 2>/dev/null
-  cd ${NEPI_ENGINE_SRC_ROOTDIR}
-  printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
+  SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+  script_file=build_nepi_rui.sh
+  script_path=${SCRIPT_FOLDER}/${script_file}
+  if ! source_script $script_path; then
+      script_error=$?
+      echo "Script ${script_path} failed with error ${script_error}"
+      exit 1
+  fi
 
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"
