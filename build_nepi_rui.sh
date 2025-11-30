@@ -140,18 +140,18 @@ sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
 echo "NEPI RUI Setup Finished"
 
 
-# ######       NEPI RUI           #####
-# echo ""
-# echo "Starting NEPI RUI Build"
-# cd $NEPI_RUI
-# ${NEPI_RUI}/venv/bin/activate 2>/dev/null
-# source ${NEPI_HOME}/.nvm/nvm.sh
-# source ./devenv.sh
-# cd src/rui_webserver/rui-app/
-# npm run build
-# deactivate 2>/dev/null
-# cd ${NEPI_ENGINE_SRC_ROOTDIR}
-# printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
+######       NEPI RUI           #####
+echo ""
+echo "Starting NEPI RUI Build"
+cd $NEPI_RUI
+${NEPI_RUI}/venv/bin/activate 2>/dev/null
+source ${NEPI_HOME}/.nvm/nvm.sh
+source ./devenv.sh
+cd src/rui_webserver/rui-app/
+npm run build
+deactivate 2>/dev/null
+cd ${NEPI_ENGINE_SRC_ROOTDIR}
+printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
 
 
 # #####################################
