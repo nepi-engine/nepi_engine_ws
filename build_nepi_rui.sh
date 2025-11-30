@@ -92,7 +92,7 @@ NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
 NEPI_RUI_APPS_IF=${NEPI_RUI}/src/rui_webserver/rui-app/src/Nepi_IF_Apps.js
 cd $NEPI_RUI_APPS
 directory=$NEPI_RUI_APPS
-import_sting=''
+import_string=''
 map_string=''
 
 for file in "$directory"/*; do
@@ -103,20 +103,15 @@ for file in "$directory"/*; do
     load_yaml_file $file
     if [[ -n "$rui_main_file" && -n "$rui_main_class" ]]; then
         echo $rui_main_file
+        rui_filename="./${rui_main_file%.*}"
         echo $rui_main_class
-        import_sting="${import_sting} \n import ${rui_main_class} from \"./${rui_main_file%.*}\"" 
+        import_string="${import_string} \n import ${rui_main_class} from \"$rui_filename\" " 
         map_string="${map_string} \n [\"${rui_main_class}\", ${rui_main_class}]," 
     else
         echo "RUI info not found in file ${file}"
     fi
   fi
 done
-echo ""
-echo "Updating App Import Lines in file ${NEPI_RUI_APPS_IF} with:"
-echo ""
-echo -e $import_sting
-key='import EmptyClass from "./EmptyClass"'
-update_text_value $NEPI_RUI_APPS_IF $key $import_sting
 
 echo ""
 echo "Updating App Map Lines in file ${NEPI_RUI_APPS_IF} with:"
@@ -125,13 +120,22 @@ if [[ "${map_string: -1}" == "," ]]; then
   map_string="${map_string%,}"
 fi
 echo ""
-echo  $map_string
-echo ""
 echo -e $map_string
 echo ""
-key='["EmptyClass", EmptyClass]'
-update_text_value $NEPI_RUI_APPS_IF $key $map_string
+line_num=20
+sed -i "${line_num}s/.*/${map_string}/" "$NEPI_RUI_APPS_IF"
 echo ""
+
+echo ""
+echo "Updating App Import Lines in file ${NEPI_RUI_APPS_IF} with:"
+echo ""
+echo -e $import_string
+echo ""
+line_num=16
+sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
+
+
+
 
 echo "NEPI RUI Setup Finished"
 
