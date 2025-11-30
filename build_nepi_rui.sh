@@ -115,28 +115,20 @@ done
 
 echo ""
 echo "Updating App Map Lines in file ${NEPI_RUI_APPS_IF} with:"
-echo ""
 if [[ "${map_string: -1}" == "," ]]; then
   map_string="${map_string%,}"
 fi
-echo ""
 echo -e $map_string
-echo ""
 line_num=20
 sed -i "${line_num}s/.*/${map_string}/" "$NEPI_RUI_APPS_IF"
-echo ""
 
 echo ""
 echo "Updating App Import Lines in file ${NEPI_RUI_APPS_IF} with:"
-echo ""
 echo -e $import_string
-echo ""
 line_num=16
 sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
 
-
-
-
+echo ""
 echo "NEPI RUI Setup Finished"
 
 
