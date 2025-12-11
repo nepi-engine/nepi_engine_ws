@@ -9,7 +9,7 @@
 ##
 
 
-if pingn; then
+
 
 
   #######################################################################################################
@@ -88,6 +88,12 @@ if pingn; then
       echo "Running in Local Mode"
 
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+    if pingn; then
+      : # Continue
+    else
+      echo "NEPI Device Not Connected"
+      exit 1
+    fi
 
     if [[ -z "${NEPI_TARGET_IP}" ]]; then
       echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
@@ -139,6 +145,3 @@ if pingn; then
   echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
-else
-  echo "NEPI Device Not Connected"
-fi
