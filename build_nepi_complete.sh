@@ -32,6 +32,7 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+nepistop
 
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
