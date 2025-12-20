@@ -141,6 +141,17 @@ if ! source_script $script_path; then
     exit 1
 fi
 
+####################################
+# Run NEPI Config Setup Script
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+script_file=nepi_setup.sh
+script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+    exit 1
+fi
+
 
 #####################################
 ###### NEPI Engine #####
