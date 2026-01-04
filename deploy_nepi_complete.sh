@@ -124,7 +124,9 @@ fi
 cur_dir=$(pwd)
 cd /home/${CONFIG_USER}/nepi_engine_ws
 fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
-echo ${fw_version} > ./src/nepi_engine/nepi_env/etc/fw_version.txt  >/dev/null 2>&1
+echo ${fw_version}
+echo ${fw_version} > ./src/nepi_engine/nepi_env/etc/fw_version.txt 
+
 
 
 RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
