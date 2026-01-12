@@ -1,14 +1,39 @@
-#########################
-The complete NEPI Engine base software repo (nepi_engine), which includes the following top level src folders:
-(nepi_sdk,  nepi_ros_interfaces,  nepi_managers, and nepi_rui)
-are licensed under the following license terms:
 
-Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
 
-This file is part of nepi-engine
-(see https://github.com/nepi-engine).
+#######################
+Numurus managed NEPI add on repos:
+(nepi_apps, nepi_ai_frameworks, and nepi_drivers) 
+are licenesed under the following licence terms:
+
+Copyright (c) 2024 Numurus <https://www.numurus.com>.
 
 License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
+
+
+
+#########################
+The complete NEPI Engine base software repo (nepi_engine, nepi_interfaces, nepi_rui), which includes the following top level src folders:
+(nepi_sdk,  nepi_api, nepi_env, nepi_ros_interfaces,  nepi_managers, and nepi_rui)
+are licensed under the following license terms:
+
+Copyright (c) 2024 Numurus <https://www.numurus.com>.
+
+License:  "Numurus Software License", which can be found at: 
+<https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
+
+Redistributions in source code must retain this top-level comment block.
+Plagiarizing this software to sidestep the license obligations is illegal.
+
+Redistributions of NEPI Software Images, either stand alone or in a containerized version,
+must include a running NEPI license manager process,
+retain any processes and user interface components related to NEPI license management,
+and include the "Powered by NEPI" logo on any NEPI user interfaces.
+
+Contact Information:
+====================
+- mailto:nepi@numurus.com
+
+
 
 
 #########################
@@ -37,30 +62,6 @@ Contact Information:
 - mailto:nepi@numurus.com
 
 
-#######################
-Numurus managed NEPI add on repos:
-(nepi_apps, nepi_ai_frameworks, and nepi_drivers) 
-are licenesed under the following licence terms:
-
-Copyright (c) 2024 Numurus <https://www.numurus.com>.
-
-This file is part of NEPI applications (nepi_apps) repo
-(see https://https://github.com/nepi-engine/nepi_apps)
-
-License:  "Numurus Software License", which can be found at: 
-<https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
-
-Redistributions in source code must retain this top-level comment block.
-Plagiarizing this software to sidestep the license obligations is illegal.
-
-Redistributions of NEPI Software Images, either stand alone or in a containerized version,
-must include a running NEPI license manager process,
-retain any processes and user interface components related to NEPI license management,
-and include the "Powered by NEPI" logo on any NEPI user interfaces.
-
-Contact Information:
-====================
-- mailto:nepi@numurus.com
 
 #######################
 NEPI Engine 3rd party source code (the nepi_3rd_party repo) just pass on the original 3rd party repo's license terms.
