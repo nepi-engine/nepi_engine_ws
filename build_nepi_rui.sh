@@ -129,13 +129,13 @@ if [[ "${map_string: -1}" == "," ]]; then
   map_string="${map_string%,}"
 fi
 echo -e $map_string
-line_num=20
+line_num=31
 sed -i "${line_num}s/.*/${map_string}/" "$NEPI_RUI_APPS_IF"
 
 echo ""
 echo "Updating App Import Lines in file ${NEPI_RUI_APPS_IF} with:"
 echo -e $import_string
-line_num=16
+line_num=27
 sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
 
 echo ""
