@@ -61,6 +61,12 @@ fi
 if [[ ! -v NEPI_BASE ]]; then
     NEPI_BASE=/opt/nepi
 fi
+if [[ ! -v NEPI_API ]]; then
+    NEPI_API=/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
+fi
+if [[ ! -v NEPI_APPS ]]; then
+    NEPI_APPS=/opt/nepi/nepi_engine/share/nepi_apps/params
+fi
 if [[ ! -v NEPI_RUI ]]; then
     NEPI_RUI=${NEPI_BASE}/nepi_rui
 fi
@@ -109,7 +115,11 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 export CONFIG_USER=$(id -un 1000)
 
 
+if [ "${DO_RUI}" -eq "1" ]; then 
 
+  NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
+
+fi
 
 
 ####################################
@@ -162,6 +172,11 @@ fi
 
 #####################################
 ###### NEPI Engine #####
+
+if [[ -d ${NEPI_APPS} ]]; then
+  sudo rm -r ${NEPI_APPS}/*
+fi
+
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
 
@@ -179,6 +194,7 @@ fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
 
+  sudo rm -r ${NEPI_RUI_APPS}/*
   SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
   script_file=build_nepi_rui.sh
   script_path=${SCRIPT_FOLDER}/${script_file}
