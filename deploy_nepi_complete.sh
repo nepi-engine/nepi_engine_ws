@@ -100,7 +100,7 @@ fi
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
   echo "Must have environtment variable NEPI_REMOTE_SETUP set"
-  exit 1
+  return 
 fi
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
@@ -111,21 +111,21 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   echo $NEPI_TARGET_IP
   if [[ -z "${NEPI_TARGET_IP}" ]]; then
     echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
-    exit 1
+    return 
   fi
   if [[ -z "${NEPI_TARGET_USERNAME}" ]]; then
     echo "Remote setup requires env. variable NEPI_TARGET_USERNAME be assigned"
-    exit 1
+    return 
   fi
   if [[ -z "${NEPI_SSH_KEY}" ]]; then
     echo "Remote setup requires env. variable NEPI_SSH_KEY be assigned"
-    exit 1
+    return 
   fi
   if pingn; then
     : # Continue
   else
     echo "NEPI Device Not Connected"
-    exit 1
+    return 
   fi
   ssh-keygen -f "/home/${CONFIG_USER}/.ssh/known_hosts" -R "${NEPI_TARGET_IP}"
 fi
