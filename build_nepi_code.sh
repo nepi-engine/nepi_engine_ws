@@ -94,11 +94,11 @@ do
         DO_RUI=0;;
       *) 
         printf "${ERROR}Unknown component to skip: %s... exiting\n${CLEAR}" ${OPTARG}
-        exit 1;;
+        return ;;
     esac;;
   
   ?)  printf "${ERROR}Unexpected argument... exiting\n${CLEAR}"
-      exit 1;;
+      return ;;
   esac
 done
 

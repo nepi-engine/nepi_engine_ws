@@ -44,7 +44,7 @@ if [[ -f "$ufile" ]]; then
     source $ufile
 else
     echo "NEPI Utils bash file not found at: ${ufile}"
-    exit 1
+    return 
 fi
 
 # Set NEPI folder variables if not configured by nepi aliases bash script

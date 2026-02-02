@@ -101,11 +101,11 @@ do
         DO_RUI=0;;
       *) 
         printf "${ERROR}Unknown component to skip: %s... exiting\n${CLEAR}" ${OPTARG}
-        exit 1;;
+        return ;;
     esac;;
   
   ?)  printf "${ERROR}Unexpected argument... exiting\n${CLEAR}"
-      exit 1;;
+      return ;;
   esac
 done
 
@@ -115,11 +115,7 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 export CONFIG_USER=$(id -un 1000)
 
 
-if [ "${DO_RUI}" -eq "1" ]; then 
 
-  NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
-
-fi
 
 
 ####################################
@@ -131,7 +127,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    exit 1
+    return 
 fi
 
 
@@ -143,7 +139,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    exit 1
+    return 
 fi
 
 
@@ -155,7 +151,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    exit 1
+    return 
 fi
 
 ####################################
@@ -166,7 +162,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    exit 1
+    return 
 fi
 
 
@@ -175,6 +171,10 @@ fi
 
 if [[ -d ${NEPI_APPS} ]]; then
   sudo rm -r ${NEPI_APPS}/*
+fi
+
+if [ "${DO_RUI}" -eq "1" ]; then 
+  NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
 fi
 
 if [ "${DO_SDK}" -eq "1" ]; then
@@ -194,14 +194,13 @@ fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
 
-  sudo rm -r ${NEPI_RUI_APPS}/*
   SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
   script_file=build_nepi_rui.sh
   script_path=${SCRIPT_FOLDER}/${script_file}
   if ! source_script $script_path; then
       script_error=$?
       echo "Script ${script_path} failed with error ${script_error}"
-      exit 1
+      return 
   fi
 
 else
