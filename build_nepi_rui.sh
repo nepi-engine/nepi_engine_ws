@@ -157,7 +157,7 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
     printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
 else
     printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build. RUI Webserver not installed *** ${CLEAR}\n"
-
+fi
 
 # #####################################
 

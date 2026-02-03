@@ -41,6 +41,8 @@
 
 nepistop
 
+success=1
+
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
@@ -101,11 +103,11 @@ do
         DO_RUI=0;;
       *) 
         printf "${ERROR}Unknown component to skip: %s... exiting\n${CLEAR}" ${OPTARG}
-        return ;;
+        success=0
     esac;;
   
   ?)  printf "${ERROR}Unexpected argument... exiting\n${CLEAR}"
-      return ;;
+      success=0
   esac
 done
 
@@ -127,7 +129,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    return 
+    success=0 
 fi
 
 
@@ -139,7 +141,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    return 
+    success=0 
 fi
 
 
@@ -151,7 +153,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    return 
+    success=0 
 fi
 
 ####################################
@@ -162,7 +164,7 @@ script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
 if ! source_script $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
-    return 
+    success=0 
 fi
 
 
@@ -200,7 +202,6 @@ if [ "${DO_RUI}" -eq "1" ]; then
   if ! source_script $script_path; then
       script_error=$?
       echo "Script ${script_path} failed with error ${script_error}"
-      return 
   fi
 
 else
