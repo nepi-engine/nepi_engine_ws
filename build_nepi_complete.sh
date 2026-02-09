@@ -57,6 +57,9 @@ fi
 if [[ ! -v NEPI_STORAGE ]]; then
   NEPI_STORAGE=/mnt/nepi_storage
 fi
+if [[ ! -v NEPI_INTERFACES_BUILD ]]; then
+  NEPI_INTERFACES_BUILD=/mnt/nepi_storage/nepi_src/nepi_engine_ws/build_release/nepi_interfaces
+fi
 if [[ ! -v NEPI_CONFIG ]]; then
     NEPI_CONFIG=/mnt/nepi_config
 fi
@@ -175,6 +178,10 @@ if [[ -d ${NEPI_APPS} ]]; then
   sudo rm -r ${NEPI_APPS}/*
 fi
 
+if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
+  sudo rm -r ${NEPI_INTERFACES_BUILD}/*
+fi
+
 if [ "${DO_RUI}" -eq "1" ]; then 
   NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
 fi
@@ -182,6 +189,7 @@ fi
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
 
+sudo rm -r nepi_interfaces
   ncores=$(nproc)
   catkin build --profile=release --env-cache -j -p$ncores #-v
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
