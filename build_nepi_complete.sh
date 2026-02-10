@@ -212,7 +212,6 @@ fi
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
 
-sudo rm -r nepi_interfaces
   ncores=$(nproc)
   catkin build --profile=release --env-cache -j -p$ncores #-v
   printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
