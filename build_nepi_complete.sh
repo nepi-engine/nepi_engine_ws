@@ -79,7 +79,7 @@ if [[ ! -v NEPI_RUI_SRC ]]; then
     NEPI_RUI_SRC=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
 fi
 if [[ ! -v NEPI_RUI_APPS ]]; then
-    NEPI_RUI=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src/apps
+    NEPI_RUI_APPS=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src/apps
 fi
 if [[ ! -v NEPI_ENGINE ]]; then
     NEPI_ENGINE=${NEPI_BASE}/nepi_engine
