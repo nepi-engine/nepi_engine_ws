@@ -75,6 +75,9 @@ fi
 if [[ ! -v NEPI_RUI ]]; then
     NEPI_RUI=${NEPI_BASE}/nepi_rui
 fi
+if [[ ! -v NEPI_RUI_SRC ]]; then
+    NEPI_RUI_SRC=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
+fi
 if [[ ! -v NEPI_RUI_APPS ]]; then
     NEPI_RUI=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src/apps
 fi
@@ -187,6 +190,23 @@ fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
   sudo rm -r ${NEPI_RUI_APPS}/*
+
+  system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
+  if [[ ! -d "${system_rui_config}" ]]; then
+    sudo mkdir $system_rui_config
+  fi
+
+  if [[ -d "${system_rui_config}" ]]; then
+    if [[ ! -f "${NEPI_RUI_SRC}/MainMenuDeploy.js" ]]; then
+      sudo cp ${NEPI_RUI_SRC}/MainMenuDeploy.js ${system_rui_config}/
+
+    fi
+    if [[ ! -f "${NEPI_RUI_SRC}/logos/logo.webp" ]]; then
+      sudo cp ${NEPI_RUI_SRC}/logos/logo.webp ${system_rui_config}/logos/
+    fi
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $system_rui_config
+  fi
+
 fi
 
 if [ "${DO_SDK}" -eq "1" ]; then
