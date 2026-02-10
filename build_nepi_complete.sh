@@ -75,6 +75,9 @@ fi
 if [[ ! -v NEPI_RUI ]]; then
     NEPI_RUI=${NEPI_BASE}/nepi_rui
 fi
+if [[ ! -v NEPI_RUI_APPS ]]; then
+    NEPI_RUI=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src/apps
+fi
 if [[ ! -v NEPI_ENGINE ]]; then
     NEPI_ENGINE=${NEPI_BASE}/nepi_engine
 fi
@@ -183,7 +186,7 @@ if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
 fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
-  NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
+  sudo rm -r ${NEPI_RUI_APPS}/*
 fi
 
 if [ "${DO_SDK}" -eq "1" ]; then
