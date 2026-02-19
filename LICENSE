@@ -1,16 +1,3 @@
-
-
-#######################
-Numurus managed NEPI add on repos:
-(nepi_apps, nepi_ai_frameworks, and nepi_drivers) 
-are licenesed under the following licence terms:
-
-Copyright (c) 2024 Numurus <https://www.numurus.com>.
-
-License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
-
-
-
 #########################
 The complete NEPI Engine base software repo (nepi_engine, nepi_interfaces, nepi_rui), which includes the following top level src folders:
 (nepi_sdk,  nepi_api, nepi_env, nepi_ros_interfaces,  nepi_managers, and nepi_rui)
@@ -60,6 +47,17 @@ and include the "Powered by NEPI" logo on any NEPI user interfaces.
 Contact Information:
 ====================
 - mailto:nepi@numurus.com
+
+
+
+#######################
+Numurus managed NEPI add on repos:
+(nepi_apps, nepi_ai_frameworks, nepi_scripts, and nepi_drivers) 
+are licenesed under the following licence terms:
+
+Copyright (c) 2024 Numurus <https://www.numurus.com>.
+
+License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 
 
 
