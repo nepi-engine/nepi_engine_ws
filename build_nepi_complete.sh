@@ -195,14 +195,14 @@ if [ "${DO_RUI}" -eq "1" ]; then
   if [[ ! -d "${system_rui_config}" ]]; then
     sudo mkdir $system_rui_config
   fi
-  if [[ ! -d "${system_rui_config}/logos" ]]; then
-    sudo mkdir ${system_rui_config}/logos
+  if [[ ! -d "${system_rui_config}/assets" ]]; then
+    sudo mkdir ${system_rui_config}/assets
   fi
 
   if [[ -d "${system_rui_config}" ]]; then
     sudo cp ${NEPI_RUI_SRC}/MainMenuDeploy.js ${system_rui_config}/
-    if [[ -d "${system_rui_config}/logos" ]]; then
-      sudo cp ${NEPI_RUI_SRC}/logos/logo.webp ${system_rui_config}/logos/
+    if [[ -d "${system_rui_config}/assets" ]]; then
+      sudo cp ${NEPI_RUI_SRC}/assets/logo.webp ${system_rui_config}/assets/
     fi
     sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $system_rui_config
   fi
