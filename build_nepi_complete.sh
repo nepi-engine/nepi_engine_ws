@@ -188,26 +188,6 @@ if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
   sudo rm -r ${NEPI_INTERFACES_BUILD}/*
 fi
 
-if [ "${DO_RUI}" -eq "1" ]; then 
-  sudo rm -r ${NEPI_RUI_APPS}/*
-
-  system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
-  if [[ ! -d "${system_rui_config}" ]]; then
-    sudo mkdir $system_rui_config
-  fi
-  if [[ ! -d "${system_rui_config}/assets" ]]; then
-    sudo mkdir ${system_rui_config}/assets
-  fi
-
-  if [[ -d "${system_rui_config}" ]]; then
-    sudo cp ${NEPI_RUI_SRC}/MainMenuDeploy.js ${system_rui_config}/
-    if [[ -d "${system_rui_config}/assets" ]]; then
-      sudo cp ${NEPI_RUI_SRC}/assets/logo.webp ${system_rui_config}/assets/
-    fi
-    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $system_rui_config
-  fi
-
-fi
 
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
