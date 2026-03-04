@@ -137,6 +137,16 @@ echo ${fw_version}
 echo ${fw_version} > $(pwd)/src/nepi_engine/nepi_env/etc/fw_version.txt 
 
 
+
+## Synce update remote clock if needed
+echo "Syncing remote clock if needed"
+if [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+  sshnhc
+fi
+
+
+
+
 RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
 echo "Excluding ${RSYNC_EXCLUDES}"
 
