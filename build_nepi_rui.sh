@@ -139,6 +139,19 @@ line_num=27
 sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
 
 echo ""
+
+
+
+##################
+system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
+base_rui_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
+echo "Updating RUI source from system config folder ${system_rui_config}"
+
+if [[ -d "${system_rui_config}" ]]; then
+    sudo cp -r ${system_rui_config}/* ${base_rui_folder}/
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $base_rui_folder
+fi
+
 echo "NEPI RUI Setup Finished"
 
 

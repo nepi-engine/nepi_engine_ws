@@ -57,6 +57,9 @@ fi
 if [[ ! -v NEPI_STORAGE ]]; then
   NEPI_STORAGE=/mnt/nepi_storage
 fi
+if [[ ! -v NEPI_INTERFACES_BUILD ]]; then
+  NEPI_INTERFACES_BUILD=/mnt/nepi_storage/nepi_src/nepi_engine_ws/build_release/nepi_interfaces
+fi
 if [[ ! -v NEPI_CONFIG ]]; then
     NEPI_CONFIG=/mnt/nepi_config
 fi
@@ -71,6 +74,12 @@ if [[ ! -v NEPI_APPS ]]; then
 fi
 if [[ ! -v NEPI_RUI ]]; then
     NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_RUI_SRC ]]; then
+    NEPI_RUI_SRC=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
+fi
+if [[ ! -v NEPI_RUI_APPS ]]; then
+    NEPI_RUI_APPS=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src/apps
 fi
 if [[ ! -v NEPI_ENGINE ]]; then
     NEPI_ENGINE=${NEPI_BASE}/nepi_engine
@@ -175,9 +184,10 @@ if [[ -d ${NEPI_APPS} ]]; then
   sudo rm -r ${NEPI_APPS}/*
 fi
 
-if [ "${DO_RUI}" -eq "1" ]; then 
-  NEPI_RUI_APPS=${NEPI_RUI}/src/rui_webserver/rui-app/src/apps
+if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
+  sudo rm -r ${NEPI_INTERFACES_BUILD}/*
 fi
+
 
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"

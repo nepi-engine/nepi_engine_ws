@@ -34,3 +34,6 @@
 [submodule "nepi_setup"]
 	path = nepi_setup
 	url = git@github.com:nepi-engine/nepi_setup.git
+[submodule "src/nepi_scripts"]
+	path = src/nepi_scripts
+	url = git@github.com:nepi-engine/nepi_scripts.git
