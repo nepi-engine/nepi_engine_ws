@@ -191,6 +191,7 @@ fi
 
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
+  sudo chmod 775 $(pwd)/../nepi_engine_ws
 
   ncores=$(nproc)
   catkin build --profile=release --env-cache -j -p$ncores #-v
