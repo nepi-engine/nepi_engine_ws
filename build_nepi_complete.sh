@@ -192,6 +192,7 @@ fi
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
   sudo chmod 775 $(pwd)/../nepi_engine_ws
+  sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
 
   ncores=$(nproc)
   catkin build --profile=release --env-cache -j -p$ncores #-v
