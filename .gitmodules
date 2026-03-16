@@ -37,3 +37,4 @@
 [submodule "src/nepi_scripts"]
 	path = src/nepi_scripts
 	url = git@github.com:nepi-engine/nepi_scripts.git
+	branch = main
