@@ -38,7 +38,7 @@ CONFIG_USER=$(id -un)
 #    NEPI_TARGET_USERNAME: Target username
     nepihost=nepi
     if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
-      nepihost=nepihost
+      nepihost=$CONFIG_USER
     fi
 
     NEPI_TARGET_USERNAME=${nepihost}
