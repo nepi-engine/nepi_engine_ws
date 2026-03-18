@@ -37,9 +37,10 @@ CONFIG_USER=$(id -un)
     NEPI_TARGET_IP=${NEPI_IP} #/${NEPI_DEVICE_ID}
 #    NEPI_TARGET_USERNAME: Target username
     nepihost=nepihost
-    if [[ ! -v NEPI_HOST_USER ]]; then
+    if [[ -v NEPI_HOST_USER ]]; then
         nepihost=$NEPI_HOST_USER
     fi
+    echo $nepihost
 
     NEPI_TARGET_USERNAME=${nepihost}
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
