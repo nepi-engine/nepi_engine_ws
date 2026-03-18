@@ -36,9 +36,9 @@ CONFIG_USER=$(id -un)
 #    NEPI_TARGET_IP: Target IP address/hostname
     NEPI_TARGET_IP=${NEPI_IP} #/${NEPI_DEVICE_ID}
 #    NEPI_TARGET_USERNAME: Target username
-    nepihost=nepi
-    if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
-      nepihost=nepihost
+    nepihost=nepihost
+    if [[ ! -v NEPI_HOST_USER ]]; then
+        nepihost=$NEPI_HOST_USER
     fi
 
     NEPI_TARGET_USERNAME=${nepihost}
@@ -181,7 +181,7 @@ if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   sudo chmod 775 ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
 elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
   rsync -azhe  "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000  ${RSYNC_EXCLUDES} ../nepi_engine_ws/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws
-  ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP} "sudo -S chown 1000:1000 ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws && chmod 775 ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws"
+  #ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP} "sudo -S chown 1000:1000 ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws && chmod 775 ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws"
 fi
 
 
