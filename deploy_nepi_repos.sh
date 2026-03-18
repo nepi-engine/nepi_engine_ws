@@ -17,6 +17,8 @@
 # - mailto:nepi@numurus.com
 #
 
+CONFIG_USER=$(id -un)
+
 
 if pingn; then
 
@@ -37,10 +39,10 @@ if pingn; then
   #    NEPI_TARGET_IP: Target IP address/hostname
       NEPI_TARGET_IP=${NEPI_IP} #/${NEPI_DEVICE_ID}
   #    NEPI_TARGET_USERNAME: Target username
-      nepihost=nepi
-      if [[ "$NEPI_IN_CONTAINER" -eq 1 ]]; then
-        nepihost=nepihost
-      fi
+    nepihost=nepihost
+    if [[ ! -v NEPI_HOST_USER ]]; then
+        nepihost=$NEPI_HOST_USER
+    fi
 
       NEPI_TARGET_USERNAME=${nepihost}
   #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
