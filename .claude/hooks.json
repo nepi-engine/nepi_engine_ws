@@ -1,6 +1,0 @@
-{
-  "session_start": {
-    "script": ".claude/scripts/session-start.sh",
-    "description": "Load most recent session summary for continuity"
-  }
-}
