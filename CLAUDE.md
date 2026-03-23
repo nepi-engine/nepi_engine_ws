@@ -59,6 +59,31 @@ Drivers in `nepi_drivers/` implement hardware abstraction layers. Discovery scri
 
 ---
 
+## Naming Conventions
+
+Python functions and methods in nepi_api follow this convention:
+
+Public functions and methods:
+  snake_case — all lowercase, words separated by underscores.
+  Example: goto_tilt_ratio, get_ready_state, publish_status
+  These are part of the callable API surface and receive docstrings.
+
+Private functions and methods:
+  _camelCase — leading underscore(s) followed by camelCase.
+  Example: _initCb, _resetCb, _publishStatusCb
+  These are internal implementation. No docstrings required.
+
+This convention is the authoritative rule for determining docstring scope
+during documentation passes. camelCase public methods (e.g. initCb, getPanAdj)
+are treated as private by convention regardless of underscore prefix and do not
+receive docstrings.
+
+The Cb suffix indicates a ROS callback. Methods with this suffix registered
+as ROS subscribers, publishers, or timer callbacks carry rename risk and must
+be audited for external call sites before any renaming pass proceeds.
+
+---
+
 ## MENURIC FRAMEWORK INTEGRATION
 
 This repo uses the Menuric Framework for AI-assisted development governance. The framework adds persistent context, decision tracking, and session continuity across Claude AI and Claude Code sessions.
