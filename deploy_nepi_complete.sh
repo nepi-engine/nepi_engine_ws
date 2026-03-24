@@ -43,8 +43,6 @@ CONFIG_USER=$(id -un)
     echo $nepihost
 
     NEPI_TARGET_USERNAME=${nepihost}
-#    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
-    NEPI_SSH_KEY=/home/${CONFIG_USER}/ssh_keys/nepi_engine_default_private_ssh_key
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
     NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
 #    NEPI_SETUP_SRC_DIR: Directory to deploy setup source to
@@ -96,6 +94,7 @@ if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
 
+NEPI_SSH_KEY=/home/${CONFIG_USER}/.ssh/nepi_default_ssh_key
 if [[ ! -v NEPI_SSH_KEY_PATH ]]; then
   NEPI_SSH_KEY_PATH=$NEPI_SSH_KEY
 fi
