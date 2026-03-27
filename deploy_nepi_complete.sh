@@ -40,7 +40,6 @@ CONFIG_USER=$(id -un)
     if [[ -v NEPI_HOST_USER ]]; then
         nepihost=$NEPI_HOST_USER
     fi
-    echo $nepihost
 
     NEPI_TARGET_USERNAME=${nepihost}
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
@@ -133,12 +132,6 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 
   if [[ -z "${NEPI_SSH_KEY}" ]]; then
     echo "Remote setup requires env. variable NEPI_SSH_KEY be assigned"
-    return 
-  fi
-  if pingn; then
-    : # Continue
-  else
-    echo "NEPI Device Not Connected"
     return 
   fi
   ssh-keygen -f "/home/${CONFIG_USER}/.ssh/known_hosts" -R "${NEPI_TARGET_IP}"
