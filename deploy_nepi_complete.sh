@@ -117,7 +117,7 @@ if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
 
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 
-  if pingn; then
+  if ! pingn; then
     echo ""NEPI Device Not Connected""
     return 
   fi
