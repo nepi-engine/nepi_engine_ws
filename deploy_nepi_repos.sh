@@ -2,8 +2,8 @@
 #
 # Copyright (c) 2024 Numurus <https://www.numurus.com>.
 #
-# This file is part of nepi engine ws (nepi_engine_ws) repo
-# (see https://github.com/nepi-engine/nepi_engine_ws)
+# This file is part of nepi engine ws (${NEPI_REPO_NAME}) repo
+# (see https://github.com/nepi-engine/${NEPI_REPO_NAME})
 #
 # License: NEPI Engine WS Tools and NEPI software deployed and/or compiled with these tools
 # are licensed under the "Numurus Software License", 
@@ -20,7 +20,7 @@
 CONFIG_USER=$(id -un)
 
 
-if pingn; then
+
 
 
   #######################################################################################################
@@ -89,6 +89,9 @@ if pingn; then
       NEPI_ETC=${NEPI_BASE}/etc
   fi
 
+if [[ ! -v NEPI_REPO_NAME  ]]; then
+  NEPI_REPO_NAME='nepi_engine_ws'
+fi
 
   if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
     echo "Must have environtment variable NEPI_REMOTE_SETUP set"
@@ -99,6 +102,11 @@ if pingn; then
       echo "Running in Local Mode"
 
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+
+    if pingn; then
+      echo ""NEPI Device Not Connected""
+      return 
+    fi
 
     if [[ -z "${NEPI_TARGET_IP}" ]]; then
       echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
@@ -117,7 +125,7 @@ if pingn; then
 
 
   cur_dir=$(pwd)
-  cd /home/${USER}/nepi_engine_ws
+  cd /home/${USER}/${NEPI_REPO_NAME}
   fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
   $fw_version > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
@@ -140,14 +148,14 @@ if pingn; then
     REPO_PATH="$(pwd)/src/${REPO}"
     echo "Syncing repo ${REPO} from ${REPO_PATH} to"
 
-    echo "${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/"
+    echo "${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/"
     # Push everything but the EXCLUDES to the specified source folder on the target
 
     if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-      sudo rsync -arh  --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+      sudo rsync -arh  --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
 
     elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-      rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/src/
+      rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
 
     fi
     
@@ -157,6 +165,3 @@ if pingn; then
   echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
-else
-  echo "NEPI Device Not Connected"
-fi
