@@ -127,14 +127,14 @@ export CONFIG_USER=$(id -un 1000)
 
 
 
-
+BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 
 ####################################
 # Run NEPI Bash Setup Script
 
-SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
 script_file=nepi_bash_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
+script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
 echo "Sourcing ${script_path}"
 if ! source $script_path; then
     script_error=$?
@@ -145,10 +145,10 @@ fi
 
 ####################################
 # Run NEPI Folder Setup Script
-SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
 script_file=nepi_folders_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
-if ! source_script $script_path; then
+script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
     success=0 
@@ -157,10 +157,10 @@ fi
 
 ####################################
 # Run NEPI Files Setup Script
-SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
 script_file=nepi_files_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
-if ! source_script $script_path; then
+script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
     success=0 
@@ -168,10 +168,10 @@ fi
 
 ####################################
 # Run NEPI Config Setup Script
-SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
 script_file=nepi_setup.sh
-script_path=${SCRIPT_FOLDER}/nepi_setup/scripts/${script_file}
-if ! source_script $script_path; then
+script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
+if ! source $script_path; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
     success=0 
@@ -209,9 +209,8 @@ fi
 
 if [ "${DO_RUI}" -eq "1" ]; then 
 
-  SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
   script_file=build_nepi_rui.sh
-  script_path=${SCRIPT_FOLDER}/${script_file}
+  script_path=${BUILD_FOLDER}/${script_file}
   if ! source_script $script_path; then
       script_error=$?
       echo "Script ${script_path} failed with error ${script_error}"
