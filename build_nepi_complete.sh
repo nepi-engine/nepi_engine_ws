@@ -182,17 +182,17 @@ fi
 ###### NEPI Engine #####
 
 if [[ -d ${NEPI_APPS} ]]; then
-  sudo rm -r ${NEPI_APPS}/*
+  sudo rm -r ${NEPI_APPS}/* 2> /dev/null 
 fi
 
 if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
-  sudo rm -r ${NEPI_INTERFACES_BUILD}/*
+  sudo rm -r ${NEPI_INTERFACES_BUILD}/* 2> /dev/null
 fi
 
-
+cd $BUILD_FOLDER
 if [ "${DO_SDK}" -eq "1" ]; then
   printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  sudo chmod 775 $(pwd)/../nepi_engine_ws
+  sudo chmod 775 ${BUILD_FOLDER}/../nepi_engine_ws
   sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
 
   ncores=$(nproc)
@@ -206,7 +206,7 @@ fi
 #####################################
 ######       NEPI RUI           #####\
 # RUI build
-
+cd $BUILD_FOLDER
 if [ "${DO_RUI}" -eq "1" ]; then 
 
   script_file=build_nepi_rui.sh
