@@ -128,6 +128,17 @@ Session files are gitignored. They are supplementary context, not the authoritat
 The session-start hook at .claude/hooks.json loads the most recent session summary automatically. Session files older than 7 days are ignored on load. Files older than 14 days are auto-pruned.
 
 
+## SUBMODULE DEVELOPER REFERENCES
+
+@src/nepi_engine/CLAUDE.md
+@src/nepi_apps/CLAUDE.md
+@src/nepi_rui/CLAUDE.md
+@src/nepi_interfaces/CLAUDE.md
+@src/nepi_drivers/CLAUDE.md
+@src/nepi_ai_frameworks/CLAUDE.md
+@nepi_setup/CLAUDE.md
+
+
 ## REFERENCES
 
 - NEPI-CODEX.md — Platform identity, features, and design decisions
