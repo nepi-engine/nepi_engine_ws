@@ -186,6 +186,14 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG_DIR}/docker_cfg
 fi
 
+echo "Updating NEPI Docker Config files from ${build_folder}/nepi_setup/resources/docker to ${NEPI_BASE}/docker"
+  # Deploy Docker Folder
+if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/docker/* ${NEPI_BASE}/docker/
+elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_BASE}/docker
+fi
+
 shopt -u dotglob
 
 shopt -s dotglob
