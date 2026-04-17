@@ -69,14 +69,15 @@ Public functions and methods:
   These are part of the callable API surface and receive docstrings.
 
 Private functions and methods:
-  _camelCase — leading underscore(s) followed by camelCase.
-  Example: _initCb, _resetCb, _publishStatusCb
+  camelCase — no leading underscore, mixed case.
+  Example: initCb, resetCb, publishStatusCb, getPanAdj
   These are internal implementation. No docstrings required.
+  Some private methods also carry a leading underscore (_camelCase) for additional
+  emphasis, but the underscore is not required — camelCase alone marks a method private.
 
 This convention is the authoritative rule for determining docstring scope
-during documentation passes. camelCase public methods (e.g. initCb, getPanAdj)
-are treated as private by convention regardless of underscore prefix and do not
-receive docstrings.
+during documentation passes. Any camelCase method (with or without a leading
+underscore) is treated as private and does not receive docstrings.
 
 The Cb suffix indicates a ROS callback. Methods with this suffix registered
 as ROS subscribers, publishers, or timer callbacks carry rename risk and must
@@ -88,11 +89,11 @@ be audited for external call sites before any renaming pass proceeds.
 
 This repo uses the Menuric Framework for AI-assisted development governance. The framework adds persistent context, decision tracking, and session continuity across Claude AI and Claude Code sessions.
 
-Framework documents in this repo:
+Framework documents in this repo (located in `nepi_claude/`):
 
-- NEPI-LORE.md — Platform philosophy, voice guidelines, design principles, and development standards. Claude reads this before every substantive response.
-- NEPI-FORGE.md — Lifecycle stages, release checklists, versioning conventions, and contributor workflow.
-- NEPI-CODEX.md — Platform identity, target users, feature set, design decisions, and competitive position.
+- nepi_claude/NEPI-LORE.md — Platform philosophy, voice guidelines, design principles, and development standards. Claude reads this before every substantive response.
+- nepi_claude/NEPI-FORGE.md — Lifecycle stages, release checklists, versioning conventions, and contributor workflow.
+- nepi_claude/NEPI-CODEX.md — Platform identity, target users, feature set, design decisions, and competitive position.
 
 For deep pipeline and architecture details, this CLAUDE.md remains the authoritative source. The CODEX and LORE provide the why behind the architecture documented here.
 
@@ -104,7 +105,7 @@ Format: YYYY-MM — Decision — Brief rationale
 
 ## PUSH EDITS WORKFLOW
 
-When told "push edits", execute the full push workflow documented in NEPI-FORGE.md under PUSH EDITS WORKFLOW. That document is the authoritative source for the procedure. The short version:
+When told "push edits", execute the full push workflow documented in nepi_claude/NEPI-FORGE.md under PUSH EDITS WORKFLOW. That document is the authoritative source for the procedure. The short version:
 
 1. Audit all submodules for pending changes (git submodule status + git status inside each modified submodule)
 2. Commit inside each submodule with a specific commit message (checkout main first if in detached HEAD)
@@ -123,24 +124,26 @@ Before committing at the end of any Claude Code session, write a summary to .cla
 - Test results (what passed, what failed, what was unexpected)
 - Unresolved issues or items for the next session
 
-Session files are gitignored. They are supplementary context, not the authoritative source. The authoritative sources are this CLAUDE.md, NEPI-CODEX.md, and NEPI-LORE.md.
+Session files are gitignored. They are supplementary context, not the authoritative source. The authoritative sources are this CLAUDE.md, nepi_claude/NEPI-CODEX.md, and nepi_claude/NEPI-LORE.md.
 
 The session-start hook at .claude/hooks.json loads the most recent session summary automatically. Session files older than 7 days are ignored on load. Files older than 14 days are auto-pruned.
 
 
 ## SUBMODULE DEVELOPER REFERENCES
 
-@src/nepi_engine/CLAUDE.md
-@src/nepi_apps/CLAUDE.md
-@src/nepi_rui/CLAUDE.md
-@src/nepi_interfaces/CLAUDE.md
-@src/nepi_drivers/CLAUDE.md
-@src/nepi_ai_frameworks/CLAUDE.md
-@nepi_setup/CLAUDE.md
+Read these files only when working in the relevant submodule:
+
+- src/nepi_engine/CLAUDE.md — core engine, managers, SDK, API
+- src/nepi_apps/CLAUDE.md — application packages
+- src/nepi_rui/CLAUDE.md — web UI (Flask + React)
+- src/nepi_interfaces/CLAUDE.md — ROS message/service definitions
+- src/nepi_drivers/CLAUDE.md — hardware driver packages
+- src/nepi_ai_frameworks/CLAUDE.md — AI model framework adapters
+- nepi_setup/CLAUDE.md — deployment and setup scripts
 
 
 ## REFERENCES
 
-- NEPI-CODEX.md — Platform identity, features, and design decisions
-- NEPI-LORE.md — Portfolio-wide philosophy, voice, and development standards
-- NEPI-FORGE.md — Lifecycle stages and release checklists
+- nepi_claude/NEPI-CODEX.md — Platform identity, features, and design decisions
+- nepi_claude/NEPI-LORE.md — Portfolio-wide philosophy, voice, and development standards
+- nepi_claude/NEPI-FORGE.md — Lifecycle stages and release checklists
