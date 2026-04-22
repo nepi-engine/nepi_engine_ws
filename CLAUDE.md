@@ -89,11 +89,12 @@ be audited for external call sites before any renaming pass proceeds.
 
 This repo uses the Menuric Framework for AI-assisted development governance. The framework adds persistent context, decision tracking, and session continuity across Claude AI and Claude Code sessions.
 
-Framework documents in this repo (located in `nepi_claude/`):
+Framework documents in this repo (located in `src/nepi_claude/`):
 
-- nepi_claude/NEPI-LORE.md — Platform philosophy, voice guidelines, design principles, and development standards. Claude reads this before every substantive response.
-- nepi_claude/NEPI-FORGE.md — Lifecycle stages, release checklists, versioning conventions, and contributor workflow.
-- nepi_claude/NEPI-CODEX.md — Platform identity, target users, feature set, design decisions, and competitive position.
+- src/nepi_claude/NEPI-LORE.md — Platform philosophy, voice guidelines, design principles, and development standards. Claude reads this before every substantive response.
+- src/nepi_claude/NEPI-FORGE.md — Lifecycle stages, release checklists, versioning conventions, and contributor workflow.
+- src/nepi_claude/NEPI-CODEX.md — Platform identity, target users, feature set, design decisions, and competitive position.
+- src/nepi_claude/NEPI-PROMPT.md — Prompt generation mode instructions. See that file for the full "prompt:" trigger behavior.
 
 For deep pipeline and architecture details, this CLAUDE.md remains the authoritative source. The CODEX and LORE provide the why behind the architecture documented here.
 
@@ -142,8 +143,16 @@ Read these files only when working in the relevant submodule:
 - nepi_setup/CLAUDE.md — deployment and setup scripts
 
 
+## PROMPT GENERATION MODE
+
+When a user message begins with "prompt:", enter prompt generation mode. Full instructions are in src/nepi_claude/NEPI-PROMPT.md — read that file before generating any prompt.
+
+If the user types "prompt:" with nothing after it, respond: Please describe the task after "prompt:" and include the target submodule if known.
+
+
 ## REFERENCES
 
-- nepi_claude/NEPI-CODEX.md — Platform identity, features, and design decisions
-- nepi_claude/NEPI-LORE.md — Portfolio-wide philosophy, voice, and development standards
-- nepi_claude/NEPI-FORGE.md — Lifecycle stages and release checklists
+- src/nepi_claude/NEPI-CODEX.md — Platform identity, features, and design decisions
+- src/nepi_claude/NEPI-LORE.md — Portfolio-wide philosophy, voice, and development standards
+- src/nepi_claude/NEPI-FORGE.md — Lifecycle stages and release checklists
+- src/nepi_claude/NEPI-PROMPT.md — Prompt generation mode instructions
