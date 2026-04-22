@@ -38,3 +38,6 @@
 	path = src/nepi_scripts
 	url = git@github.com:nepi-engine/nepi_scripts.git
 	branch = main
+[submodule "src/nepi_claude"]
+	path = src/nepi_claude
+	url = git@github.com:nepi-engine/nepi_claude.git
