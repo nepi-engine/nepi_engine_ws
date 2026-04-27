@@ -165,6 +165,18 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
     source ${NEPI_HOME}/.nvm/nvm.sh
     source ./devenv.sh
     cd src/rui_webserver/rui-app/
+    RUI_KEY_PATH="/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src/keys/rui_key"
+    if [[ ! -f "${RUI_KEY_PATH}" ]]; then
+        mkdir -p "$(dirname "${RUI_KEY_PATH}")"
+        python3 -c "import secrets; open('${RUI_KEY_PATH}', 'w').write(secrets.token_hex(32))"
+        echo "Generated new RUI key at ${RUI_KEY_PATH}"
+    fi
+    if [[ -f "${RUI_KEY_PATH}" ]]; then
+        export REACT_APP_RUI_KEY=$(cat "${RUI_KEY_PATH}")
+        echo "REACT_APP_RUI_KEY loaded from ${RUI_KEY_PATH}"
+    else
+        echo "WARNING: RUI key file not found at ${RUI_KEY_PATH} -- building without encryption key"
+    fi
     npm run build
     deactivate 2>/dev/null
     cd ${NEPI_ENGINE_SRC_ROOTDIR}
