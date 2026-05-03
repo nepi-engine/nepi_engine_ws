@@ -138,11 +138,21 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   ssh-keygen -f "/home/${CONFIG_USER}/.ssh/known_hosts" -R "${NEPI_TARGET_IP}"
 fi
 
+
+echo "Starting NEPI source-code deploy process"
+if [[ $NEPI_REMOTE_SETUP -eq 1 ]]; then
+  echo "Running in REMOTE mode"
+else
+  echo "Running in LOCAL mode"
+fi
+
+
 cur_dir=${build_folder}
 cd $NEPI_REPO_FOLDER
 fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
 echo ${fw_version}
 echo ${fw_version} > ${build_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt 
+
 
 
 
@@ -186,12 +196,12 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG_DIR}/docker_cfg
 fi
 
-echo "Updating NEPI Docker Config files from ${build_folder}/nepi_setup/resources/docker to ${NEPI_BASE}/docker"
+echo "Updating NEPI Docker Config files from ${build_folder}/nepi_setup/resources/docker to ${NEPI_BASE}/docker_cfg"
   # Deploy Docker Folder
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/docker/* ${NEPI_BASE}/docker/
+  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/docker/* ${NEPI_BASE}/docker_cfg/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_BASE}/docker
+  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_BASE}/docker_cfg
 fi
 
 shopt -u dotglob
