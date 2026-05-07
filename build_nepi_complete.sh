@@ -180,6 +180,17 @@ fi
 
 #####################################
 ###### NEPI Engine #####
+##################
+system_source_config="${NEPI_CONFIG}/system_cfg/src"
+build_src_folder="${BUILD_FOLDER}/src"
+echo "Updating NEPI source from system config folder ${system_source_config}"
+
+if [[ -d "${system_source_config}" ]]; then
+    sudo cp -r ${system_source_config}/* ${build_src_folder}/
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $build_src_folder
+fi
+
+
 
 if [[ -d ${NEPI_APPS} ]]; then
   sudo rm -r ${NEPI_APPS}/* 2> /dev/null 
