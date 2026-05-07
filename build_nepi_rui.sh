@@ -145,12 +145,12 @@ echo ""
 
 ##################
 system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
-base_rui_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
+build_rui_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
 echo "Updating RUI source from system config folder ${system_rui_config}"
 
 if [[ -d "${system_rui_config}" ]]; then
-    sudo cp -r ${system_rui_config}/* ${base_rui_folder}/
-    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $base_rui_folder
+    sudo cp -r ${system_rui_config}/* ${build_rui_folder}/
+    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $build_rui_folder
 fi
 
 echo "NEPI RUI Setup Finished"
