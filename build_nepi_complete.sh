@@ -182,12 +182,23 @@ fi
 ###### NEPI Engine #####
 ##################
 system_source_config="${NEPI_CONFIG}/system_cfg/src"
-build_src_folder="${BUILD_FOLDER}/src"
+build_src_folder="${BUILD_FOLDER}"
 echo "Updating NEPI source from system config folder ${system_source_config}"
 
-if [[ -d "${system_source_config}" ]]; then
-    sudo cp -r ${system_source_config}/* ${build_src_folder}/
-    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $build_src_folder
+if [[ -d $system_source_config ]]; then
+  for dir in "$system_source_config"/*/; do
+      # Remove trailing slash for cleaner output
+      dir=${dir%/}
+      folder="${dir##*/}"
+      source_path=${system_source_config}/${folder}
+      dest_path=${build_src_folder}/${folder}
+      echo "Copying system src files from ${source_path} to ${dest_path}"
+      if [[ -d $dest_path ]]; then
+        sudo cp -r -p ${source_path}/* ${dest_path}/
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_path
+        echo "Copied system src files from ${source_path} to ${dest_path}"
+      fi
+  done
 fi
 
 
