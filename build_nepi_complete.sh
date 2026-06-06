@@ -39,6 +39,12 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
+BUILD_CLEAN=$1
+if [[ -z $BUILD_CLEAN ]]; then
+echo "Building NEPI Clean"
+echo ""
+fi
+
 nepistop
 
 success=1
@@ -129,9 +135,18 @@ export CONFIG_USER=$(id -un 1000)
 
 BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 
+
+
 ####################################
 # Run NEPI Bash Setup Script
 
+echo "Build Clean: ${BUILD_CLEAN}"
+if [[ $BUILD_CLEAN -eq 1 ]]; then
+  echo "Cleaning NEPI SSH Folders"
+  system_source_config="${NEPI_CONFIG}/system_cfg/ssh_keys"
+  sudo rm -r $system_source_config
+  sudo rm -r /home/nepi/.ssh/*
+fi
 
 script_file=nepi_bash_setup.sh
 script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
@@ -169,9 +184,12 @@ fi
 ####################################
 # Run NEPI Config Setup Script
 
+
+
 script_file=nepi_setup.sh
 script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
-if ! source $script_path; then
+SHOW_MENU=0
+if ! source $script_path $SHOW_MENU; then
     script_error=$?
     echo "Script ${script_path} failed with error ${script_error}"
     success=0 
@@ -225,6 +243,8 @@ else
 fi
 
 
+
+
 #####################################
 ######       NEPI RUI           #####\
 # RUI build
@@ -241,6 +261,18 @@ if [ "${DO_RUI}" -eq "1" ]; then
 else
   printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"
 fi
+
+
+
+  echo "Updating firmware version file"
+  BUILD_DATE=$(date +%Y%m%d)
+  fwv=$(nfws)
+  fwv="${fwv%%-*}"
+  fwv="${fwv%%_*}"
+  fwv="${fwv//./p}"
+  fwv="${fwv}_${BUILD_DATE}"
+  nfwu "$fwv"
+
 
 #####################################
 
