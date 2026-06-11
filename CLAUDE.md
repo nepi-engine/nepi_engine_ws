@@ -103,6 +103,8 @@ For deep pipeline and architecture details, this CLAUDE.md remains the authorita
 
 Format: YYYY-MM — Decision — Brief rationale
 
+2026-05 — Added RPi cam3 IDX driver (idx_rpi_cam3) using libcamera/picamera2 stack — CSI camera on RPi5 is not exposed via V4L2 (excluded as pispbe in idx_v4l2 discovery); dedicated driver required
+
 
 ## PUSH EDITS WORKFLOW
 
