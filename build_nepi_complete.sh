@@ -39,13 +39,7 @@
 #   rui
 # Repeat -s <component> for additional components to skip
 
-BUILD_CLEAN=$1
-if [[ -z $BUILD_CLEAN ]]; then
-echo "Building NEPI Clean"
-echo ""
-fi
 
-nepistop
 
 success=1
 
@@ -140,13 +134,6 @@ BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 ####################################
 # Run NEPI Bash Setup Script
 
-echo "Build Clean: ${BUILD_CLEAN}"
-if [[ $BUILD_CLEAN -eq 1 ]]; then
-  echo "Cleaning NEPI SSH Folders"
-  system_source_config="${NEPI_CONFIG}/system_cfg/ssh_keys"
-  sudo rm -r $system_source_config
-  sudo rm -r /home/nepi/.ssh/*
-fi
 
 script_file=nepi_bash_setup.sh
 script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
