@@ -106,11 +106,11 @@ rui_build_folder=${NEPI_RUI}/src/rui_webserver/rui-app/src
 echo "Updating NEPI RUI source from system config folder ${system_source_path}"
 
 if [[ -d $system_source_path ]]; then
-      echo "Copying system src files from ${source_path} to ${dest_path}"
-      if [[ -d $dest_path ]]; then
+      echo "Copying system src files from ${system_source_path} to ${rui_build_folder}"
+      if [[ -d $rui_build_folder ]]; then
         sudo cp -r -p ${system_source_path}/* ${rui_build_folder}/
-        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_path
-        echo "Copied system src files from ${source_path} to ${dest_path}"
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rui_build_folder
+        echo "Copied system src files from ${system_source_path} to ${rui_build_folder}"
       fi
 fi
 
