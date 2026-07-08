@@ -174,22 +174,22 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 fi
 
 
-echo "Updating NEPI System Config files from ${build_folder}/nepi_setup/resources/etc to ${NEPI_CONFIG_DIR}/system_cfg"
+echo "Updating NEPI System Config files from ${build_folder}/nepi_setup/resources/etc to ${NEPI_CONFIG}/system_cfg"
   # Deploy Docker Folder
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml --exclude nepi_system_config.yaml.bak ${build_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG_DIR}/system_cfg/etc/
+  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml --exclude nepi_system_config.yaml.bak ${build_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml  --exclude nepi_system_config.yaml.bak \
-    ${build_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG_DIR}/system_cfg/etc
+    ${build_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
 fi
 
 
-echo "Updating NEPI Docker Config files from ${build_folder}/nepi_setup/resources/docker to ${NEPI_CONFIG_DIR}/docker_cfg"
+echo "Updating NEPI Docker Config files from ${build_folder}/nepi_setup/resources/docker to ${NEPI_CONFIG}/docker_cfg"
   # Deploy Docker Folder
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/docker/* ${NEPI_CONFIG_DIR}/docker_cfg/
+  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/docker/* ${NEPI_CONFIG}/docker_cfg/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG_DIR}/docker_cfg
+  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${build_folder}/nepi_setup/resources/docker/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/docker_cfg
 fi
 
 echo "Updating NEPI Docker Config files from ${build_folder}/nepi_setup/resources/docker to ${NEPI_BASE}/docker_cfg"
