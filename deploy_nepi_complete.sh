@@ -40,6 +40,7 @@ build_folder=$(pwd)
 #    NEPI_DEPLOY_USERNAME: Target username
 
      NEPI_DEPLOY_USERNAME=nepihost
+     NEPI_SSH_PORT=22
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
      NEPI_SSH_KEY=/home/${USER}/.ssh/nepi_default_ssh_key
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
