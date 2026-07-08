@@ -37,20 +37,17 @@ CONFIG_USER=$(id -un)
   #                      (1 = Dev. Host, 0 = From Target)
   # In the case that NEPI_REMOTE_SETUP == 1, some further environment variables must be set
   #    NEPI_TARGET_IP: Target IP address/hostname
-      NEPI_TARGET_IP=${NEPI_IP} #/${NEPI_DEVICE_ID}
-  #    NEPI_TARGET_USERNAME: Target username
-    nepihost=nepihost
-    if [[ -v NEPI_HOST_USER ]]; then
-        nepihost=$NEPI_HOST_USER
-    fi
+     NEPI_TARGET_IP=${NEPI_IP} #/${NEPI_DEVICE_ID}
+     echo "Using target IP: ${NEPI_TARGET_IP}"
+#    NEPI_DEPLOY_USERNAME: Target username
 
-      NEPI_TARGET_USERNAME=${nepihost}
-  #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
-      NEPI_SSH_KEY=/home/${CONFIG_USER}/.ssh/nepi_default_ssh_key
-  #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
-      NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
-  #    NEPI_SETUP_SRC_DIR: Directory to deploy setup source to
-      NEPI_SETUP_SRC_DIR=/home/${nepihost}
+     NEPI_DEPLOY_USERNAME=nepihost
+#    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
+     NEPI_SSH_KEY=/home/${USER}/.ssh/nepi_default_ssh_key
+#    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
+     NEPI_TARGET_SRC_DIR=/mnt/nepi_storage/nepi_src
+#    NEPI_SETUP_SRC_DIR: Directory to deploy setup source to
+     NEPI_SETUP_SRC_DIR=/home/nepihost
   #######################################################################################################
   # # Clear known hosts keys
   # sudo rm /home/${USER}/.ssh/known*
@@ -112,8 +109,8 @@ fi
       echo "Remote setup requires env. variable NEPI_TARGET_IP be assigned"
       return 
     fi
-    if [[ -z "${NEPI_TARGET_USERNAME}" ]]; then
-      echo "Remote setup requires env. variable NEPI_TARGET_USERNAME be assigned"
+    if [[ -z "${NEPI_DEPLOY_USERNAME}" ]]; then
+      echo "Remote setup requires env. variable NEPI_DEPLOY_USERNAME be assigned"
       return 
     fi
     if [[ -z "${NEPI_SSH_KEY}" ]]; then
@@ -155,7 +152,7 @@ fi
       sudo rsync -arh  --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
 
     elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-      rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_TARGET_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
+      rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/src/${REPO} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
 
     fi
     
