@@ -96,6 +96,24 @@ sudo rsync -arp ${SCRIPT_FOLDER}/src/nepi_rui/ ${NEPI_BASE}/nepi_rui/
 sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
 echo "NEPI RUI Deploy Finished"
 
+system_source_path="${NEPI_CONFIG}/system_cfg/nepi_rui"
+rui_build_folder=${NEPI_RUI}/src/rui_webserver/rui-app/src
+echo "Updating NEPI RUI source from system config folder ${system_source_path}"
+
+
+system_source_path="${NEPI_CONFIG}/system_cfg/src/nepi_rui"
+rui_build_folder=${NEPI_RUI}/src/rui_webserver/rui-app/src
+echo "Updating NEPI RUI source from system config folder ${system_source_path}"
+
+if [[ -d $system_source_path ]]; then
+      echo "Copying system src files from ${source_path} to ${dest_path}"
+      if [[ -d $dest_path ]]; then
+        sudo cp -r -p ${system_source_path}/* ${rui_build_folder}/
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_path
+        echo "Copied system src files from ${source_path} to ${dest_path}"
+      fi
+fi
+
 
 echo ""
 echo "Updating NEPI RUI App File System"
