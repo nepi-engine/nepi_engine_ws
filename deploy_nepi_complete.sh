@@ -17,6 +17,13 @@
 # - mailto:nepi@numurus.com
 #
 
+dclean=$1
+echo $dclean
+DCLEAN=0
+if [[ $dclean -eq 1 ]]; then
+  DCLEAN=1
+fi
+
 CONFIG_USER=$(id -un)
 buid_folder=$(pwd)
 
@@ -176,11 +183,26 @@ fi
 
 echo "Updating NEPI System Config files from ${build_folder}/nepi_setup/resources/etc to ${NEPI_CONFIG}/system_cfg"
   # Deploy Docker Folder
-if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml --exclude nepi_system_config.yaml.bak ${build_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
-elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml  --exclude nepi_system_config.yaml.bak \
-    ${build_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
+
+if [[ $DCLEAN -eq 1 ]]; then
+  echo "Clearing NEPI user config from ${NEPI_CONFIG}/system_cfg"
+  if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+    sudo rm ${NEPI_CONFIG}/system_cfg/* 2>/dev/null
+    sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
+  elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+    ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} "rm -r ${NEPI_CONFIG}/system_cfg/* 2>/dev/null" 
+    rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} \
+      ${build_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
+  fi
+
+else
+
+  if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+    sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml --exclude nepi_system_config.yaml.bak ${build_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
+  elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+    rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml  --exclude nepi_system_config.yaml.bak \
+      ${build_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
+  fi
 fi
 
 
