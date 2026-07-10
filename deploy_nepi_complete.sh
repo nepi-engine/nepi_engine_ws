@@ -187,10 +187,11 @@ echo "Updating NEPI System Config files from ${build_folder}/nepi_setup/resource
 if [[ $DCLEAN -eq 1 ]]; then
   echo "Clearing NEPI user config from ${NEPI_CONFIG}/system_cfg"
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    sudo rm ${NEPI_CONFIG}/system_cfg/* 2>/dev/null
+   find ${NEPI_CONFIG}/system_cfg -mindepth 1 -path ${NEPI_CONFIG}/system_cfg/etc -prune -o -exec rm -rf {} + 2>/dev/null
     sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${build_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} "rm -r ${NEPI_CONFIG}/system_cfg/* 2>/dev/null" 
+    ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
+     "find ${NEPI_CONFIG}/system_cfg -mindepth 1 -path ${NEPI_CONFIG}/system_cfg/etc -prune -o -exec rm -rf {} + 2>/dev/null" 
     rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} \
       ${build_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
   fi
