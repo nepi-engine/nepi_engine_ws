@@ -120,9 +120,10 @@ fi
     fi
   fi
 
+  
 
-
-  cur_dir=$(pwd)
+  
+  
   cd /home/${USER}/${NEPI_REPO_NAME}
   fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
   $fw_version > ./src/nepi_engine/nepi_env/etc/fw_version.txt
@@ -161,5 +162,4 @@ fi
   done
 
   echo "0.0.0" > ./src/nepi_engine/nepi_env/etc/fw_version.txt
-
 

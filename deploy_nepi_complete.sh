@@ -150,7 +150,7 @@ else
 fi
 
 
-cur_dir=${build_folder}
+
 cd $NEPI_REPO_FOLDER
 fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
 echo ${fw_version}
@@ -258,6 +258,6 @@ fi
 
 echo "0.0.0" > ${build_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
 
-cd $cur_dir
+
 
 
