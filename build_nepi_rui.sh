@@ -78,7 +78,8 @@ fi
 
 # RUI build
 
-
+export 
+echo $run_folder
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
 HIGHLIGHT='\033[1;34m' # LIGHT BLUE
@@ -89,6 +90,7 @@ CLEAR='\033[0m'
 #####################################
 ######  NEPI RUI Install and Build
 echo ""
+build_rui_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
 
 SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 echo "Installing NEPI RUI Base File System "
@@ -96,6 +98,30 @@ sudo rsync -arp ${SCRIPT_FOLDER}/src/nepi_rui/ ${NEPI_BASE}/nepi_rui/
 sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
 echo "NEPI RUI Deploy Finished"
 
+
+system_source_path="${NEPI_CONFIG}/system_cfg/src/nepi_rui"
+echo "Updating RUI source ${build_rui_folder} from ${system_source_path}"
+
+if [[ -d $system_source_path ]]; then
+      echo "Copying system src files from ${system_source_path} to ${rui_build_folder}"
+      if [[ -d $rui_build_folder ]]; then
+        sudo cp -r -p ${system_source_path}/* ${rui_build_folder}/
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rui_build_folder
+        echo "Copied system src files from ${system_source_path} to ${rui_build_folder}"
+      fi
+fi
+
+
+system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
+echo "Updating RUI source ${build_rui_folder} from  ${system_rui_config}"
+
+if [[ -d $system_rui_config ]]; then
+    echo "Copying system src files from ${system_rui_config} to ${rui_build_folder}"
+    if [[ -d $rui_build_folder ]]; then
+        sudo cp -r ${system_rui_config}/* ${build_rui_folder}/
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $build_rui_folder
+    fi
+fi
 
 
 echo ""
@@ -143,32 +169,6 @@ sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
 echo ""
 
 
-
-##################
-
-system_source_path="${NEPI_CONFIG}/system_cfg/src/nepi_rui"
-rui_build_folder=${NEPI_RUI}/src/rui_webserver/rui-app/src
-echo "Updating NEPI RUI source from system config folder ${system_source_path}"
-
-if [[ -d $system_source_path ]]; then
-      echo "Copying system src files from ${system_source_path} to ${rui_build_folder}"
-      if [[ -d $rui_build_folder ]]; then
-        sudo cp -r -p ${system_source_path}/* ${rui_build_folder}/
-        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rui_build_folder
-        echo "Copied system src files from ${system_source_path} to ${rui_build_folder}"
-      fi
-fi
-
-
-system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
-build_rui_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
-echo "Updating RUI source from system config folder ${system_rui_config}"
-
-if [[ -d "${system_rui_config}" ]]; then
-    sudo cp -r ${system_rui_config}/* ${build_rui_folder}/
-    sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $build_rui_folder
-fi
-
 echo "NEPI RUI Setup Finished"
 
 
@@ -201,6 +201,6 @@ else
     printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build. RUI Webserver not installed *** ${CLEAR}\n"
 fi
 
-# #####################################
+#####################################
 
 
