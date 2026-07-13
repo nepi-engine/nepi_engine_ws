@@ -226,6 +226,16 @@ fi
 shopt -u dotglob
 
 shopt -s dotglob
+if [[ $DCLEAN -eq 1  && -n $NEPI_TARGET_SRC_DIR ]]; then
+    echo "Clearing NEPI Engine Source in ${NEPI_TARGET_SRC_DIR}"
+    if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
+      sudo rm -r ${NEPI_TARGET_SRC_DIR}/*
+    elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
+      ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
+      "sudo -S rm -r ${NEPI_TARGET_SRC_DIR}/*" 
+    fi
+fi
+
 echo "Deploying NEPI Engine Source from ${build_folder} to ${NEPI_TARGET_SRC_DIR}"
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   sudo rsync -arh --chown=1000:1000 ${RSYNC_EXCLUDES} ../${NEPI_REPO_NAME}/* ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/
