@@ -185,6 +185,16 @@ echo "Updating NEPI System Config files from ${build_folder}/nepi_setup/resource
   # Deploy Docker Folder
 
 if [[ $DCLEAN -eq 1 ]]; then
+  # echo "Stopping NEPI Software"
+  # if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+  #   sudo systemctl stop nepi_docker
+  #   bash ${NEPI_CONFIG}/docker_cfg/nepi_docker_stop.sh
+  # elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+  #   ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
+  #   "sudo -S systemctl stop nepi_docker && sudo -S bash ${NEPI_CONFIG}/docker_cfg/nepi_docker_stop.sh"
+  # fi
+
+
   echo "Clearing NEPI user config from ${NEPI_CONFIG}/system_cfg"
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
    find ${NEPI_CONFIG}/system_cfg -mindepth 1 -path ${NEPI_CONFIG}/system_cfg/etc -prune -o -exec rm -rf {} + 2>/dev/null
