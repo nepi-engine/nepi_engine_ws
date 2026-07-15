@@ -46,11 +46,12 @@ build_folder=$(pwd)
      echo "Using target IP: ${NEPI_TARGET_IP}"
 #    NEPI_DEPLOY_USERNAME: Target username
 
-     if [[ "$nepimode" == 'HOST' ]]; then
+     if [[ "$NEPI_MODE" == 'HOST' ]]; then
         NEPI_DEPLOY_USERNAME=$CONFIG_USER
      else
         NEPI_DEPLOY_USERNAME=nepihost
      fi
+
      NEPI_SSH_PORT=22
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
      NEPI_SSH_KEY=/home/${USER}/.ssh/nepi_default_ssh_key
