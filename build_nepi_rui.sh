@@ -91,7 +91,7 @@ CLEAR='\033[0m'
 #####################################
 ######  NEPI RUI Install and Build
 echo ""
-build_rui_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
+rui_build_folder="${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src"
 
 SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 echo "Installing NEPI RUI Base File System "
@@ -101,7 +101,7 @@ echo "NEPI RUI Deploy Finished"
 
 
 system_source_path="${NEPI_CONFIG}/system_cfg/src/nepi_rui"
-echo "Updating RUI source ${build_rui_folder} from ${system_source_path}"
+echo "Updating RUI source ${rui_build_folder} from ${system_source_path}"
 
 if [[ -d $system_source_path ]]; then
       echo "Copying system src files from ${system_source_path} to ${rui_build_folder}"
@@ -114,13 +114,13 @@ fi
 
 
 system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
-echo "Updating RUI source ${build_rui_folder} from  ${system_rui_config}"
+echo "Updating RUI source ${rui_build_folder} from  ${system_rui_config}"
 
 if [[ -d $system_rui_config ]]; then
     echo "Copying system src files from ${system_rui_config} to ${rui_build_folder}"
     if [[ -d $rui_build_folder ]]; then
-        sudo cp -r ${system_rui_config}/* ${build_rui_folder}/
-        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $build_rui_folder
+        sudo cp -r ${system_rui_config}/* ${rui_build_folder}/
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rui_build_folder
     fi
 fi
 
