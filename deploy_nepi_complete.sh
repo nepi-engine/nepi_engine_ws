@@ -164,8 +164,11 @@ echo ${fw_version} > ${build_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
 
+
+
 ## Synce update remote clock if needed
 echo "Syncing remote clock if needed"
+source /home/${CONFIG_USER}/.nepi_remote_aliases
 if [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
   sshnhc
 fi
