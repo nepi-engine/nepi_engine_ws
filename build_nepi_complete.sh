@@ -197,7 +197,7 @@ echo "Updating NEPI source from system config folder ${system_source_config}"
 
 if [[ -d $system_source_config ]]; then
   echo "Clearing __pycache__ folders in ${system_source_config} "
-  find ${system_source_config} -type d -name "__pycache__" -exec rm -rf {} +
+  find ${system_source_config} -type d -name "__pycache__" -exec sudo rm -rf {} +
   for dir in "$system_source_config"/*/; do
       # Remove trailing slash for cleaner output
       dir=${dir%/}
@@ -217,7 +217,7 @@ fi
 
 
 echo "Clearing __pycache__ folders in ${BUILD_FOLDER}/src/ "
-find ${BUILD_FOLDER}/src/ -type d -name "__pycache__" -exec rm -rf {} +
+find ${BUILD_FOLDER}/src/ -type d -name "__pycache__" -exec sudo rm -rf {} +
 
 
 
@@ -243,7 +243,7 @@ else
 fi
 
 echo "Clearing __pycache__ folders in ${NEPI_BASE}/nepi_engine "
-find ${NEPI_BASE}/nepi_engine -type d -name "__pycache__" -exec rm -rf {} +
+find ${NEPI_BASE}/nepi_engine -type d -name "__pycache__" -exec sudo rm -rf {} +
 
 
 
