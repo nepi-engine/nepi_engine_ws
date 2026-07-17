@@ -221,9 +221,9 @@ find ${BUILD_FOLDER}/src/ -type d -name "__pycache__" -exec sudo rm -rf {} +
 
 
 
-if [[ -d ${NEPI_APPS} ]]; then
-  sudo rm -r ${NEPI_APPS}/* 2> /dev/null 
-fi
+# if [[ -d ${NEPI_APPS} ]]; then
+#   sudo rm -r ${NEPI_APPS}/* 2> /dev/null 
+# fi
 
 if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
   sudo rm -r ${NEPI_INTERFACES_BUILD}/* 2> /dev/null
