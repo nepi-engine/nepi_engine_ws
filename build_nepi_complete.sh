@@ -242,8 +242,7 @@ else
   printf "\n${HIGHLIGHT}*** Skipping NEPI Engine by User Request ***${CLEAR}\n"
 fi
 
-echo "Clearing __pycache__ folders in ${NEPI_BASE}/nepi_engine "
-find ${NEPI_BASE}/nepi_engine -type d -name "__pycache__" -exec sudo rm -rf {} +
+
 
 
 
@@ -277,6 +276,4 @@ fi
 
 
 #####################################
-
-
 
