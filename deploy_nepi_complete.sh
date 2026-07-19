@@ -147,6 +147,14 @@ elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
 fi
 
 
+if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
+    sudo -v
+elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
+    sshnhc
+fi
+
+
+
 echo "Starting NEPI source-code deploy process"
 if [[ $NEPI_REMOTE_SETUP -eq 1 ]]; then
   echo "Running in REMOTE mode"
@@ -166,12 +174,6 @@ echo ${fw_version} > ${build_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
 
 
 
-## Synce update remote clock if needed
-echo "Syncing remote clock if needed"
-source /home/${CONFIG_USER}/.nepi_remote_aliases
-if [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  sshnhc
-fi
 
 
 
