@@ -79,7 +79,6 @@ fi
 
 # RUI build
 
-export 
 echo $run_folder
 
 NEPI_ENGINE_SRC_ROOTDIR=`pwd`
