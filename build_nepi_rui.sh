@@ -42,7 +42,7 @@ ufile=/home/${CONFIG_USER}/.nepi_bash_utils
 
 if [[ -f "$ufile" ]]; then
     echo "Sourcing NEPI Utils bash file at: ${ufile}"
-    source $ufile >/dev/null 2>&1
+    source $ufile
 else
     echo "NEPI Utils bash file not found at: ${ufile}"
     return 
