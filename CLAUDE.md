@@ -105,6 +105,8 @@ Format: YYYY-MM — Decision — Brief rationale
 
 2026-05 — Added RPi cam3 IDX driver (idx_rpi_cam3) using libcamera/picamera2 stack — CSI camera on RPi5 is not exposed via V4L2 (excluded as pispbe in idx_v4l2 discovery); dedicated driver required
 
+2026-07 — Registry keys on a shared node_if must be domain-unique — register_pubs/subs/services and add_params do a keyed dict.update() on a NodeClassIF's internal registry. When a sub-IF (SettingsIF, SaveDataIF, Transform3DIF, NavPoseIF, image-IFs) shares a device's node_if, a generic key (e.g. status_pub, capabilities_query, disable, reset) silently overwrites the device's or a sibling's entry, orphaning the earlier publisher (topic stays advertised but never publishes; wrong-type publishes are swallowed by a throttled try/except). Fix is to prefix sub-IF keys with the sub-IF domain (settings_, save_data_, transform_, navpose_). The ROS wire name derives from namespace+topic/srv, NOT the key, so key renames are wire-safe — EXCEPT params, where the wire name IS namespace+param-key. Multi-instance IFs (image-IFs) need namespace-derived keys, not a per-class prefix. Sub-IFs currently build their own node_if (node_if=self.node_if is commented out in the device IFs), which also avoids the collision; unique keys keep the shared/un-shared toggle safe either way.
+
 
 ## PUSH EDITS WORKFLOW
 
