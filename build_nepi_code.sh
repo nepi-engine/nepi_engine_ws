@@ -17,30 +17,8 @@
 # - mailto:nepi@numurus.com
 #
 
-# NEPI Engine Build/Install Script
-# This script is a convenience to build/install all nepi-engine components at once.
-# Users can optionally skip specific components
+success=1
 
-# Note, this script assumes that basic NEPI engine filesystem setup and dependency installation
-# has already been completed. See
-# https://github.com/nepi-engine/nepi_rootfs_tools
-# for details.
-
-# It also assumes that preliminary NEPI RUI and NEPI BOT build environment setup is complete. See
-# https://github.com/nepi-engine/nepi_rui
-# https://github.com/nepi-engine/nepi-bot
-# for details
-
-# Note, this script builds the components sequentially. It may be more efficient for you to
-# run these steps in parallel in different terminals. Similarly, once everything has been built
-# once for a system, it will be more efficient to build individual components that are modified.
-
-# You can skip build/install of specific components with -s <component>
-# where <component> is
-#   sdk
-#   rui
-# Repeat -s <component> for additional components to skip
-nepistop
 
 # Set NEPI folder variables if not configured by nepi aliases bash script
 if [[ ! -v NEPI_USER ]]; then
@@ -53,7 +31,10 @@ if [[ ! -v NEPI_DOCKER ]]; then
     NEPI_DOCKER=/mnt/nepi_docker
 fi
 if [[ ! -v NEPI_STORAGE ]]; then
-   NEPI_STORAGE=/mnt/nepi_storage
+  NEPI_STORAGE=/mnt/nepi_storage
+fi
+if [[ ! -v NEPI_INTERFACES_BUILD ]]; then
+  NEPI_INTERFACES_BUILD=/mnt/nepi_storage/nepi_src/nepi_engine_ws/build_release/nepi_interfaces
 fi
 if [[ ! -v NEPI_CONFIG ]]; then
     NEPI_CONFIG=/mnt/nepi_config
@@ -61,8 +42,20 @@ fi
 if [[ ! -v NEPI_BASE ]]; then
     NEPI_BASE=/opt/nepi
 fi
+if [[ ! -v NEPI_API ]]; then
+    NEPI_API=/opt/nepi/nepi_engine/lib/python3/dist-packages/nepi_api
+fi
+if [[ ! -v NEPI_APPS ]]; then
+    NEPI_APPS=/opt/nepi/nepi_engine/share/nepi_apps/params
+fi
 if [[ ! -v NEPI_RUI ]]; then
     NEPI_RUI=${NEPI_BASE}/nepi_rui
+fi
+if [[ ! -v NEPI_RUI_SRC ]]; then
+    NEPI_RUI_SRC=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
+fi
+if [[ ! -v NEPI_RUI_APPS ]]; then
+    NEPI_RUI_APPS=${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src/apps
 fi
 if [[ ! -v NEPI_ENGINE ]]; then
     NEPI_ENGINE=${NEPI_BASE}/nepi_engine
@@ -82,41 +75,84 @@ HIGHLIGHT='\033[1;34m' # LIGHT BLUE
 ERROR='\033[0;31m' # RED
 CLEAR='\033[0m'
 
-DO_SDK=1
-
-
-# Parse args
-while getopts s: arg 
-do
-  case $arg in
-  s)  
-    case ${OPTARG} in
-      sdk | SDK)
-        DO_SDK=0;;
-      rui | RUI)
-        DO_RUI=0;;
-      *) 
-        printf "${ERROR}Unknown component to skip: %s... exiting\n${CLEAR}" ${OPTARG}
-        return ;;
-    esac;;
-  
-  ?)  printf "${ERROR}Unexpected argument... exiting\n${CLEAR}"
-      return ;;
-  esac
-done
 
 printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 
-###### ROS-based SDK Components #####
-if [ "${DO_SDK}" -eq "1" ]; then
-  printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  ncores=$(nproc)
-  catkin build --profile=release --env-cache -j -p$ncores #-v
-  printf "\n${HIGHLIGHT} *** NEPI Engine SDK Build Finished ***${CLEAR}\n"
-else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine Build by User Request ***${CLEAR}\n"
+
+export CONFIG_USER=$(id -un 1000)
+
+
+BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+
+
+#####################################
+###### NEPI Engine #####
+##################
+system_source_config="${NEPI_CONFIG}/system_cfg/src"
+build_src_folder="${BUILD_FOLDER}"
+
+
+
+echo "Updating NEPI source from system config folder ${system_source_config}"
+
+if [[ -d $system_source_config ]]; then
+  echo "Clearing __pycache__ folders in ${system_source_config} "
+  find ${system_source_config} -type d -name "__pycache__" -exec sudo rm -rf {} +
+  for dir in "$system_source_config"/*/; do
+      # Remove trailing slash for cleaner output
+      dir=${dir%/}
+      folder="${dir##*/}"
+      source_path=${system_source_config}/${folder}
+      dest_path=${build_src_folder}/${folder}
+      echo "Copying system src files from ${source_path} to ${dest_path}"
+      if [[ -d $dest_path ]]; then
+        sudo cp -r -p ${source_path}/* ${dest_path}/
+        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_path
+        echo "Copied system src files from ${source_path} to ${dest_path}"
+      fi
+  done
 fi
 
 
 
+
+echo "Clearing __pycache__ folders in ${BUILD_FOLDER}/src/ "
+find ${BUILD_FOLDER}/src/ -type d -name "__pycache__" -exec sudo rm -rf {} +
+
+
+
+# if [[ -d ${NEPI_APPS} ]]; then
+#   sudo rm -r ${NEPI_APPS}/* 2> /dev/null 
+# fi
+
+if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
+  sudo rm -r ${NEPI_INTERFACES_BUILD}/* 2> /dev/null
+fi
+
+cd $BUILD_FOLDER
+
+printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
+sudo chmod 775 ${BUILD_FOLDER}/../nepi_engine_ws
+sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
+
+ncores=$(nproc)
+catkin build --profile=release --env-cache -j -p$ncores #-v
+printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
+
+
+
+
+
+echo "Updating firmware version file"
+BUILD_DATE=$(date +%Y%m%d)
+fwv=$(nfws)
+fwv="${fwv%%-*}"
+fwv="${fwv%%_*}"
+fwv="${fwv//./p}"
+fwv="${fwv}_${BUILD_DATE}"
+nfwu "$fwv"
+
+
+#####################################
 

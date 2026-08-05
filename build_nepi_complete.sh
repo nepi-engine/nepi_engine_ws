@@ -16,30 +16,6 @@
 # ====================
 # - mailto:nepi@numurus.com
 #
-# NEPI Engine Build/Install Script
-# This script is a convenience to build/install all nepi-engine components at once.
-# Users can optionally skip specific components
-
-# Note, this script assumes that basic NEPI engine filesystem setup and dependency installation
-# has already been completed. See
-# https://github.com/nepi-engine/nepi_rootfs_tools
-# for details.
-
-# It also assumes that preliminary NEPI RUI and NEPI BOT build environment setup is complete. See
-# https://github.com/nepi_rui
-# for details
-
-# Note, this script builds the components sequentially. It may be more efficient for you to
-# run these steps in parallel in different terminals. Similarly, once everything has been built
-# once for a system, it will be more efficient to build individual components that are modified.
-
-# You can skip build/install of specific components with -s <component>
-# where <component> is
-#   sdk
-#   rui
-# Repeat -s <component> for additional components to skip
-
-
 
 success=1
 
@@ -136,7 +112,6 @@ BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 ####################################
 # Run NEPI Bash Setup Script
 
-
 script_file=nepi_bash_setup.sh
 script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
 echo "Sourcing ${script_path}"
@@ -159,6 +134,7 @@ if ! source $script_path; then
 fi
 
 
+
 ####################################
 # Run NEPI Files Setup Script
 
@@ -170,10 +146,9 @@ if ! source $script_path; then
     success=0 
 fi
 
+
 ####################################
 # Run NEPI Config Setup Script
-
-
 
 script_file=nepi_setup.sh
 script_path=${BUILD_FOLDER}/nepi_setup/scripts/${script_file}
@@ -186,94 +161,29 @@ fi
 
 
 #####################################
-###### NEPI Engine #####
-##################
-system_source_config="${NEPI_CONFIG}/system_cfg/src"
-build_src_folder="${BUILD_FOLDER}"
-
-
-
-echo "Updating NEPI source from system config folder ${system_source_config}"
-
-if [[ -d $system_source_config ]]; then
-  echo "Clearing __pycache__ folders in ${system_source_config} "
-  find ${system_source_config} -type d -name "__pycache__" -exec sudo rm -rf {} +
-  for dir in "$system_source_config"/*/; do
-      # Remove trailing slash for cleaner output
-      dir=${dir%/}
-      folder="${dir##*/}"
-      source_path=${system_source_config}/${folder}
-      dest_path=${build_src_folder}/${folder}
-      echo "Copying system src files from ${source_path} to ${dest_path}"
-      if [[ -d $dest_path ]]; then
-        sudo cp -r -p ${source_path}/* ${dest_path}/
-        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_path
-        echo "Copied system src files from ${source_path} to ${dest_path}"
-      fi
-  done
-fi
-
-
-
-
-echo "Clearing __pycache__ folders in ${BUILD_FOLDER}/src/ "
-find ${BUILD_FOLDER}/src/ -type d -name "__pycache__" -exec sudo rm -rf {} +
-
-
-
-# if [[ -d ${NEPI_APPS} ]]; then
-#   sudo rm -r ${NEPI_APPS}/* 2> /dev/null 
-# fi
-
-if [[ -d ${NEPI_INTERFACES_BUILD} ]]; then
-  sudo rm -r ${NEPI_INTERFACES_BUILD}/* 2> /dev/null
-fi
-
-cd $BUILD_FOLDER
-if [ "${DO_SDK}" -eq "1" ]; then
-  printf "\n${HIGHLIGHT}*** Starting NEPI Engine Build ***${CLEAR}\n"
-  sudo chmod 775 ${BUILD_FOLDER}/../nepi_engine_ws
-  sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
-
-  ncores=$(nproc)
-  catkin build --profile=release --env-cache -j -p$ncores #-v
-  printf "\n${HIGHLIGHT} *** NEPI Engine Build Finished ***${CLEAR}\n"
-else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI Engine by User Request ***${CLEAR}\n"
-fi
-
-
-
-
-
-#####################################
-######       NEPI RUI           #####\
+######       NEPI Code Build         #####\
 # RUI build
 cd $BUILD_FOLDER
-if [ "${DO_RUI}" -eq "1" ]; then 
 
-  script_file=build_nepi_rui.sh
-  script_path=${BUILD_FOLDER}/${script_file}
-  if ! source_script $script_path; then
-      script_error=$?
-      echo "Script ${script_path} failed with error ${script_error}"
-  fi
-
-else
-  printf "\n${HIGHLIGHT}*** Skipping NEPI RUI Build by User Request ***${CLEAR}\n"
+script_file=build_nepi_code.sh
+script_path=${BUILD_FOLDER}/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
 fi
 
 
 
-  echo "Updating firmware version file"
-  BUILD_DATE=$(date +%Y%m%d)
-  fwv=$(nfws)
-  fwv="${fwv%%-*}"
-  fwv="${fwv%%_*}"
-  fwv="${fwv//./p}"
-  fwv="${fwv}_${BUILD_DATE}"
-  nfwu "$fwv"
-
-
 #####################################
+######       NEPI RUI Build        #####\
+# RUI build
+cd $BUILD_FOLDER
+
+script_file=build_nepi_rui.sh
+script_path=${BUILD_FOLDER}/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+fi
+
 
