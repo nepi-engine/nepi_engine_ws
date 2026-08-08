@@ -51,8 +51,8 @@ build_folder=$(pwd)
      else
         NEPI_DEPLOY_USERNAME=nepihost
      fi
+    NEPI_LIVE_USER=nepi
 
-     NEPI_SSH_PORT=22
 #    NEPI_SSH_KEY: Private SSH key for SSH/Rsync to target (as applicable)
      NEPI_SSH_KEY=/home/${USER}/.ssh/nepi_default_ssh_key
 #    NEPI_TARGET_SRC_DIR: Directory to deploy source code to
@@ -290,61 +290,11 @@ if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
     sudo rsync -arh --chown=1000:1000 ${RSYNC_EXCLUDES} ${build_folder}/src/nepi_3rd_party ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} ${build_folder}/src/nepi_3rd_party ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
-    
   fi
 
 else
-  echo ""
   echo "Skipping nepi 3rd party repos"
-  echo ""
 fi
 
 echo "0.0.0" > ${build_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
 
-
-
-echo ""
-echo "--------------------------------------------"
-echo "DEPLOYING LIVE UPDATES"
-echo ""
-
-
-
-# ###############################################
-# # Live Deploy Nepi Apps
-# ###############################################
-
-# APP_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
-# APP_NAME=$(basename "$APP_FOLDER")
-
-# SOURCE_PATH=$APP_FOLDER
-# DEST_PATH="/mnt/nepi_storage/nepi_src/nepi_engine_ws/src/nepi_apps/${APP_NAME}"
-
-# echo "Syncing App ${APP_NAME} from ${SOURCE_PATH} to NEPI Build Repo at:" 
-# echo "Destination Path ${DEST_PATH}"
-# echo ""
-
-
-#   APPS="nepi_app_obstacles nepi_app_auto_move nepi_app_stereo_cam nepi_app_wpilib_if "
-
-#   RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude empty.txt"
-#   #echo "Excluding ${RSYNC_EXCLUDES}"
-
-#   DEST_PATH=${NEPI_TARGET_SRC_DIR}/nepi_engine_ws/nepi_apps
-#   for APP in $APPS; do
-#     APP_PATH="$(pwd)/${APP}"
-#     echo ""
-#     echo "Syncing repo ${APP} from ${APP_PATH} to"
-#     echo "${DEST_PATH}"
-#     sleep 1
-#     # Push everything but the EXCLUDES to the specified source folder on the target
-
-#     if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-#       sudo rsync -arh  --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/${APP} ${DEST_PATH}/
-
-#     elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-#       rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} $(pwd)/${APP} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${DEST_PATH}/
-
-#     fi
-
-#   done
