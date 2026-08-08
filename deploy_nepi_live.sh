@@ -171,7 +171,7 @@ function deploy_live_update() {
   dest_path=$2
   echo "Deploying ${source_name} from ${source_path}"
   #echo "  to NEPI live folder ${dest_path}:" 
-  fix_scripts $source_path
+  fix_scripts $source_path >/dev/null 2>&1
   RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude empty.txt"
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no -p 2222" ${RSYNC_EXCLUDES} ${source_path}/* ${NEPI_LIVE_USER}@${NEPI_TARGET_IP}:${dest_path}/ >/dev/null
   if [[ $? -ne 0 ]]; then
