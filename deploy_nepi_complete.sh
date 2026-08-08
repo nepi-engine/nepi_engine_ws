@@ -255,10 +255,10 @@ shopt -s dotglob
 if [[ $DCLEAN -eq 1  && -n $NEPI_TARGET_SRC_DIR ]]; then
     echo "Clearing NEPI Engine Source in ${NEPI_TARGET_SRC_DIR}"
     if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
-      sudo rm -r ${NEPI_TARGET_SRC_DIR}/*
+      sudo rm -r ${NEPI_TARGET_SRC_DIR}/* 2>/dev/null
     elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
       ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
-      "sudo -S rm -r ${NEPI_TARGET_SRC_DIR}/*" 
+      "sudo -S rm -r ${NEPI_TARGET_SRC_DIR}/*"
     fi
 fi
 

@@ -16,13 +16,7 @@
 # ====================
 # - mailto:nepi@numurus.com
 #
-
-dclean=$1
-echo $dclean
-DCLEAN=0
-if [[ $dclean -eq 1 ]]; then
-  DCLEAN=1
-fi
+sudo -v
 
 CONFIG_USER=$(id -un)
 buid_folder=$(pwd)
@@ -164,13 +158,6 @@ fi
 
 
 
-cd $NEPI_REPO_FOLDER
-fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
-echo ${fw_version}
-echo ${fw_version} > ${build_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt 
-
-
-
 echo ""
 echo "--------------------------------------------"
 echo "DEPLOYING LIVE UPDATES"
@@ -184,6 +171,7 @@ function deploy_live_update() {
   dest_path=$2
   echo "Deploying ${source_name} from ${source_path}"
   #echo "  to NEPI live folder ${dest_path}:" 
+  fix_scripts $source_path
   RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude empty.txt"
   rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no -p 2222" ${RSYNC_EXCLUDES} ${source_path}/* ${NEPI_LIVE_USER}@${NEPI_TARGET_IP}:${dest_path}/ >/dev/null
   if [[ $? -ne 0 ]]; then
@@ -224,6 +212,15 @@ fi
 DEPLOY_NAME=nepi_api
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
 DEST_PATH=${DEPLOY_FOLDER}/lib/python3/dist-packages/nepi_api
+if [[ $LIVE_SUCCESS -eq 1 ]]; then
+  if ! deploy_live_update $SOURCE_PATH $DEST_PATH; then
+    LIVE_SUCCESS=0
+  fi
+fi
+
+DEPLOY_NAME=nepi_api
+SOURCE_PATH=$REPO_FOLDER/src/nepi_engine/${DEPLOY_NAME}/scripts/
+DEST_PATH=${DEPLOY_FOLDER}/lib/nepi_api
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   if ! deploy_live_update $SOURCE_PATH $DEST_PATH; then
     LIVE_SUCCESS=0
