@@ -99,6 +99,7 @@ echo "Updating NEPI source from system config folder ${system_source_config}"
 if [[ -d $system_source_config ]]; then
   #echo "Clearing __pycache__ folders in ${system_source_config} "
   find ${system_source_config} -type d -name "__pycache__" -exec sudo rm -rf {} +
+  echo "Copying system src files from ${system_source_config} to ${build_src_folder}"
   for dir in "$system_source_config"/*/; do
       # Remove trailing slash for cleaner output
       dir=${dir%/}
@@ -106,7 +107,6 @@ if [[ -d $system_source_config ]]; then
       source_path=${system_source_config}/${folder}
       dest_path=${build_src_folder}/${folder}
       if [[ -d $dest_path ]]; then
-        echo "Copying system src files from ${source_path} to ${dest_path}"
         sudo cp -r -p ${source_path}/* ${dest_path}/ >/dev/null 2>&1
         sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $dest_path
         echo "Copied system src files from ${source_path} to ${dest_path}"
