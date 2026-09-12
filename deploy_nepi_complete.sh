@@ -37,6 +37,26 @@ buid_folder=$(pwd)
 # repository's README
 #
 source_folder=$(pwd)
+
+
+if [[ ! -v NEPI_REPO_NAME  ]]; then
+  NEPI_REPO_NAME='nepi_engine_ws'
+fi
+
+if [[ ! -v NEPI_REPO_FOLDER ]]; then
+  NEPI_REPO_FOLDER=/home/${CONFIG_USER}/${NEPI_REPO_NAME}
+fi
+
+cd $NEPI_REPO_FOLDER
+fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
+echo "########################################"
+echo "Deploying NEPI Version ${fw_version}"
+echo "########################################"
+echo ""
+#echo ${fw_version} > ${source_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt 
+
+
+
 # The script requires the following environment variable be set
 #    NEPI_REMOTE_SETUP: Indicates whether running from development host or directly on target 
 #                      (1 = Dev. Host, 0 = From Target)
@@ -65,8 +85,6 @@ source_folder=$(pwd)
 # # Clear known hosts keys
 # sudo rm /home/${CONFIG_USER}/.ssh/known*
 ########################################
-
-
 
 
 if [[ ! -v DEPLOY_3RD_PARTY ]]; then
@@ -102,17 +120,9 @@ if [[ ! -v NEPI_ETC ]]; then
     NEPI_ETC=${NEPI_BASE}/etc
 fi
 
-if [[ ! -v NEPI_REPO_NAME  ]]; then
-  NEPI_REPO_NAME='nepi_engine_ws'
-fi
-
 NEPI_SSH_KEY=/home/${CONFIG_USER}/.ssh/nepi_default_ssh_key
 if [[ ! -v NEPI_SSH_KEY_PATH ]]; then
   NEPI_SSH_KEY_PATH=$NEPI_SSH_KEY
-fi
-
-if [[ ! -v NEPI_REPO_FOLDER ]]; then
-  NEPI_REPO_FOLDER=/home/${CONFIG_USER}/${NEPI_REPO_NAME}
 fi
 
 if [[ -z "${NEPI_REMOTE_SETUP}" ]]; then
@@ -161,15 +171,6 @@ if [[ $NEPI_REMOTE_SETUP -eq 1 ]]; then
 else
   echo "Running in LOCAL mode"
 fi
-
-
-
-cd $NEPI_REPO_FOLDER
-fw_version=$(dev_version_string $(git tag --sort=v:refname | tail -1))
-echo ${fw_version}
-echo ${fw_version} > ${source_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt 
-
-
 
 
 
@@ -272,10 +273,13 @@ echo ""
 echo "Deploying NEPI Engine Source from ${source_folder} to ${NEPI_TARGET_SRC_DIR}"
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   sudo rsync -arh --chown=1000:1000 ${RSYNC_EXCLUDES} ../${NEPI_REPO_NAME}/* ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/
+  echo ${fw_version} > ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/nepi_engine/nepi_env/etc/fw_version.txt
   sudo chown 1000:1000 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
   sudo chmod 775 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
 elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
   rsync -azhe  "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000  ${RSYNC_EXCLUDES} ../${NEPI_REPO_NAME}/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
+  ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
+    "echo ${fw_version} > ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/nepi_engine/nepi_env/etc/fw_version.txt" 
   #ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} "sudo -S chown 1000:1000 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME} && chmod 775 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}"
 fi
 
@@ -296,5 +300,5 @@ else
   echo "Skipping nepi 3rd party repos"
 fi
 
-echo "0.0.0" > ${source_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
+#echo "0.0.0" > ${source_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
 
