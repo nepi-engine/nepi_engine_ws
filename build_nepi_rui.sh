@@ -86,6 +86,10 @@ HIGHLIGHT='\033[1;34m' # LIGHT BLUE
 ERROR='\033[0;31m' # RED
 CLEAR='\033[0m'
 
+# Wall-clock marker so the summary at the end can separate the rsync/setup
+# preamble from the npm build itself.
+_rui_script_start=$(date +%s)
+
 
 #####################################
 ######  NEPI RUI Install and Build
@@ -193,7 +197,34 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
     else
         echo "WARNING: RUI key file not found at ${RUI_KEY_PATH} -- building without encryption key"
     fi
+    # Build-speed settings. Measured on device 2026-09-16 (see the RUI Build
+    # Speed entry in CLAUDE.md): 63s originally, 15s with all three on.
+    # Each is an overridable default -- set it to 0 on the command line to get
+    # the slower, higher-fidelity behavior back for one build.
+
+    # Source maps cost roughly 20% of build time and add ~7MB to the deployed
+    # build that nothing on the device consumes.
+    #   GENERATE_SOURCEMAP=true ruibld   -> debug minified RUI JS in a browser
+    export GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-false}
+
+    # eslint-loader runs over every source file on every build and only ever
+    # warns (nothing sets CI=true), so skipping it changes no output. Worth 8s.
+    #   RUI_SKIP_LINT=0 ruibld           -> run the lint pass
+    export RUI_SKIP_LINT=${RUI_SKIP_LINT:-1}
+
+    # uglify's compress pass is the expensive half of minification. Skipping it
+    # grows the bundle ~13KB gzipped, which is immaterial for a UI served over
+    # the LAN from this device. Worth 8s.
+    #   RUI_NO_COMPRESS=0 ruibld         -> fully minified bundle
+    export RUI_NO_COMPRESS=${RUI_NO_COMPRESS:-1}
+
+    _rui_npm_start=$(date +%s)
     npm run build
+    _rui_npm_end=$(date +%s)
+    printf "\n${HIGHLIGHT}RUI timing: setup+rsync %ss | npm build %ss | total %ss${CLEAR}\n" \
+        "$((_rui_npm_start - _rui_script_start))" \
+        "$((_rui_npm_end - _rui_npm_start))" \
+        "$((_rui_npm_end - _rui_script_start))"
     deactivate 2>/dev/null
     cd ${NEPI_ENGINE_SRC_ROOTDIR}
     printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
