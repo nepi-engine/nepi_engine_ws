@@ -179,7 +179,7 @@ fi
 
 
 
-RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party"
+RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party*"
 echo "Excluding ${RSYNC_EXCLUDES}"
 
 echo "Deploying NEPI Setup Source from ${source_folder}/nepi_setup to ${NEPI_SETUP_SRC_DIR}/nepi_setup"
@@ -277,7 +277,7 @@ if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   sudo chown 1000:1000 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
   sudo chmod 775 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
 elif [ "$NEPI_REMOTE_SETUP" == 1 ]; then
-  rsync -azhe  "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000  ${RSYNC_EXCLUDES} ../${NEPI_REPO_NAME}/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
+  rsync -azhe  "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 --exclude '*/nepi_3rd_party' ${RSYNC_EXCLUDES} ../${NEPI_REPO_NAME}/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}
   ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
     "echo ${fw_version} > ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/nepi_engine/nepi_env/etc/fw_version.txt" 
   #ssh -o StrictHostKeyChecking=no -p 22 -i $NEPI_SSH_KEY_PATH ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} "sudo -S chown 1000:1000 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME} && chmod 775 ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}"
