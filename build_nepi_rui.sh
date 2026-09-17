@@ -198,14 +198,16 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
         echo "WARNING: RUI key file not found at ${RUI_KEY_PATH} -- building without encryption key"
     fi
     # Build-speed settings. Measured on device 2026-09-16 (see the RUI Build
-    # Speed entry in CLAUDE.md): 63s originally, 15s with all three on.
-    # Each is an overridable default -- set it to 0 on the command line to get
-    # the slower, higher-fidelity behavior back for one build.
+    # Speed entry in CLAUDE.md): 63s originally, ~26s with these defaults.
+    # Each is an overridable default -- set it to the other value on the command
+    # line to get the slower or higher-fidelity behavior back for one build.
 
-    # Source maps cost roughly 20% of build time and add ~7MB to the deployed
-    # build that nothing on the device consumes.
-    #   GENERATE_SOURCEMAP=true ruibld   -> debug minified RUI JS in a browser
-    export GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-false}
+    # Source maps stay ON. They cost ~11s and ~7MB in the deploy, but without
+    # them a browser only ever shows you minified main.<hash>.js, so a runtime
+    # error in the RUI cannot be traced back to a source file. That is the
+    # difference between a debuggable UI and a guessable one.
+    #   GENERATE_SOURCEMAP=false ruibld  -> faster build, no browser debugging
+    export GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-true}
 
     # eslint-loader runs over every source file on every build and only ever
     # warns (nothing sets CI=true), so skipping it changes no output. Worth 8s.
