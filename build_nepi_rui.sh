@@ -197,36 +197,55 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
     else
         echo "WARNING: RUI key file not found at ${RUI_KEY_PATH} -- building without encryption key"
     fi
-    # Build-speed settings. Measured on device 2026-09-16 (see the RUI Build
-    # Speed entry in CLAUDE.md): 63s originally, ~26s with these defaults.
-    # Each is an overridable default -- set it to the other value on the command
-    # line to get the slower or higher-fidelity behavior back for one build.
-
-    # Source maps stay ON. They cost ~11s and ~7MB in the deploy, but without
-    # them a browser only ever shows you minified main.<hash>.js, so a runtime
-    # error in the RUI cannot be traced back to a source file. That is the
-    # difference between a debuggable UI and a guessable one.
-    #   GENERATE_SOURCEMAP=false ruibld  -> faster build, no browser debugging
-    export GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-true}
-
-    # eslint-loader runs over every source file on every build and only ever
-    # warns (nothing sets CI=true), so skipping it changes no output. Worth 8s.
-    #   RUI_SKIP_LINT=0 ruibld           -> run the lint pass
-    export RUI_SKIP_LINT=${RUI_SKIP_LINT:-1}
-
-    # uglify's compress pass is the expensive half of minification. Skipping it
-    # grows the bundle ~13KB gzipped, which is immaterial for a UI served over
-    # the LAN from this device. Worth 8s.
-    #   RUI_NO_COMPRESS=0 ruibld         -> fully minified bundle
-    export RUI_NO_COMPRESS=${RUI_NO_COMPRESS:-1}
+    # Build profiles. All numbers measured on this hardware 2026-09-17; see the
+    # RUI Build Speed entry in CLAUDE.md for the full matrix.
+    #
+    #   ruibld                 DEV      ~24s   650KB gz   debuggable + lint
+    #   RUI_RELEASE=1 ruibld   RELEASE  ~15s   292KB gz   minified, no debugging
+    #
+    # DEV is the default because the person running a build by hand is almost
+    # always about to look at the result in a browser. It does NOT minify: a
+    # full `source-map` over a minified bundle costs ~38s (npm build 16s -> 54s),
+    # while simply not minifying costs nothing but size and makes the cheap
+    # line-only source map accurate, since the bundle still has real lines.
+    #
+    # RELEASE is what belongs in a container image build: the artifact is small
+    # and nobody debugs it in place. It is yesterday's fast build.
+    #
+    # Every value below is an overridable default, so any single axis can be
+    # flipped for one build regardless of profile -- e.g.
+    #   RUI_SKIP_LINT=1 ruibld              dev build, no lint pass (~16s)
+    #   RUI_RELEASE=1 GENERATE_SOURCEMAP=true ruibld   minified + full map
+    if [[ "${RUI_RELEASE}" == "1" ]]; then
+        export GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-false}
+        export RUI_UNMINIFIED=${RUI_UNMINIFIED:-0}
+        export RUI_SKIP_LINT=${RUI_SKIP_LINT:-1}
+        _rui_profile="release"
+    else
+        export GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-true}
+        export RUI_UNMINIFIED=${RUI_UNMINIFIED:-1}
+        # Lint stays on for dev: eslint-loader is the only real linting in this
+        # repo (`npm run lint` is prettier, i.e. formatting). It costs ~8s and
+        # only ever warns, so it changes no output -- but it is the only way
+        # those warnings are ever seen.
+        export RUI_SKIP_LINT=${RUI_SKIP_LINT:-0}
+        _rui_profile="dev"
+    fi
 
     _rui_npm_start=$(date +%s)
     npm run build
     _rui_npm_end=$(date +%s)
-    printf "\n${HIGHLIGHT}RUI timing: setup+rsync %ss | npm build %ss | total %ss${CLEAR}\n" \
+    printf "\n${HIGHLIGHT}RUI timing (%s): setup+rsync %ss | npm build %ss | total %ss${CLEAR}\n" \
+        "$_rui_profile" \
         "$((_rui_npm_start - _rui_script_start))" \
         "$((_rui_npm_end - _rui_npm_start))" \
         "$((_rui_npm_end - _rui_script_start))"
+
+    # This script is SOURCED by the ruibld shell function, so every `export`
+    # above would otherwise persist in the interactive shell and silently apply
+    # to every later build in that terminal -- a one-off `RUI_RELEASE=1 ruibld`
+    # would quietly turn every subsequent ruibld into a release build.
+    unset GENERATE_SOURCEMAP RUI_UNMINIFIED RUI_SKIP_LINT RUI_RELEASE _rui_profile
     deactivate 2>/dev/null
     cd ${NEPI_ENGINE_SRC_ROOTDIR}
     printf "\n${HIGHLIGHT}*** NEPI RUI Build Finished *** ${CLEAR}\n"
