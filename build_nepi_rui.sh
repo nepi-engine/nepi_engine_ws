@@ -91,6 +91,92 @@ CLEAR='\033[0m'
 _rui_script_start=$(date +%s)
 
 
+
+
+
+
+
+
+# ###############################################
+# # App RUI Overide Deploy
+OVERIDE_NAME=rui
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+SOURCE_NAME=nepi_apps
+SOURCE_PATH=${SCRIPT_FOLDER}/${SOURCE_NAME}
+
+DEST_NAME=nepi_${OVERIDE_NAME}
+DEST_PATH=${SCRIPT_FOLDER}/${DEST_NAME}
+echo "Updating SDK source from ${SOURCE_PATH} to ${DEST_PATH} "
+shopt -s nullglob
+for dir in "$SOURCE_PATH"/*/; do
+    # Ensure the directory actually exists (handles empty folders safely)
+    source_path=${dir}${OVERIDE_NAME}
+    echo "Checking app Folder ${source_path}"
+    if [[ -d "$source_path" ]]; then
+        echo "Copying app files from ${source_path} to ${DEST_PATH}"
+        sudo cp -r ${source_path}/* ${DEST_PATH}/ 
+    fi
+done
+
+
+###############################################
+# nepi_src Overide Deploy
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+OVERIDE_NAME=rui
+SOURCE_NAME=nepi_${OVERIDE_NAME}
+SOURCE_PATH=${SCRIPT_FOLDER}/src/nepi_src/${SOURCE_NAME}
+DEST_PATH=${SCRIPT_FOLDER}/nepi_${OVERIDE_NAME}
+echo "Updating SDK source from ${SOURCE_PATH} to ${DEST_PATH} "
+if [[ -d "$SOURCE_PATH" ]]; then
+        echo "Copying app files from ${source_path} to ${DEST_PATH}"
+        sudo cp -r ${SOURCE_PATH}/* ${DEST_PATH}/ 
+
+fi
+
+###############################################
+# nepi system Overide Deploy
+
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+OVERIDE_NAME=rui
+system_source_path="${NEPI_CONFIG}/system_cfg/src/nepi_${OVERIDE_NAME}"
+SOURCE_PATH=$system_source_path
+DEST_PATH=${SCRIPT_FOLDER}/nepi_${OVERIDE_NAME}
+echo "Updating SDK source from ${SOURCE_PATH} to ${DEST_PATH} "
+if [[ -d "$SOURCE_PATH" ]]; then
+        echo "Copying app files from ${source_path} to ${DEST_PATH}"
+        sudo cp -r ${source_path}/* ${DEST_PATH}/ 
+
+fi
+
+
+
+
+# ###############################################
+# # nepi system Overide Deploy
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+OVERIDE_NAME=rui
+system_source_path="${NEPI_CONFIG}/system_cfg/nepi_${OVERIDE_NAME}"
+SOURCE_PATH=$system_source_path
+DEST_PATH=${SCRIPT_FOLDER}/nepi_${OVERIDE_NAME}
+echo "Updating SDK source from ${SOURCE_PATH} to ${DEST_PATH} "
+if [[ -d "$SOURCE_PATH" ]]; then
+        echo "Copying app files from ${source_path} to ${DEST_PATH}"
+        sudo cp -r ${source_path}/* ${DEST_PATH}/ 
+
+fi
+
+
+
+
+
 #####################################
 ######  NEPI RUI Install and Build
 echo ""
@@ -103,29 +189,8 @@ sudo chmod 775 -R ${NEPI_BASE}/nepi_rui/src/rui_webserver/rui-app/src
 echo "NEPI RUI Deploy Finished"
 
 
-system_source_path="${NEPI_CONFIG}/system_cfg/src/nepi_rui"
-echo "Updating RUI source ${rui_build_folder} from ${system_source_path}"
-
-if [[ -d $system_source_path ]]; then
-      echo "Copying system src files from ${system_source_path} to ${rui_build_folder}"
-      if [[ -d $rui_build_folder ]]; then
-        sudo cp -r -p ${system_source_path}/* ${rui_build_folder}/
-        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rui_build_folder
-        echo "Copied system src files from ${system_source_path} to ${rui_build_folder}"
-      fi
-fi
-
-
-system_rui_config="${NEPI_CONFIG}/system_cfg/nepi_rui"
-echo "Updating RUI source ${rui_build_folder} from  ${system_rui_config}"
-
-if [[ -d $system_rui_config ]]; then
-    echo "Copying system src files from ${system_rui_config} to ${rui_build_folder}"
-    if [[ -d $rui_build_folder ]]; then
-        sudo cp -r ${system_rui_config}/* ${rui_build_folder}/
-        sudo chown -R ${CONFIG_USER}:${CONFIG_USER} $rui_build_folder
-    fi
-fi
+# ###############################################
+# # nepi system Overide Deploy
 
 
 echo ""
@@ -171,6 +236,11 @@ line_num=27
 sed -i "${line_num}s|.*|${import_string}|" "$NEPI_RUI_APPS_IF"
 
 echo ""
+
+
+
+
+
 
 
 echo "NEPI RUI Setup Finished"

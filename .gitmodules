@@ -41,3 +41,6 @@
 [submodule "src/nepi_claude"]
 	path = src/nepi_claude
 	url = git@github.com:nepi-engine/nepi_claude.git
+[submodule "src/nepi_src"]
+	path = src/nepi_src
+	url = git@github.com:nepi-engine/nepi_src.git

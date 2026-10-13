@@ -82,9 +82,54 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 export CONFIG_USER=$(id -un 1000)
 
 
-BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+# ###############################################
+# # App SDK Overide Deploy
+OVERIDE_NAME=sdk
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+SOURCE_NAME=nepi_apps
+SOURCE_PATH=${SCRIPT_FOLDER}/${SOURCE_NAME}
+
+DEST_NAME=nepi_${OVERIDE_NAME}
+DEST_PATH=${SCRIPT_FOLDER}/${DEST_NAME}
+echo "Updating SDK source from ${SOURCE_PATH} to ${DEST_PATH} "
+shopt -s nullglob
+for dir in "$SOURCE_PATH"/*/; do
+    # Ensure the directory actually exists (handles empty folders safely)
+    source_path=${dir}${OVERIDE_NAME}
+    echo "Checking app Folder ${source_path}"
+    if [[ -d "$source_path" ]]; then
+        echo "Copying app files from ${source_path} to ${DEST_PATH}"
+        sudo cp -r ${source_path}/* ${DEST_PATH}/ 
+    fi
+done
 
 
+
+# ###############################################
+# # NEPI_SRC Overide Deploy
+
+
+SCRIPT_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+SOURCE_NAME=nepi_src
+SOURCE_PATH=${SCRIPT_FOLDER}/src/${SOURCE_NAME}
+
+
+echo "Updating SDK source from ${SOURCE_PATH} to ${DEST_PATH} "
+shopt -s nullglob
+for dir in "$SOURCE_PATH"/*/; do
+    # Ensure the directory actually exists (handles empty folders safely)
+    source_path=${dir}
+    DEST_NAME=$(basename "$dir")
+    DEST_PATH=${SCRIPT_FOLDER}/${DEST_NAME}
+    echo "Checking nepi_src Folder ${source_path}"
+    if [[ -d "$source_path" ]]; then
+        echo "Copying app files from ${source_path} to ${DEST_PATH}"
+        sudo cp -r ${source_path}/* ${DEST_PATH}/ 
+    fi
+done
 
 #####################################
 ###### NEPI Engine #####
