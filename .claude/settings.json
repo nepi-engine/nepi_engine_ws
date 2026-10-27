@@ -37,7 +37,14 @@
       "Bash(sed -i \"s/'NEPI_DRIVERS_MGR'/'NepiDriversMgr'/\" sim.py)",
       "Bash(python3 -B sim.py /tmp/claude-1000/-home-production-nepi-engine-ws/7908e583-5dc6-4bcf-8610-5157578aa5ae/scratchpad/optsim/drivers)",
       "Bash(sed \"s/print\\(\\('PASS ' if cond else 'FAIL '\\) + label\\); assert cond, label/print\\(\\('PASS ' if cond else 'FAIL '\\) + label\\)/\" sim_head.py)",
-      "Bash(python3 -B sim_head_soft.py /tmp/claude-1000/-home-production-nepi-engine-ws/7908e583-5dc6-4bcf-8610-5157578aa5ae/scratchpad/optsim/drivers)"
+      "Bash(python3 -B sim_head_soft.py /tmp/claude-1000/-home-production-nepi-engine-ws/7908e583-5dc6-4bcf-8610-5157578aa5ae/scratchpad/optsim/drivers)",
+      "Bash(git -C /home/production/nepi_engine_ws/src/nepi_engine log --oneline -3 -- nepi_sdk/src/nepi_sdk/nepi_nav.py)",
+      "Bash(awk -F: '$1<2989')",
+      "Bash(awk 'NR>=935 && NR<=2989 && /^class /{print NR\": \"$0}' /home/production/nepi_engine_ws/src/nepi_engine/nepi_api/src/nepi_api/data_if.py)",
+      "Bash(awk -F: '$1>100 && $1<800')",
+      "Bash(ssh -i ~/.ssh/nepi_default_ssh_key -o ConnectTimeout=5 -o StrictHostKeyChecking=no nepihost@192.168.179.103 'C=$\\(docker ps --format \"{{.Names}}\" | head -1\\); echo \"container: $C\"; docker exec $C bash -c \"source /opt/ros/noetic/setup.bash; echo === ROV frame; timeout 4 rostopic echo -n1 /nepi/device1/navposes/ROV/navpose 2>&1 | grep -E \\\\\"^\\(navpose_frame|has_depth|depth_m\\):\\\\\"; echo === robot npx; timeout 4 rostopic echo -n1 /nepi/device1/app_custom_robot/npx/navpose 2>&1 | grep -E \\\\\"^\\(navpose_frame|has_depth|depth_m\\):\\\\\"; echo === app subscriptions to navposes; rosnode info /nepi/device1/app_custom_robot 2>/dev/null | grep -E \\\\\"navposes|navpose_frame_connect|navpose_connect\\\\\" | head -20\"')",
+      "Bash(awk 'NR>=556 && NR<=772' /home/production/nepi_engine_ws/src/nepi_engine/nepi_api/src/nepi_api/data_if.py)",
+      "Bash(grep -n \"dclean\\\\|rm -r\\\\|rm -rf\\\\|nepi_config\\\\|system_cfg\\\\|DCLEAN\\\\|\\\\$1\" /home/production/nepi_engine_ws/deploy_nepi_complete.sh)"
     ]
   }
 }
