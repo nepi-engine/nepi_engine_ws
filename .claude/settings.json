@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 90 ssh -i /home/production/.ssh/nepi_default_ssh_key -o BatchMode=yes nepihost@192.168.179.103 'C=gallant_heyrovsky; docker exec $C bash -c \"source /opt/ros/noetic/setup.bash; source /opt/nepi/nepi_engine/setup.bash; T=/nepi/device1/mate_rov_link_robot/link_status; timeout 9 rostopic echo -n 60 \\\\$T 2>/dev/null | grep -o \\\\\"tn_age_ms.: [0-9-]*\\\\\" | grep -o \\\\\"[0-9-]*\\\\$\\\\\" | tr \\\\\"\\\\\\\\n\\\\\" \\\\\" \\\\\"; echo; timeout 12 rostopic hz -w 50 /nepi/device1/mate_rov_link_robot/npx/navpose/depth 2>&1 | tail -2; timeout 6 rostopic echo -n 20 /nepi/device1/mate_rov_link_robot/npx/navpose/depth 2>/dev/null | grep -E \\\\\"^depth_m:|^timestamp\\\\\" | sort | uniq -c\"')",
+      "Bash(timeout 60 ssh -i /home/production/.ssh/nepi_default_ssh_key -o BatchMode=yes nepihost@192.168.179.103 'docker exec -i gallant_heyrovsky bash -c \"source /opt/ros/noetic/setup.bash; source /opt/nepi/nepi_engine/setup.bash; python3 -\"')",
+      "mcp__claude_ai_Claude_Docs__update",
+      "mcp__claude_ai_Claude_Docs__read",
+      "mcp__claude_ai_Claude_Docs__export",
+      "Bash(python3 /tmp/claude-1000/-home-production-nepi-engine-ws/8878594b-a0c0-4128-bdec-a066556a60c3/scratchpad/imu_side.py)",
+      "Bash(python3 -B -m unittest test_rbx_mate_rov_link)",
+      "Bash(python3 -B -c ' *)",
+      "Bash(python3 -m py_compile ../../Drivers/rbx_drivers/rbx_mate_rov_link_node.py)",
+      "Bash(python3 -B -m unittest test_nepi_link)",
+      "Bash(curl -sI -m 10 https://cad.bluerobotics.com/T200-Public-Performance-Data-10-20V-September-2019.xlsx)",
+      "Bash(python3 -c \"import openpyxl; print\\('openpyxl', openpyxl.__version__\\)\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' -m 10 https://raw.githubusercontent.com/nepi-engine/mate_robotics/main/Drivers/Firmware/teensy_thrusters/teensy_thrusters.ino)",
+      "Bash(timeout 4 bash -c '</dev/tcp/192.168.68.22/22')",
+      "Bash(ping -c1 -W2 192.168.68.22)",
+      "Bash(command -v teensy_loader_cli)",
+      "Bash(timeout 40 ssh -i ~/.ssh/nepi_default_ssh_key -o BatchMode=yes -o ConnectTimeout=4 nepihost@192.168.68.23 'export PATH=$HOME/.local/bin:$PATH; echo \"== core\"; arduino-cli core list 2>&1; echo \"== libs\"; arduino-cli lib list 2>&1 | awk \"{print \\\\$1,\\\\$2,\\\\$3}\"; echo \"== sketches\"; ls ~/bench_fw/* 2>&1; echo \"== port\"; ls -l /dev/ttyACM* 2>&1; c=$\\(docker ps --format \"{{.Names}}\" | head -1\\); echo \"== container $c\"; docker exec $c bash -c \"source /opt/ros/noetic/setup.bash >/dev/null 2>&1; timeout 8 rosnode list 2>/dev/null | grep -i teensy || echo no teensy node\"')",
+      "Bash(timeout 30 ssh -i ~/.ssh/nepi_default_ssh_key -o BatchMode=yes -o ConnectTimeout=4 nepihost@192.168.68.23 'T=~/.arduino15/packages/teensy/tools/teensy-tools/1.59.0; ls $T; for b in teensy_ports teensy teensy_post_compile teensy_reboot; do echo \"== $b\"; ldd $T/$b 2>&1 | grep -E \"not found|GLIBC\" ; done; echo \"== run teensy_ports\"; \\(timeout 3 $T/teensy_ports -J; echo \"exit $?\"\\) 2>&1 | head -5; echo \"== DISPLAY=$DISPLAY\"; who | head; ls /tmp/.X11-unix 2>&1; command -v xvfb-run gcc make git; dpkg -s libusb-dev 2>/dev/null | grep -i ^status || echo \"no libusb-dev\"')",
+      "Bash(timeout 15 ssh -i ~/.ssh/nepi_default_ssh_key -o BatchMode=yes -o ConnectTimeout=4 nepihost@192.168.68.23 'stty -F /dev/ttyACM0 raw -echo 115200 && exec 3<>/dev/ttyACM0 && printf \"\\\\$ID*0D\\\\n\" >&3 && timeout 2 head -n1 <&3; exec 3>&-')",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(sed -n '/^def msg_stamp_from_sec/,/^def sec_from_msg_stamp/p' /home/production/nepi_engine_ws/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_sdk.py)",
+      "Bash(sed -n '/^def publish_pub/,/^def /p' /home/production/nepi_engine_ws/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_sdk.py)",
+      "Bash(python3 -B -I -)",
+      "Bash(mkdir -p /tmp/claude-1000/-home-production-nepi-engine-ws/7908e583-5dc6-4bcf-8610-5157578aa5ae/scratchpad/crccheck)",
+      "Bash(awk '/^unsigned char crc4/,/^}/' /home/production/mate_robotics/Docs/npx/bluerobotics_bar_depth_sensor.md)",
+      "Bash(awk '/^static uint8_t depthCrc4/,/^}/' /home/production/mate_robotics/Drivers/Firmware/teensy_thrusters/teensy_thrusters.ino)",
+      "Bash(gcc -std=gnu11 -Wall -o harness harness.c)",
+      "Bash(python3 -B -m unittest test_svx_teensy_thrusters_depth)",
+      "Bash(python3 -B -m unittest test_svx_teensy_thrusters test_svx_teensy_thrusters_depth)",
+      "Bash(python3 -B -m unittest test_svx_teensy_thrusters_depth test_svx_teensy_thrusters)",
+      "Bash(python3 -c \"import numpy, serial, yaml; print\\('numpy serial yaml ok'\\)\")",
+      "Bash(python3 -c \"import usb\")",
+      "Bash(sed -i \"s/'NEPI_DRIVERS_MGR'/'NepiDriversMgr'/\" sim.py)",
+      "Bash(python3 -B sim.py /tmp/claude-1000/-home-production-nepi-engine-ws/7908e583-5dc6-4bcf-8610-5157578aa5ae/scratchpad/optsim/drivers)",
+      "Bash(sed \"s/print\\(\\('PASS ' if cond else 'FAIL '\\) + label\\); assert cond, label/print\\(\\('PASS ' if cond else 'FAIL '\\) + label\\)/\" sim_head.py)",
+      "Bash(python3 -B sim_head_soft.py /tmp/claude-1000/-home-production-nepi-engine-ws/7908e583-5dc6-4bcf-8610-5157578aa5ae/scratchpad/optsim/drivers)"
+    ]
+  }
+}
