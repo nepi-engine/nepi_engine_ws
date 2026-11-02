@@ -44,7 +44,32 @@
       "Bash(awk -F: '$1>100 && $1<800')",
       "Bash(ssh -i ~/.ssh/nepi_default_ssh_key -o ConnectTimeout=5 -o StrictHostKeyChecking=no nepihost@192.168.179.103 'C=$\\(docker ps --format \"{{.Names}}\" | head -1\\); echo \"container: $C\"; docker exec $C bash -c \"source /opt/ros/noetic/setup.bash; echo === ROV frame; timeout 4 rostopic echo -n1 /nepi/device1/navposes/ROV/navpose 2>&1 | grep -E \\\\\"^\\(navpose_frame|has_depth|depth_m\\):\\\\\"; echo === robot npx; timeout 4 rostopic echo -n1 /nepi/device1/app_custom_robot/npx/navpose 2>&1 | grep -E \\\\\"^\\(navpose_frame|has_depth|depth_m\\):\\\\\"; echo === app subscriptions to navposes; rosnode info /nepi/device1/app_custom_robot 2>/dev/null | grep -E \\\\\"navposes|navpose_frame_connect|navpose_connect\\\\\" | head -20\"')",
       "Bash(awk 'NR>=556 && NR<=772' /home/production/nepi_engine_ws/src/nepi_engine/nepi_api/src/nepi_api/data_if.py)",
-      "Bash(grep -n \"dclean\\\\|rm -r\\\\|rm -rf\\\\|nepi_config\\\\|system_cfg\\\\|DCLEAN\\\\|\\\\$1\" /home/production/nepi_engine_ws/deploy_nepi_complete.sh)"
+      "Bash(grep -n \"dclean\\\\|rm -r\\\\|rm -rf\\\\|nepi_config\\\\|system_cfg\\\\|DCLEAN\\\\|\\\\$1\" /home/production/nepi_engine_ws/deploy_nepi_complete.sh)",
+      "WebFetch(domain:docs.px4.io)",
+      "WebFetch(domain:mavlink.io)",
+      "Bash(awk -F: '{print $NF}')",
+      "Bash(git -C src/nepi_drivers show --stat --format= HEAD)",
+      "Bash(curl -sfL --max-time 30 \"https://api.github.com/repos/PX4/PX4-Autopilot/contents/ROMFS/px4fmu_common/init.d/airframes\")",
+      "WebFetch(domain:newbeedrone.com)",
+      "WebFetch(domain:docs.axon-robotics.com)",
+      "Bash(grep -oE '\"text\":\"[^\"]{0,40}\\(teensy_loader_cli|arduino-cli|scp \\)[^\"]{0,1500}' 7908e583-5dc6-4bcf-8610-5157578aa5ae.jsonl)",
+      "Bash(git -C /home/production/rov-26 log --oneline -1)",
+      "Bash(sort -t: -k3 -u)",
+      "Bash(python3 -B -)",
+      "Bash(chmod +x rbx_mate_rov_link_servo_node.py)",
+      "Bash(python3 -m pyflakes rbx_mate_rov_link_servo_node.py rbx_mate_rov_link_node.py rbx_mate_rov_link_discovery.py ../../Nepi_Connect/pi/nepi_link.py)",
+      "Bash(python3 -m pyflakes Drivers/rbx_drivers/*.py Nepi_Connect/pi/nepi_link.py Nepi_Connect/pi/test_nepi_link.py Nepi_Connect/tools/test_rbx_mate_rov_link.py)",
+      "Bash(git revert *)",
+      "Bash(curl -sfL https://raw.githubusercontent.com/PX4/PX4-Autopilot/main/src/modules/commander/HealthAndArmingChecks/checks/systemCheck.cpp -o systemCheck.cpp)",
+      "Bash(awk '$6>=\"2026-10-26\"{print $6, $7}')",
+      "Bash(python3 -c \"import pymavlink, serial; print\\('pymavlink', pymavlink.__file__\\); print\\('pyserial', serial.VERSION\\)\")",
+      "Bash(python3 -m pyflakes --version)",
+      "Bash(python3 -m py_compile rbx_px4_discovery.py rbx_px4_node.py rbx_ardupilot_discovery.py)",
+      "Bash(python3 -m pyflakes rbx_px4_discovery.py rbx_px4_node.py)",
+      "Bash(python3 -c \"import yaml; d=yaml.safe_load\\(open\\('rbx_px4_params.yaml'\\)\\); print\\(d['driver']['DISCOVERY_DICT']['OPTIONS']\\)\")",
+      "Bash(python3 test_px4_serial.py /home/production/nepi_engine_ws/src/nepi_drivers/rbx_drivers)",
+      "Bash(gh api *)",
+      "Bash(timeout 20 ssh -o BatchMode=yes -o ConnectTimeout=10 -T git@github.com)"
     ]
   }
 }
