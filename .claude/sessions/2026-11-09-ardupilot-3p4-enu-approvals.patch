@@ -1,0 +1,1793 @@
+--- a/../nepi_drones/src/nepi_apps/nepi_app_sim_connector/api/device_if_sim.py
++++ b/../nepi_drones/src/nepi_apps/nepi_app_sim_connector/api/device_if_sim.py
+@@ -55,7 +55,7 @@
+ #
+ #   NOT built -- explicit, documented gaps, not oversights:
+ #     - device_if_rbx.py's blocking-wait goto convergence logic
+-#       (setpoint_position_local_body / setpoint_attitude_ned /
++#       (setpoint_position_local_body / setpoint_attitude_enu /
+ #       setpoint_location_global_wgs84: NED/ENU/WGS84 conversions plus an
+ #       error-bound polling loop against getNavPoseCb). Replicating it correctly
+ #       needs its own verification pass against a live simulator, and wiring it
+--- a/../nepi_drones/src/nepi_apps/nepi_app_sim_connector/scripts/sim_connector_app_node.py
++++ b/../nepi_drones/src/nepi_apps/nepi_app_sim_connector/scripts/sim_connector_app_node.py
+@@ -2877,14 +2877,12 @@
+ 
+   def gotoPose(self, attitude_enu_degs):
+     # This app's own SimDeviceIF already converted whatever the caller sent
+-    # into ENU (see device_if_sim.py's gotoPoseCb); the target RBX device's
+-    # own /goto_pose does the identical NED->ENU conversion internally
+-    # (device_if_rbx.py's setpoint_attitude_ned), so it has to be handed
+-    # back NED here, or forwarding would double-apply the 90-yaw flip.
++    # into ENU (see device_if_sim.py's gotoPoseCb), and the target RBX
++    # device's /goto_pose now takes ENU too (device_if_rbx.py's
++    # setpoint_attitude_enu), so the attitude is forwarded unconverted.
+     if self.selected_simulator:
+-      yaw_ned_deg = nepi_nav.convert_yaw_enu2ned(attitude_enu_degs[2])
+       msg = GotoPose(roll_deg = attitude_enu_degs[0], pitch_deg = attitude_enu_degs[1],
+-                     yaw_deg = yaw_ned_deg)
++                     yaw_deg = attitude_enu_degs[2])
+       self.forwardToRbx("goto_pose", msg, "Goto pose")
+ 
+   def gotoLocation(self, msg):
+--- a/../nepi_drones/src/nepi_drivers/rbx_drivers/rbx_sim_node.py
++++ b/../nepi_drones/src/nepi_drivers/rbx_drivers/rbx_sim_node.py
+@@ -95,10 +95,12 @@
+ from std_msgs.msg import UInt32, String
+ from sensor_msgs.msg import Image
+ 
+-from nepi_interfaces.msg import AxisControls, ErrorBounds
++from nepi_interfaces.msg import ErrorBounds
+ from geographic_msgs.msg import GeoPoint
+ 
+ from nepi_api.device_if_rbx import RBXRobotIF
++from nepi_api.device_if_npx import NPXDeviceIF
++from nepi_api.device_if_svx import DeviceSVXIF
+ from nepi_api.messages_if import MsgIF
+ 
+ PKG_NAME = 'RBX_SIM' # Use in display menus
+@@ -414,6 +416,25 @@
+   DEFAULT_NODE_NAME = PKG_NAME.lower() + "_node"
+   drv_dict = dict()
+ 
++  # NPX device that publishes this robot's navpose (see selectOwnNavPoseCb)
++  npx_if = None
++  node_if = None
++  settings_if = None
++  save_data_if = None
++  connect_navpose_if = None
++  OWN_NAVPOSE_MAX_TRIES = 60 # 1 s apart
++  own_navpose_topic = None
++  own_navpose_tries = 0
++
++  # Every motor is its own DeviceSVXIF, named <device name>_motor_<n> (n from
++  # 1), keyed by that name in motor_svx_if_dict, which RBXRobotIF gets as its
++  # servo_if_dict. See createMotorSvxIfs.
++  motor_svx_if_dict = dict()
++  motor_svx_dirs = []
++  motor_svx_speed_ratios = []
++  motor_svx_stop_triggers = []
++  motor_svx_cmds_enabled = False
++
+   def __init__(self):
+     ####  NODE Initialization ####
+     nepi_sdk.init_node(name = self.DEFAULT_NODE_NAME)
+@@ -467,6 +488,18 @@
+ 
+     motor_count = self.getConfigInt('motor_count', self.DEFAULT_MOTOR_COUNT)
+     self.motor_ratios = [0.0] * max(0, motor_count)
++    # One servo (SVX) device per motor, named <device name>_motor_<n>. The
++    # motor count is the robot config's motor_count, read here at
++    # construction; any change to it needs a node restart. A robot with no
++    # motors gets none. The names are entered now so RBXRobotIF sees its
++    # manual (servo) controls at construction; the DeviceSVXIF instances that
++    # share its IFs fill them in afterwards (createMotorSvxIfs).
++    self.motor_svx_if_dict = dict()
++    for motor_ind in range(len(self.motor_ratios)):
++      self.motor_svx_if_dict[self.device_name + "_motor_" + str(motor_ind + 1)] = None
++    self.motor_svx_dirs = [1] * len(self.motor_ratios)
++    self.motor_svx_speed_ratios = [0.0] * len(self.motor_ratios)
++    self.motor_svx_stop_triggers = [False] * len(self.motor_ratios)
+ 
+     setup_actions = self.DEFAULT_SETUP_ACTIONS
+     if self.robot_config is not None:
+@@ -485,13 +518,15 @@
+     # Settings
+     self.settings_dict = self.initSettingsDict()
+ 
+-    self.axis_controls = AxisControls()
+-    self.axis_controls.x = True
+-    self.axis_controls.y = True
+-    self.axis_controls.z = False
+-    self.axis_controls.roll = False
+-    self.axis_controls.pitch = False
+-    self.axis_controls.yaw = True
++    # 3.4: RBXRobotIF takes axisCapabilities, a dict of DeviceRBXStatus
++    # has_*_control flags (nepi_interfaces has no AxisControls message).
++    self.axis_controls = dict()
++    self.axis_controls['has_x_control'] = True
++    self.axis_controls['has_y_control'] = True
++    self.axis_controls['has_z_control'] = False
++    self.axis_controls['has_roll_control'] = False
++    self.axis_controls['has_pitch_control'] = False
++    self.axis_controls['has_yaw_control'] = True
+ 
+     ##############################
+     # Bridge to the VM
+@@ -517,7 +552,7 @@
+                              data_source_description = 'simulator',
+                              getSettingsFunction = self.getSettingsFunction,
+                              setSettingFunction = self.setSettingFunction,
+-                             axisControls = self.axis_controls,
++                             axisCapabilities = self.axis_controls,
+                              getBatteryPercentFunction = None,
+                              states = self.RBX_STATES,
+                              getStateIndFunction = self.getStateInd,
+@@ -531,8 +566,9 @@
+                              go_actions = self.RBX_GO_ACTIONS,
+                              setGoActionIndFunction = self.setGoActionInd,
+                              manualControlsReadyFunction = self.manualControlsReady,
+-                             getMotorControlRatios = self.getMotorControlRatios if has_motors else None,
+-                             setMotorControlRatio = self.setMotorControlRatio if has_motors else None,
++                             # One DeviceSVXIF per motor (none without motors),
++                             # see createMotorSvxIfs
++                             servo_if_dict = self.motor_svx_if_dict,
+                              autonomousControlsReadyFunction = self.autonomousControlsReady,
+                              getHomeFunction = self.getHome if self.hasCapability('has_set_home') else None,
+                              setHomeFunction = self.setHome if self.hasCapability('has_set_home') else None,
+@@ -541,12 +577,39 @@
+                              gotoPoseFunction = self.gotoPose if self.hasCapability('has_goto_pose') else None,
+                              gotoPositionFunction = self.gotoPosition if self.hasCapability('has_goto_position') else None,
+                              gotoLocationFunction = None,
+-                             getNavPoseCb = self.getNavPoseCb,
+-                             navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
+                              msg_if = self.msg_if
+                             )
+ 
+     self.msg_if.pub_info("... RBX interface running")
++    ready = self.rbx_if.wait_for_ready()
++
++    self.node_if = self.rbx_if.node_if
++    self.settings_if = self.rbx_if.settings_if
++    self.save_data_if = self.rbx_if.save_data_if
++    self.connect_navpose_if = self.rbx_if.connect_navpose_if
++    ##################################
++    # Setup NPX IF Class ####################
++    # The robot's navpose is published by an NPX device at
++    # <node>/<device_name>/npx/navpose, from getNavPoseCb, and selected as the
++    # RBX navpose source so RBXRobotIF's current_* control state tracks it.
++    self.msg_if.pub_debug("Starting NPX Device IF Initialization")
++    self.npx_if = NPXDeviceIF(device_info = self.device_info_dict,
++        data_source_description = 'simulator',
++        getNavPoseCb = self.getNavPoseCb,
++        max_navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
++        msg_if = self.msg_if,
++        node_if = self.node_if,
++        settings_if = self.settings_if,
++        save_data_if = self.save_data_if,
++        connect_navpose_if = self.connect_navpose_if
++        )
++    # Make the robot's own navpose the RBX navpose source.
++    self.own_navpose_topic = self.npx_if.navpose_if.get_namespace()
++    nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++
++    ##################################
++    # Setup Motor SVX IF Classes ####################
++    self.createMotorSvxIfs()
+     time.sleep(1)
+ 
+     ## See GOTO_CMD_TIMEOUT_SEC.
+@@ -557,7 +620,15 @@
+                                              min_stabilize_time_s = self.GOTO_STABILIZED_SEC))
+     ## Point the interface's image source at this rover's own robot camera,
+     ## regardless of what a previous run left in config.
+-    self.rbx_if.setImageTopicCb(String(data = self.image_topic_name + "/robot_color"))
++    ## 3.4: RBXRobotIF has no setImageTopicCb; its image source is the
++    ## connect_img_if (ConnectColorImageIF) selection. set_selected_topic
++    ## quietly rejects a topic the connect has not discovered, and a raw
++    ## sensor_msgs/Image topic is not a NEPI image data product, so this only
++    ## takes effect once that topic is published as one (see report).
++    try:
++      self.rbx_if.connect_img_if.set_selected_topic(self.image_topic_name + "/robot_color")
++    except Exception as e:
++      self.msg_if.pub_warn("Could not select robot_color image source: " + str(e))
+ 
+     ## Start the closed-loop goto controller
+     controller_interval = float(1) / self.CONTROLLER_RATE_HZ
+@@ -658,6 +729,100 @@
+   def getMotorControlRatios(self):
+     return self.motor_ratios
+ 
++  ##########################
++  # Motor Servo (SVX) Functions
++  # Every motor is its own DeviceSVXIF (a spin servo) on the RUI Servo page.
++  # Each callback acts on one motor through setMotorControlRatio above, so its
++  # checks (index range, -1..1 clamp) still apply. A negative command reverses
++  # the motor: a rover's wheels reverse.
++
++  def createMotorSvxIfs(self):
++    # One DeviceSVXIF per motor, shaped like ptx_iqr's per-axis servos: each
++    # shares the RBX interface's msg_if, node_if, settings_if, save_data_if and
++    # connect_navpose_if, and its <device name>_motor_<n> device name gives it
++    # its own <node>/<name>/svx namespace, status topic and node_if keys.
++    # Built after RBXRobotIF because they share its IFs; RBXRobotIF holds the
++    # same motor_svx_if_dict object, so it sees them once they are filled in.
++    self.msg_if.pub_info("Launching NEPI SVX motor interfaces...")
++    for motor_ind, motor_name in enumerate(list(self.motor_svx_if_dict.keys())):
++      motor_device_info = copy.deepcopy(self.device_info_dict)
++      motor_device_info["device_name"] = motor_name
++      self.motor_svx_if_dict[motor_name] = DeviceSVXIF(device_info = motor_device_info,
++                                        is_spin = True,
++                                        # Built into the robot, so always connected,
++                                        # with no Servo Connected toggle
++                                        always_connected = True,
++                                        stopMovingCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        moveCb = lambda direction, time_s = None, motor_ind = motor_ind: self.moveMotorSvx(motor_ind, direction, time_s),
++                                        moveSpeedRatioCb = lambda direction, speed_ratio, time_s = None, motor_ind = motor_ind: self.moveMotorSvxSpeedRatio(motor_ind, direction, speed_ratio, time_s),
++                                        # The Servo page drives a spin servo with set_direction +
++                                        # set_speed_ratio, and its STOP button sends go_home
++                                        set_direction = lambda direction, motor_ind = motor_ind: self.setMotorSvxDirection(motor_ind, direction),
++                                        get_direction = lambda motor_ind = motor_ind: self.motor_svx_dirs[motor_ind],
++                                        setSpeedRatioCb = lambda speed_ratio, motor_ind = motor_ind: self.setMotorSvxSpeedRatio(motor_ind, speed_ratio),
++                                        getSpeedRatioCb = lambda motor_ind = motor_ind: self.motor_svx_speed_ratios[motor_ind],
++                                        goHomeCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        msg_if = self.msg_if,
++                                        node_if = self.node_if,
++                                        settings_if = self.settings_if,
++                                        save_data_if = self.save_data_if,
++                                        connect_navpose_if = self.connect_navpose_if
++                                        )
++    # DeviceSVXIF's init restores its saved speed ratio through setSpeedRatioCb
++    # during construction. Run commands are ignored until here, so starting the
++    # node never spins a motor.
++    self.motor_svx_cmds_enabled = True
++    self.msg_if.pub_info(" ... SVX motor interfaces running: " + str(list(self.motor_svx_if_dict.keys())))
++
++  def stopMotorSvx(self, motor_ind):
++    self.motor_svx_stop_triggers[motor_ind] = True
++    self.setMotorControlRatio(motor_ind, 0.0)
++
++  def runMotorSvx(self, motor_ind, signed_ratio):
++    # Same gate the RBX interface applied to set_motor_control before 3.4
++    if self.motor_svx_cmds_enabled == False:
++      return False
++    if self.manualControlsReady() != True:
++      self.msg_if.pub_warn("Motor " + str(motor_ind + 1) + " command ignored: manual controls not ready")
++      return False
++    self.motor_svx_stop_triggers[motor_ind] = False
++    self.setMotorControlRatio(motor_ind, signed_ratio)
++    return True
++
++  def moveMotorSvx(self, motor_ind, direction, time_s = None):
++    # moveCb (jog_timed): direction and optional time, at this motor's speed ratio
++    self.moveMotorSvxSpeedRatio(motor_ind, direction, self.motor_svx_speed_ratios[motor_ind], time_s)
++
++  def moveMotorSvxSpeedRatio(self, motor_ind, direction, speed_ratio, time_s = None):
++    # moveSpeedRatioCb (jog_timed_speed_ratio): the signed ratio is the
++    # direction's sign times the speed ratio. As in ptx_iqr's timed jog, a
++    # positive time stops the motor once it elapses or a stop arrives; no time
++    # (or 0) runs until stopped.
++    sign = 1.0 if direction >= 0 else -1.0
++    if self.runMotorSvx(motor_ind, sign * float(speed_ratio)) == False:
++      return
++    if time_s is not None and time_s > 0:
++      start_time = nepi_utils.get_time()
++      while (nepi_utils.get_time() - start_time) < time_s and self.motor_svx_stop_triggers[motor_ind] == False and not nepi_sdk.is_shutdown():
++        nepi_sdk.sleep(0.1)
++      if self.motor_svx_stop_triggers[motor_ind] == False:
++        self.stopMotorSvx(motor_ind)
++
++  def setMotorSvxDirection(self, motor_ind, direction):
++    self.motor_svx_dirs[motor_ind] = 1 if direction >= 0 else -1
++    # Re-command a running motor so a direction change at an unchanged speed
++    # ratio takes effect (DeviceSVXIF skips an unchanged set_speed_ratio)
++    ratios = self.getMotorControlRatios()
++    if motor_ind < len(ratios) and ratios[motor_ind] != 0:
++      self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
++  def setMotorSvxSpeedRatio(self, motor_ind, speed_ratio):
++    # For a spin servo the speed ratio is the run command: the Servo page's
++    # speed/direction slider sends set_direction, then set_speed_ratio.
++    self.motor_svx_speed_ratios[motor_ind] = float(speed_ratio)
++    self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
++
+   def autonomousControlsReady(self):
+     # Every goto needs a live bridge (which implies fresh telemetry, so the
+     # target is computed from a real current position) and autonomous
+@@ -696,7 +861,32 @@
+     # returns None rather than locking in a blank dict's all-False flags.
+     if not self.have_telemetry:
+       return None
+-    return self.navpose_dict
++    return copy.deepcopy(self.navpose_dict)
++
++  def selectOwnNavPoseCb(self, timer):
++    # Select the robot's own NPX navpose as the RBX navpose source once the
++    # connect has discovered it. Only a startup default is replaced ('None',
++    # '', or the node namespace that older saved configs hold), never a
++    # source the operator picked, and it gives up after a bounded number of
++    # tries so a navpose that never appears costs nothing.
++    connect_if = self.connect_navpose_if
++    if connect_if is None or self.own_navpose_topic is None or nepi_sdk.is_shutdown():
++      return
++    selected = connect_if.get_selected_topic()
++    if selected == self.own_navpose_topic:
++      return
++    if selected not in ['None', '', None, self.node_namespace]:
++      self.msg_if.pub_info("Keeping operator navpose source: " + str(selected))
++      return
++    if self.own_navpose_topic in connect_if.get_available_topics():
++      connect_if.set_selected_topic(self.own_navpose_topic)
++      self.msg_if.pub_info("Selected own navpose source: " + self.own_navpose_topic)
++      return
++    self.own_navpose_tries += 1
++    if self.own_navpose_tries < self.OWN_NAVPOSE_MAX_TRIES:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++    else:
++      self.msg_if.pub_warn("Own navpose source never appeared, leaving navpose unselected: " + self.own_navpose_topic)
+ 
+   #######################
+   ### Setup/Go-Action Functions
+@@ -787,8 +977,8 @@
+       tol_m = self.FACTORY_GOTO_TOL_M
+       tol_rad = self.FACTORY_GOTO_TOL_RAD
+       if self.rbx_if is not None:
+-        tol_m = self.rbx_if.rbx_info.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
+-        tol_rad = math.radians(self.rbx_if.rbx_info.error_bounds.max_rotation_error_deg) * self.GOTO_TOL_FRACTION
++        tol_m = self.rbx_if.status_msg.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
++        tol_rad = math.radians(self.rbx_if.status_msg.error_bounds.max_rotation_error_deg) * self.GOTO_TOL_FRACTION
+ 
+       dx = target['x_m'] - cur_x
+       dy = target['y_m'] - cur_y
+--- a/../nepi_drones/src/nepi_drivers/rbx_drivers/rbx_webots_node.py
++++ b/../nepi_drones/src/nepi_drivers/rbx_drivers/rbx_webots_node.py
+@@ -39,6 +39,7 @@
+ 
+ import base64
+ import copy
++import os
+ import json
+ import math
+ import socket
+@@ -57,10 +58,11 @@
+ from std_msgs.msg import UInt32, String
+ from sensor_msgs.msg import Image
+ 
+-from nepi_interfaces.msg import AxisControls
+ from geographic_msgs.msg import GeoPoint
+ 
+ from nepi_api.device_if_rbx import RBXRobotIF
++from nepi_api.device_if_npx import NPXDeviceIF
++from nepi_api.device_if_svx import DeviceSVXIF
+ from nepi_api.messages_if import MsgIF
+ 
+ PKG_NAME = 'RBX_WEBOTS' # Use in display menus
+@@ -243,6 +245,25 @@
+ 
+   rbx_if = None
+ 
++  # NPX device that publishes this robot's navpose (see selectOwnNavPoseCb)
++  npx_if = None
++  node_if = None
++  settings_if = None
++  save_data_if = None
++  connect_navpose_if = None
++  OWN_NAVPOSE_MAX_TRIES = 60 # 1 s apart
++  own_navpose_topic = None
++  own_navpose_tries = 0
++
++  # Every motor is its own DeviceSVXIF, named <device name>_motor_<n> (n from
++  # 1), keyed by that name in motor_svx_if_dict, which RBXRobotIF gets as its
++  # servo_if_dict. See createMotorSvxIfs.
++  motor_svx_if_dict = dict()
++  motor_svx_dirs = []
++  motor_svx_speed_ratios = []
++  motor_svx_stop_triggers = []
++  motor_svx_cmds_enabled = False
++
+   def __init__(self):
+     ####  NODE Initialization ####
+     nepi_sdk.init_node(name = self.DEFAULT_NODE_NAME)
+@@ -306,6 +327,19 @@
+     ##############################
+     # Manual motor-ratio state: motor 0 = left, motor 1 = right
+     self.motor_ratios = [0.0, 0.0]
++    # One servo (SVX) device per motor, named <device name>_motor_<n>. The
++    # motor count is fixed here at construction (motor_ratios above); any
++    # change to it needs a node restart. The names are entered now so
++    # RBXRobotIF sees its manual (servo) controls at construction; the
++    # DeviceSVXIF instances that share its IFs fill them in afterwards
++    # (createMotorSvxIfs).
++    motor_count = len(self.motor_ratios)
++    self.motor_svx_if_dict = dict()
++    for motor_ind in range(motor_count):
++      self.motor_svx_if_dict[self.device_name + "_motor_" + str(motor_ind + 1)] = None
++    self.motor_svx_dirs = [1] * motor_count
++    self.motor_svx_speed_ratios = [0.0] * motor_count
++    self.motor_svx_stop_triggers = [False] * motor_count
+ 
+     ##############################
+     # Home position state: local ENU x/y/z meters (see rbx_gazebo_node.py's
+@@ -330,13 +364,15 @@
+     self.cap_settings = self.getCapSettings()
+     self.factory_settings = self.getFactorySettings()
+ 
+-    self.axis_controls = AxisControls()
+-    self.axis_controls.x = True
+-    self.axis_controls.y = True
+-    self.axis_controls.z = False
+-    self.axis_controls.roll = False
+-    self.axis_controls.pitch = False
+-    self.axis_controls.yaw = True
++    # 3.4: RBXRobotIF takes axisCapabilities, a dict of DeviceRBXStatus
++    # has_*_control flags (nepi_interfaces has no AxisControls message).
++    self.axis_controls = dict()
++    self.axis_controls['has_x_control'] = True
++    self.axis_controls['has_y_control'] = True
++    self.axis_controls['has_z_control'] = False
++    self.axis_controls['has_roll_control'] = False
++    self.axis_controls['has_pitch_control'] = False
++    self.axis_controls['has_yaw_control'] = True
+ 
+     ##############################
+     # Bridge client thread: connects, reads telemetry, reconnects on failure
+@@ -357,7 +393,7 @@
+     self.rbx_if = RBXRobotIF(device_info = self.device_info_dict,
+                              getSettingsFunction = self.getSettings,
+                              setSettingFunction = self.settingUpdateFunction,
+-                             axisControls = self.axis_controls,
++                             axisCapabilities = self.axis_controls,
+                              getBatteryPercentFunction = None,
+                              states = self.RBX_STATES,
+                              getStateIndFunction = self.getStateInd,
+@@ -371,8 +407,8 @@
+                              go_actions = self.RBX_GO_ACTIONS,
+                              setGoActionIndFunction = self.setGoActionInd,
+                              manualControlsReadyFunction = self.manualControlsReady,
+-                             getMotorControlRatios = self.getMotorControlRatios,
+-                             setMotorControlRatio = self.setMotorControlRatio,
++                             # One DeviceSVXIF per motor, see createMotorSvxIfs
++                             servo_if_dict = self.motor_svx_if_dict,
+                              autonomousControlsReadyFunction = self.autonomousControlsReady,
+                              getHomeFunction = self.getHome,
+                              setHomeFunction = self.setHome,
+@@ -381,18 +417,56 @@
+                              gotoPoseFunction = self.gotoPose,
+                              gotoPositionFunction = self.gotoPosition,
+                              gotoLocationFunction = None,
+-                             getNavPoseCb = self.getNavPoseCb,
+-                             navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
+                              data_source_description = 'simulator',
+                              data_ref_description = 'simulator',
+                              msg_if = self.msg_if
+                             )
+ 
+     self.msg_if.pub_info("... RBX interface running")
++    ready = self.rbx_if.wait_for_ready()
++
++    self.node_if = self.rbx_if.node_if
++    self.settings_if = self.rbx_if.settings_if
++    self.save_data_if = self.rbx_if.save_data_if
++    self.connect_navpose_if = self.rbx_if.connect_navpose_if
++    ##################################
++    # Setup NPX IF Class ####################
++    # The robot's navpose is published by an NPX device at
++    # <node>/<device_name>/npx/navpose, from getNavPoseCb, and selected as the
++    # RBX navpose source so RBXRobotIF's current_* control state tracks it.
++    self.msg_if.pub_debug("Starting NPX Device IF Initialization")
++    self.npx_if = NPXDeviceIF(device_info = self.device_info_dict,
++        data_source_description = 'simulator',
++        getNavPoseCb = self.getNavPoseCb,
++        max_navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
++        msg_if = self.msg_if,
++        node_if = self.node_if,
++        settings_if = self.settings_if,
++        save_data_if = self.save_data_if,
++        connect_navpose_if = self.connect_navpose_if
++        )
++    # Make the robot's own navpose the RBX navpose source.
++    self.own_navpose_topic = self.npx_if.navpose_if.get_namespace()
++    nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++
++    ##################################
++    # Setup Motor SVX IF Classes ####################
++    self.createMotorSvxIfs()
+     time.sleep(1)
+ 
+     self.rbx_if.setCmdTimeoutCb(UInt32(data = self.GOTO_CMD_TIMEOUT_SEC))
+-    self.rbx_if.setImageTopicCb(String(data = self.robot_color_topic_name))
++    ## 3.4: RBXRobotIF has no setImageTopicCb; its image source is the
++    ## connect_img_if (ConnectColorImageIF) selection. set_selected_topic
++    ## quietly rejects a topic the connect has not discovered, and a raw
++    ## sensor_msgs/Image topic is not a NEPI image data product, so this only
++    ## takes effect once that topic is published as one (see report).
++    try:
++      # The publisher's relative name resolves against the node's ROS
++      # namespace, the parent of the node name.
++      image_topic = os.path.join(os.path.dirname(self.node_namespace), self.robot_color_topic_name)
++      self.rbx_if.connect_img_if.set_selected_topic(image_topic)
++    except Exception as e:
++      self.msg_if.pub_warn("Could not select image source: " + str(e))
+     # Same "deterministic per-instance behavior regardless of what a
+     # previous run left in config" rationale as the image-topic override
+     # just above -- see rbx_sim_node.py's own copy of this line for the
+@@ -563,6 +637,100 @@
+   def getMotorControlRatios(self):
+     return self.motor_ratios
+ 
++  ##########################
++  # Motor Servo (SVX) Functions
++  # Every motor is its own DeviceSVXIF (a spin servo) on the RUI Servo page.
++  # Each callback acts on one motor through setMotorControlRatio above, so its
++  # checks (index range, -1..1 clamp) still apply. A negative command reverses
++  # the motor: a rover's wheels reverse.
++
++  def createMotorSvxIfs(self):
++    # One DeviceSVXIF per motor, shaped like ptx_iqr's per-axis servos: each
++    # shares the RBX interface's msg_if, node_if, settings_if, save_data_if and
++    # connect_navpose_if, and its <device name>_motor_<n> device name gives it
++    # its own <node>/<name>/svx namespace, status topic and node_if keys.
++    # Built after RBXRobotIF because they share its IFs; RBXRobotIF holds the
++    # same motor_svx_if_dict object, so it sees them once they are filled in.
++    self.msg_if.pub_info("Launching NEPI SVX motor interfaces...")
++    for motor_ind, motor_name in enumerate(list(self.motor_svx_if_dict.keys())):
++      motor_device_info = copy.deepcopy(self.device_info_dict)
++      motor_device_info["device_name"] = motor_name
++      self.motor_svx_if_dict[motor_name] = DeviceSVXIF(device_info = motor_device_info,
++                                        is_spin = True,
++                                        # Built into the robot, so always connected,
++                                        # with no Servo Connected toggle
++                                        always_connected = True,
++                                        stopMovingCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        moveCb = lambda direction, time_s = None, motor_ind = motor_ind: self.moveMotorSvx(motor_ind, direction, time_s),
++                                        moveSpeedRatioCb = lambda direction, speed_ratio, time_s = None, motor_ind = motor_ind: self.moveMotorSvxSpeedRatio(motor_ind, direction, speed_ratio, time_s),
++                                        # The Servo page drives a spin servo with set_direction +
++                                        # set_speed_ratio, and its STOP button sends go_home
++                                        set_direction = lambda direction, motor_ind = motor_ind: self.setMotorSvxDirection(motor_ind, direction),
++                                        get_direction = lambda motor_ind = motor_ind: self.motor_svx_dirs[motor_ind],
++                                        setSpeedRatioCb = lambda speed_ratio, motor_ind = motor_ind: self.setMotorSvxSpeedRatio(motor_ind, speed_ratio),
++                                        getSpeedRatioCb = lambda motor_ind = motor_ind: self.motor_svx_speed_ratios[motor_ind],
++                                        goHomeCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        msg_if = self.msg_if,
++                                        node_if = self.node_if,
++                                        settings_if = self.settings_if,
++                                        save_data_if = self.save_data_if,
++                                        connect_navpose_if = self.connect_navpose_if
++                                        )
++    # DeviceSVXIF's init restores its saved speed ratio through setSpeedRatioCb
++    # during construction. Run commands are ignored until here, so starting the
++    # node never spins a motor.
++    self.motor_svx_cmds_enabled = True
++    self.msg_if.pub_info(" ... SVX motor interfaces running: " + str(list(self.motor_svx_if_dict.keys())))
++
++  def stopMotorSvx(self, motor_ind):
++    self.motor_svx_stop_triggers[motor_ind] = True
++    self.setMotorControlRatio(motor_ind, 0.0)
++
++  def runMotorSvx(self, motor_ind, signed_ratio):
++    # Same gate the RBX interface applied to set_motor_control before 3.4
++    if self.motor_svx_cmds_enabled == False:
++      return False
++    if self.manualControlsReady() != True:
++      self.msg_if.pub_warn("Motor " + str(motor_ind + 1) + " command ignored: manual controls not ready")
++      return False
++    self.motor_svx_stop_triggers[motor_ind] = False
++    self.setMotorControlRatio(motor_ind, signed_ratio)
++    return True
++
++  def moveMotorSvx(self, motor_ind, direction, time_s = None):
++    # moveCb (jog_timed): direction and optional time, at this motor's speed ratio
++    self.moveMotorSvxSpeedRatio(motor_ind, direction, self.motor_svx_speed_ratios[motor_ind], time_s)
++
++  def moveMotorSvxSpeedRatio(self, motor_ind, direction, speed_ratio, time_s = None):
++    # moveSpeedRatioCb (jog_timed_speed_ratio): the signed ratio is the
++    # direction's sign times the speed ratio. As in ptx_iqr's timed jog, a
++    # positive time stops the motor once it elapses or a stop arrives; no time
++    # (or 0) runs until stopped.
++    sign = 1.0 if direction >= 0 else -1.0
++    if self.runMotorSvx(motor_ind, sign * float(speed_ratio)) == False:
++      return
++    if time_s is not None and time_s > 0:
++      start_time = nepi_utils.get_time()
++      while (nepi_utils.get_time() - start_time) < time_s and self.motor_svx_stop_triggers[motor_ind] == False and not nepi_sdk.is_shutdown():
++        nepi_sdk.sleep(0.1)
++      if self.motor_svx_stop_triggers[motor_ind] == False:
++        self.stopMotorSvx(motor_ind)
++
++  def setMotorSvxDirection(self, motor_ind, direction):
++    self.motor_svx_dirs[motor_ind] = 1 if direction >= 0 else -1
++    # Re-command a running motor so a direction change at an unchanged speed
++    # ratio takes effect (DeviceSVXIF skips an unchanged set_speed_ratio)
++    ratios = self.getMotorControlRatios()
++    if motor_ind < len(ratios) and ratios[motor_ind] != 0:
++      self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
++  def setMotorSvxSpeedRatio(self, motor_ind, speed_ratio):
++    # For a spin servo the speed ratio is the run command: the Servo page's
++    # speed/direction slider sends set_direction, then set_speed_ratio.
++    self.motor_svx_speed_ratios[motor_ind] = float(speed_ratio)
++    self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
++
+   def autonomousControlsReady(self):
+     # Gates all goto commands: require the Sim Connector's own
+     # autonomous_movement_enabled toggle (checked here, not just hidden in
+@@ -597,8 +765,40 @@
+                           'y_m': self.navpose_dict['y_m'] + point_enu_m.y,
+                           'yaw_deg': orientation_enu_deg[2]}
+ 
++  ### Callback returning the full navpose dict to the NPX interface
+   def getNavPoseCb(self):
+-    return self.navpose_dict
++    # Returns None until telemetry has arrived: NPXDeviceIF derives its has_*
++    # capabilities once, from the first dict it gets, so a blank dict returned
++    # before telemetry would fix every capability at False for the life of
++    # the node.
++    if self.navpose_dict['has_orientation'] == False or self.navpose_dict['has_position'] == False:
++      return None
++    return copy.deepcopy(self.navpose_dict)
++
++  def selectOwnNavPoseCb(self, timer):
++    # Select the robot's own NPX navpose as the RBX navpose source once the
++    # connect has discovered it. Only a startup default is replaced ('None',
++    # '', or the node namespace that older saved configs hold), never a
++    # source the operator picked, and it gives up after a bounded number of
++    # tries so a navpose that never appears costs nothing.
++    connect_if = self.connect_navpose_if
++    if connect_if is None or self.own_navpose_topic is None or nepi_sdk.is_shutdown():
++      return
++    selected = connect_if.get_selected_topic()
++    if selected == self.own_navpose_topic:
++      return
++    if selected not in ['None', '', None, self.node_namespace]:
++      self.msg_if.pub_info("Keeping operator navpose source: " + str(selected))
++      return
++    if self.own_navpose_topic in connect_if.get_available_topics():
++      connect_if.set_selected_topic(self.own_navpose_topic)
++      self.msg_if.pub_info("Selected own navpose source: " + self.own_navpose_topic)
++      return
++    self.own_navpose_tries += 1
++    if self.own_navpose_tries < self.OWN_NAVPOSE_MAX_TRIES:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++    else:
++      self.msg_if.pub_warn("Own navpose source never appeared, leaving navpose unselected: " + self.own_navpose_topic)
+ 
+   #######################
+   ### Setup-Action Functions
+@@ -703,8 +903,8 @@
+       tol_m = self.FACTORY_GOTO_TOL_M
+       tol_rad = self.FACTORY_GOTO_TOL_RAD
+       if self.rbx_if is not None:
+-        tol_m = self.rbx_if.rbx_info.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
+-        tol_rad = (math.radians(self.rbx_if.rbx_info.error_bounds.max_rotation_error_deg)
++        tol_m = self.rbx_if.status_msg.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
++        tol_rad = (math.radians(self.rbx_if.status_msg.error_bounds.max_rotation_error_deg)
+                    * self.GOTO_TOL_FRACTION)
+ 
+       dx = target['x_m'] - cur_x
+--- a/../nepi_drones/src/nepi_drivers/rbx_drivers/rbx_webots_quadcopter_node.py
++++ b/../nepi_drones/src/nepi_drivers/rbx_drivers/rbx_webots_quadcopter_node.py
+@@ -38,6 +38,7 @@
+ # naming with a "THIRD_PERSON" view mode, but that view never existed here.
+ 
+ import copy
++import os
+ import base64
+ import json
+ import math
+@@ -57,10 +58,10 @@
+ from std_msgs.msg import UInt32, String
+ from sensor_msgs.msg import Image
+ 
+-from nepi_interfaces.msg import AxisControls
+ from geographic_msgs.msg import GeoPoint
+ 
+ from nepi_api.device_if_rbx import RBXRobotIF
++from nepi_api.device_if_npx import NPXDeviceIF
+ from nepi_api.messages_if import MsgIF
+ 
+ PKG_NAME = 'RBX_WEBOTS_QUADCOPTER' # Use in display menus
+@@ -203,6 +204,16 @@
+ 
+   rbx_if = None
+ 
++  # NPX device that publishes this robot's navpose (see selectOwnNavPoseCb)
++  npx_if = None
++  node_if = None
++  settings_if = None
++  save_data_if = None
++  connect_navpose_if = None
++  OWN_NAVPOSE_MAX_TRIES = 60 # 1 s apart
++  own_navpose_topic = None
++  own_navpose_tries = 0
++
+   def __init__(self):
+     ####  NODE Initialization ####
+     nepi_sdk.init_node(name = self.DEFAULT_NODE_NAME)
+@@ -278,13 +289,15 @@
+     # z True (real altitude axis) and roll/pitch stay False (no real attitude
+     # control -- gotoPose is still yaw-only, same simplification the rover
+     # driver makes for its single rotation axis).
+-    self.axis_controls = AxisControls()
+-    self.axis_controls.x = True
+-    self.axis_controls.y = True
+-    self.axis_controls.z = True
+-    self.axis_controls.roll = False
+-    self.axis_controls.pitch = False
+-    self.axis_controls.yaw = True
++    # 3.4: RBXRobotIF takes axisCapabilities, a dict of DeviceRBXStatus
++    # has_*_control flags (nepi_interfaces has no AxisControls message).
++    self.axis_controls = dict()
++    self.axis_controls['has_x_control'] = True
++    self.axis_controls['has_y_control'] = True
++    self.axis_controls['has_z_control'] = True
++    self.axis_controls['has_roll_control'] = False
++    self.axis_controls['has_pitch_control'] = False
++    self.axis_controls['has_yaw_control'] = True
+ 
+     ##############################
+     # Bridge client thread: connects, reads telemetry, reconnects on failure
+@@ -305,7 +318,7 @@
+     self.rbx_if = RBXRobotIF(device_info = self.device_info_dict,
+                              getSettingsFunction = self.getSettings,
+                              setSettingFunction = self.settingUpdateFunction,
+-                             axisControls = self.axis_controls,
++                             axisCapabilities = self.axis_controls,
+                              getBatteryPercentFunction = None,
+                              states = self.RBX_STATES,
+                              getStateIndFunction = self.getStateInd,
+@@ -324,8 +337,6 @@
+                              # same convention any driver uses to report a
+                              # capability it genuinely doesn't have.
+                              manualControlsReadyFunction = None,
+-                             getMotorControlRatios = None,
+-                             setMotorControlRatio = None,
+                              autonomousControlsReadyFunction = self.autonomousControlsReady,
+                              getHomeFunction = self.getHome,
+                              setHomeFunction = self.setHome,
+@@ -334,18 +345,53 @@
+                              gotoPoseFunction = self.gotoPose,
+                              gotoPositionFunction = self.gotoPosition,
+                              gotoLocationFunction = None,
+-                             getNavPoseCb = self.getNavPoseCb,
+-                             navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
+                              data_source_description = 'simulator',
+                              data_ref_description = 'simulator',
+                              msg_if = self.msg_if
+                             )
+ 
+     self.msg_if.pub_info("... RBX interface running")
++    ready = self.rbx_if.wait_for_ready()
++
++    self.node_if = self.rbx_if.node_if
++    self.settings_if = self.rbx_if.settings_if
++    self.save_data_if = self.rbx_if.save_data_if
++    self.connect_navpose_if = self.rbx_if.connect_navpose_if
++    ##################################
++    # Setup NPX IF Class ####################
++    # The robot's navpose is published by an NPX device at
++    # <node>/<device_name>/npx/navpose, from getNavPoseCb, and selected as the
++    # RBX navpose source so RBXRobotIF's current_* control state tracks it.
++    self.msg_if.pub_debug("Starting NPX Device IF Initialization")
++    self.npx_if = NPXDeviceIF(device_info = self.device_info_dict,
++        data_source_description = 'simulator',
++        getNavPoseCb = self.getNavPoseCb,
++        max_navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
++        msg_if = self.msg_if,
++        node_if = self.node_if,
++        settings_if = self.settings_if,
++        save_data_if = self.save_data_if,
++        connect_navpose_if = self.connect_navpose_if
++        )
++    # Make the robot's own navpose the RBX navpose source.
++    self.own_navpose_topic = self.npx_if.navpose_if.get_namespace()
++    nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++
+     time.sleep(1)
+ 
+     self.rbx_if.setCmdTimeoutCb(UInt32(data = self.GOTO_CMD_TIMEOUT_SEC))
+-    self.rbx_if.setImageTopicCb(String(data = self.image_topic_name))
++    ## 3.4: RBXRobotIF has no setImageTopicCb; its image source is the
++    ## connect_img_if (ConnectColorImageIF) selection. set_selected_topic
++    ## quietly rejects a topic the connect has not discovered, and a raw
++    ## sensor_msgs/Image topic is not a NEPI image data product, so this only
++    ## takes effect once that topic is published as one (see report).
++    try:
++      # The publisher's relative name resolves against the node's ROS
++      # namespace, the parent of the node name.
++      image_topic = os.path.join(os.path.dirname(self.node_namespace), self.image_topic_name)
++      self.rbx_if.connect_img_if.set_selected_topic(image_topic)
++    except Exception as e:
++      self.msg_if.pub_warn("Could not select image source: " + str(e))
+     # Same "deterministic per-instance behavior regardless of what a
+     # previous run left in config" rationale as the image-topic override
+     # just above -- see rbx_sim_node.py's own copy of this line for the
+@@ -504,8 +550,40 @@
+                           'z_m': self.navpose_dict['z_m'] + point_enu_m.z,
+                           'yaw_deg': orientation_enu_deg[2]}
+ 
++  ### Callback returning the full navpose dict to the NPX interface
+   def getNavPoseCb(self):
+-    return self.navpose_dict
++    # Returns None until telemetry has arrived: NPXDeviceIF derives its has_*
++    # capabilities once, from the first dict it gets, so a blank dict returned
++    # before telemetry would fix every capability at False for the life of
++    # the node.
++    if self.navpose_dict['has_orientation'] == False or self.navpose_dict['has_position'] == False:
++      return None
++    return copy.deepcopy(self.navpose_dict)
++
++  def selectOwnNavPoseCb(self, timer):
++    # Select the robot's own NPX navpose as the RBX navpose source once the
++    # connect has discovered it. Only a startup default is replaced ('None',
++    # '', or the node namespace that older saved configs hold), never a
++    # source the operator picked, and it gives up after a bounded number of
++    # tries so a navpose that never appears costs nothing.
++    connect_if = self.connect_navpose_if
++    if connect_if is None or self.own_navpose_topic is None or nepi_sdk.is_shutdown():
++      return
++    selected = connect_if.get_selected_topic()
++    if selected == self.own_navpose_topic:
++      return
++    if selected not in ['None', '', None, self.node_namespace]:
++      self.msg_if.pub_info("Keeping operator navpose source: " + str(selected))
++      return
++    if self.own_navpose_topic in connect_if.get_available_topics():
++      connect_if.set_selected_topic(self.own_navpose_topic)
++      self.msg_if.pub_info("Selected own navpose source: " + self.own_navpose_topic)
++      return
++    self.own_navpose_tries += 1
++    if self.own_navpose_tries < self.OWN_NAVPOSE_MAX_TRIES:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++    else:
++      self.msg_if.pub_warn("Own navpose source never appeared, leaving navpose unselected: " + self.own_navpose_topic)
+ 
+   #######################
+   ### Setup-Action Functions
+@@ -640,8 +718,8 @@
+       tol_m = self.FACTORY_GOTO_TOL_M
+       tol_rad = self.FACTORY_GOTO_TOL_RAD
+       if self.rbx_if is not None:
+-        tol_m = self.rbx_if.rbx_info.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
+-        tol_rad = (math.radians(self.rbx_if.rbx_info.error_bounds.max_rotation_error_deg)
++        tol_m = self.rbx_if.status_msg.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
++        tol_rad = (math.radians(self.rbx_if.status_msg.error_bounds.max_rotation_error_deg)
+                    * self.GOTO_TOL_FRACTION)
+ 
+       # Vertical (Z) axis: independent of the horizontal turn/drive phase
+--- a/src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py
++++ b/src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py
+@@ -51,6 +51,8 @@
+ 
+ from nepi_api.device_if_rbx import RBXRobotIF
+ from nepi_api.device_if_npx import NPXDeviceIF
++from nepi_api.device_if_svx import DeviceSVXIF
++from nepi_api.data_product_if_image import ColorImageIF
+ from nepi_api.messages_if import MsgIF
+ 
+ PKG_NAME = 'RBX_ARDUPILOT' # Use in display menus
+@@ -747,6 +749,28 @@
+   own_navpose_topic = None
+   own_navpose_tries = 0
+ 
++  # Geoid height N at the current fix (geoid above the WGS84 ellipsoid), for
++  # navpose geoid_height_meters. Looked up again only once the fix has moved
++  # GEOID_UPDATE_DIST_DEG from the last lookup point; the geoid changes slowly.
++  GEOID_UPDATE_DIST_DEG = 0.01 # about 1.1 km of latitude
++  geoid_height_m = 0.0
++  geoid_lookup_geo = None
++
++  # SITL robot_color camera published as a NEPI color image data product
++  # (see selectOwnImageCb)
++  robot_color_if = None
++  OWN_IMAGE_MAX_TRIES = 60 # 1 s apart
++  own_image_tries = 0
++
++  # Every motor is its own DeviceSVXIF, named <device name>_motor_<n> (n from
++  # 1), keyed by that name in motor_svx_if_dict, which RBXRobotIF gets as its
++  # servo_if_dict. See createMotorSvxIfs.
++  motor_svx_if_dict = dict()
++  motor_svx_dirs = []
++  motor_svx_speed_ratios = []
++  motor_svx_stop_triggers = []
++  motor_svx_cmds_enabled = False
++
+   port_id = None
+ 
+   msg_list = ["","","","","",""]
+@@ -1064,6 +1088,20 @@
+     # Per-motor commanded speed ratios (0-1), tracked locally since ArduPilot's
+     # DO_MOTOR_TEST is fire-and-forget and reports no ongoing per-motor state.
+     self.motor_ratios = [0.0] * int(nepi_controls.get_value(self.settings_dict, 'motor_count'))
++    # One servo (SVX) device per motor, named <device name>_motor_<n>. The
++    # motor count is read from the motor_count setting HERE, once: changing
++    # motor_count later resizes motor_ratios but adds or removes no motor
++    # servo devices until the node restarts. The names are entered now so
++    # RBXRobotIF sees its manual (servo) controls at construction; the
++    # DeviceSVXIF instances that share its IFs fill them in afterwards
++    # (createMotorSvxIfs).
++    motor_count = len(self.motor_ratios)
++    self.motor_svx_if_dict = dict()
++    for motor_ind in range(motor_count):
++      self.motor_svx_if_dict[self.device_name + "_motor_" + str(motor_ind + 1)] = None
++    self.motor_svx_dirs = [1] * motor_count
++    self.motor_svx_speed_ratios = [0.0] * motor_count
++    self.motor_svx_stop_triggers = [False] * motor_count
+ 
+     # Teleop (keyboard-driven) velocity state -- already rotated into ENU and
+     # scaled to m/s and rad/s, so sendTeleopVelocityLoop can publish it
+@@ -1157,9 +1195,8 @@
+                                   go_actions = self.RBX_GO_ACTIONS,
+                                   setGoActionIndFunction = self.setGoActionInd,
+                                   manualControlsReadyFunction = self.manualControlsReady,
+-                                  # 3.4.0 PORT: motor test not wired to servo_if_dict, see report
+-                                  # getMotorControlRatios = self.getMotorControlRatios,
+-                                  # setMotorControlRatio = self.setMotorControlRatio,
++                                  # Motor test: one DeviceSVXIF per motor, see createMotorSvxIfs
++                                  servo_if_dict = self.motor_svx_if_dict,
+                                   teleopControlsReadyFunction = self.teleopControlsReady,
+                                   setTeleopVelocityFunction = self.setTeleopVelocity,
+                                   autonomousControlsReadyFunction = self.autonomousControlsReady,
+@@ -1200,6 +1237,31 @@
+     # Make the autopilot's own navpose the RBX navpose source.
+     self.own_navpose_topic = self.npx_if.navpose_if.get_namespace()
+     nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++
++    ##################################
++    # Setup Motor SVX IF Classes ####################
++    self.createMotorSvxIfs()
++
++    ##################################
++    # Setup robot_color Image IF Class ####################
++    # SITL only, like the camera bridge that feeds it: the robot_color frames
++    # are also published as a NEPI color image data product at
++    # <rbx namespace>/robot_color, which RBXRobotIF's image-source connect
++    # can discover and select. Constructed the way IDXDeviceIF builds its
++    # ColorImageIF, sharing the RBX interface's IFs.
++    if self.is_sitl:
++      self.msg_if.pub_debug("Starting robot_color Image IF Initialization")
++      self.robot_color_if = ColorImageIF(name = 'robot_color',
++                      namespace = self.rbx_if.get_namespace(),
++                      data_source_description = 'simulator',
++                      data_ref_description = 'robot camera',
++                      msg_if = self.msg_if,
++                      node_if = self.node_if,
++                      save_data_if = self.save_data_if,
++                      transform_if = self.rbx_if.transform_if,
++                      navpose_if = self.rbx_if.navpose_if
++                      )
++      self.robot_color_if.wait_for_ready()
+     time.sleep(1)
+ 
+     ## Point the interface's image-source search at this instance's own
+@@ -1213,16 +1275,21 @@
+     ## Image Source dropdown.
+     ## 3.4: RBXRobotIF has no setImageTopicCb; its image source is the
+     ## connect_img_if (ConnectColorImageIF) selection. set_selected_topic
+-    ## quietly rejects a topic the connect has not discovered, and a raw
+-    ## sensor_msgs/Image topic is not a NEPI image data product, so this only
+-    ## takes effect once that topic is published as one (see report).
+-    try:
+-      # The publisher's relative name resolves against the node's ROS
+-      # namespace, the parent of the node name.
+-      robot_color_topic = os.path.join(os.path.dirname(self.node_namespace), self.robot_color_topic_name)
+-      self.rbx_if.connect_img_if.set_selected_topic(robot_color_topic)
+-    except Exception as e:
+-      self.msg_if.pub_warn("Could not select robot_color image source: " + str(e))
++    ## quietly rejects a topic the connect has not discovered yet, so on SITL
++    ## the robot_color image IF's topic is selected by selectOwnImageCb once
++    ## the connect has discovered it. A raw sensor_msgs/Image topic is not a
++    ## NEPI image data product, so on real hardware this selection of the raw
++    ## relay topic is still rejected (see report).
++    if self.robot_color_if is not None:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnImageCb, oneshot = True)
++    else:
++      try:
++        # The publisher's relative name resolves against the node's ROS
++        # namespace, the parent of the node name.
++        robot_color_topic = os.path.join(os.path.dirname(self.node_namespace), self.robot_color_topic_name)
++        self.rbx_if.connect_img_if.set_selected_topic(robot_color_topic)
++      except Exception as e:
++        self.msg_if.pub_warn("Could not select robot_color image source: " + str(e))
+     ## Same "deterministic per-instance behavior regardless of what a
+     ## previous run left in config" rationale as the image-topic override
+     ## just above -- see rbx_sim_node.py's own copy of this line for the
+@@ -1491,6 +1558,100 @@
+   def getMotorControlRatios(self):
+     return self.motor_ratios
+ 
++  ##########################
++  # Motor Servo (SVX) Functions
++  # Every motor is its own DeviceSVXIF (a spin servo) on the RUI Servo page.
++  # Each callback acts on one motor through setMotorControlRatio above, so its
++  # checks (index range, 0-1 clamp, motor_test_max_throttle_percent,
++  # motor_test_timeout_s, FCU rejection) all still apply. A negative (reverse)
++  # command clamps to 0 there: an ArduPilot motor test cannot spin backwards.
++
++  def createMotorSvxIfs(self):
++    # One DeviceSVXIF per motor, shaped like ptx_iqr's per-axis servos: each
++    # shares the RBX interface's msg_if, node_if, settings_if, save_data_if and
++    # connect_navpose_if, and its <device name>_motor_<n> device name gives it
++    # its own <node>/<name>/svx namespace, status topic and node_if keys.
++    # Built after RBXRobotIF because they share its IFs; RBXRobotIF holds the
++    # same motor_svx_if_dict object, so it sees them once they are filled in.
++    self.msg_if.pub_info("Launching NEPI SVX motor interfaces...")
++    for motor_ind, motor_name in enumerate(list(self.motor_svx_if_dict.keys())):
++      motor_device_info = copy.deepcopy(self.device_info_dict)
++      motor_device_info["device_name"] = motor_name
++      self.motor_svx_if_dict[motor_name] = DeviceSVXIF(device_info = motor_device_info,
++                                        is_spin = True,
++                                        # Built into the robot, so always connected,
++                                        # with no Servo Connected toggle
++                                        always_connected = True,
++                                        stopMovingCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        moveCb = lambda direction, time_s = None, motor_ind = motor_ind: self.moveMotorSvx(motor_ind, direction, time_s),
++                                        moveSpeedRatioCb = lambda direction, speed_ratio, time_s = None, motor_ind = motor_ind: self.moveMotorSvxSpeedRatio(motor_ind, direction, speed_ratio, time_s),
++                                        # The Servo page drives a spin servo with set_direction +
++                                        # set_speed_ratio, and its STOP button sends go_home
++                                        set_direction = lambda direction, motor_ind = motor_ind: self.setMotorSvxDirection(motor_ind, direction),
++                                        get_direction = lambda motor_ind = motor_ind: self.motor_svx_dirs[motor_ind],
++                                        setSpeedRatioCb = lambda speed_ratio, motor_ind = motor_ind: self.setMotorSvxSpeedRatio(motor_ind, speed_ratio),
++                                        getSpeedRatioCb = lambda motor_ind = motor_ind: self.motor_svx_speed_ratios[motor_ind],
++                                        goHomeCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        msg_if = self.msg_if,
++                                        node_if = self.node_if,
++                                        settings_if = self.settings_if,
++                                        save_data_if = self.save_data_if,
++                                        connect_navpose_if = self.connect_navpose_if
++                                        )
++    # DeviceSVXIF's init restores its saved speed ratio through setSpeedRatioCb
++    # during construction. Run commands are ignored until here, so starting the
++    # node never spins a motor.
++    self.motor_svx_cmds_enabled = True
++    self.msg_if.pub_info(" ... SVX motor interfaces running: " + str(list(self.motor_svx_if_dict.keys())))
++
++  def stopMotorSvx(self, motor_ind):
++    self.motor_svx_stop_triggers[motor_ind] = True
++    self.setMotorControlRatio(motor_ind, 0.0)
++
++  def runMotorSvx(self, motor_ind, signed_ratio):
++    # Same gate the RBX interface applied to set_motor_control before 3.4
++    if self.motor_svx_cmds_enabled == False:
++      return False
++    if self.manualControlsReady() != True:
++      self.msg_if.pub_warn("Motor " + str(motor_ind + 1) + " command ignored: manual controls not ready")
++      return False
++    self.motor_svx_stop_triggers[motor_ind] = False
++    self.setMotorControlRatio(motor_ind, signed_ratio)
++    return True
++
++  def moveMotorSvx(self, motor_ind, direction, time_s = None):
++    # moveCb (jog_timed): direction and optional time, at this motor's speed ratio
++    self.moveMotorSvxSpeedRatio(motor_ind, direction, self.motor_svx_speed_ratios[motor_ind], time_s)
++
++  def moveMotorSvxSpeedRatio(self, motor_ind, direction, speed_ratio, time_s = None):
++    # moveSpeedRatioCb (jog_timed_speed_ratio): the signed ratio is the
++    # direction's sign times the speed ratio. As in ptx_iqr's timed jog, a
++    # positive time stops the motor once it elapses or a stop arrives; no time
++    # (or 0) runs until stopped.
++    sign = 1.0 if direction >= 0 else -1.0
++    if self.runMotorSvx(motor_ind, sign * float(speed_ratio)) == False:
++      return
++    if time_s is not None and time_s > 0:
++      start_time = nepi_utils.get_time()
++      while (nepi_utils.get_time() - start_time) < time_s and self.motor_svx_stop_triggers[motor_ind] == False and not nepi_sdk.is_shutdown():
++        nepi_sdk.sleep(0.1)
++      if self.motor_svx_stop_triggers[motor_ind] == False:
++        self.stopMotorSvx(motor_ind)
++
++  def setMotorSvxDirection(self, motor_ind, direction):
++    self.motor_svx_dirs[motor_ind] = 1 if direction >= 0 else -1
++    # Re-command a running motor so a direction change at an unchanged speed
++    # ratio takes effect (DeviceSVXIF skips an unchanged set_speed_ratio)
++    ratios = self.getMotorControlRatios()
++    if motor_ind < len(ratios) and ratios[motor_ind] != 0:
++      self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
++  def setMotorSvxSpeedRatio(self, motor_ind, speed_ratio):
++    # For a spin servo the speed ratio is the run command: the Servo page's
++    # speed/direction slider sends set_direction, then set_speed_ratio.
++    self.motor_svx_speed_ratios[motor_ind] = float(speed_ratio)
++    self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
+   def setSetupActionInd(self,action_ind):
+     set_action_function = globals()[self.RBX_SETUP_ACTION_FUNCTIONS[action_ind]]
+     success = set_action_function(self)
+@@ -1673,7 +1834,12 @@
+     ##############################################
+     ## Send Message and Check for Setpoint Success
+     ##############################################
++    # location_target goes to setpoint_position/global (sendGotoCommandLoop),
++    # which mavros sends as SET_POSITION_TARGET_GLOBAL_INT with the altitude
++    # unconverted, so geopoint_amsl's AMSL altitude is what the FCU flies to.
+     self.location_target = location_global_target_msg
++    # The Fake GPS app keeps its location in WGS84 (ellipsoid) altitude, so
++    # it gets the goal back as ellipsoid height: AMSL + N.
+     geopoint_wsg84 = nepi_nav.convert_amsl_to_wgs84(geopoint_amsl)
+     self.fake_gps_goto_location_pub.publish(geopoint_wsg84)
+ 
+@@ -1862,18 +2028,42 @@
+   
+ 
+ 
++  def updateGeoidHeight(self, latitude, longitude):
++    # Geoid height N at the fix, looked up again only once the fix has moved
++    # GEOID_UPDATE_DIST_DEG from the last lookup point. No fix (0,0) keeps the
++    # last value. A missing geoid database or a failed lookup keeps the last
++    # value (0 until a lookup succeeds) with a throttled warning.
++    if latitude == 0 and longitude == 0:
++      return
++    if self.geoid_lookup_geo is not None:
++      if abs(latitude - self.geoid_lookup_geo[0]) < self.GEOID_UPDATE_DIST_DEG and \
++         abs(longitude - self.geoid_lookup_geo[1]) < self.GEOID_UPDATE_DIST_DEG:
++        return
++    if nepi_nav.file_loaded == False:
++      self.msg_if.pub_warn("Geoid database not loaded (" + nepi_nav.GEOID_DATABASE_FILE + "), navpose geoid height stays 0, so location altitudes are not AMSL-corrected", throttle_s = 60.0)
++      return
++    try:
++      geopoint = GeoPoint()
++      geopoint.latitude = latitude
++      geopoint.longitude = longitude
++      self.geoid_height_m = float(nepi_nav.get_navpose_geoid_height_at_geopoint(geopoint))
++      self.geoid_lookup_geo = [latitude, longitude]
++    except Exception as e:
++      self.msg_if.pub_warn("Geoid height lookup failed, keeping " + str(self.geoid_height_m) + " m: " + str(e), throttle_s = 60.0)
++
+   def gps_topic_callback(self,navsatfix_msg):
+       if navsatfix_msg.latitude != 0:
+         self.gps_connected = True
+-      # geoid_height_m used to be read back from self.rbx_if.current_geoid_height_m,
+-      # which is itself only ever set from navpose_dict['geoid_height_meters']
+-      # below -- a self-referential loop with no real geoid-separation source
+-      # feeding it, permanently pinned at its initial value of 0 (confirmed
+-      # live 2026-08-27). No real geoid data is available from this SITL's
+-      # NavSatFix, so this is left an explicit, honest 0 instead of a fake
+-      # correction that only looked like it was doing something.
+-      geoid_height_m = 0
+-      altitude_wgs84 = navsatfix_msg.altitude - geoid_height_m
++      # mavros global_position/global altitude is already height above the
++      # WGS84 ellipsoid, so it is stored as is. geoid_height_meters is the
++      # geoid height N there (geoid above the ellipsoid), from nepi_nav's geoid
++      # database, so RBXRobotIF can form AMSL = altitude - N for the
++      # setpoint_position/global target. It used to be read back from
++      # self.rbx_if.current_geoid_height_m (a self-referential loop pinned at
++      # 0), then an explicit 0; see updateGeoidHeight.
++      self.updateGeoidHeight(navsatfix_msg.latitude, navsatfix_msg.longitude)
++      geoid_height_m = self.geoid_height_m
++      altitude_wgs84 = navsatfix_msg.altitude
+       time_ns = nepi_sdk.sec_from_msg_stamp(navsatfix_msg.header.stamp)
+       # Location Lat,Long
+       self.navpose_dict['has_location'] = True
+@@ -2045,6 +2235,27 @@
+     else:
+       self.msg_if.pub_warn("Own navpose source never appeared, leaving navpose unselected: " + self.own_navpose_topic)
+ 
++  def selectOwnImageCb(self, timer):
++    # Select the SITL robot_color image IF as the RBX image source once the
++    # connect has discovered it. Like the raw-topic selection this replaces,
++    # it overrides any persisted selection every startup; the operator can
++    # pick another source afterwards. Gives up after a bounded number of tries.
++    if self.robot_color_if is None or self.rbx_if is None or nepi_sdk.is_shutdown():
++      return
++    connect_if = self.rbx_if.connect_img_if
++    own_image_topic = self.robot_color_if.get_namespace()
++    if connect_if.get_selected_topic() == own_image_topic:
++      return
++    if own_image_topic in connect_if.get_available_topics():
++      connect_if.set_selected_topic(own_image_topic)
++      self.msg_if.pub_info("Selected own image source: " + own_image_topic)
++      return
++    self.own_image_tries += 1
++    if self.own_image_tries < self.OWN_IMAGE_MAX_TRIES:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnImageCb, oneshot = True)
++    else:
++      self.msg_if.pub_warn("Own image source never appeared, leaving image source unchanged: " + own_image_topic)
++
+   #######################
+   # Mavlink Interface Methods
+ 
+@@ -2848,8 +3059,14 @@
+       if cv2_img is None:
+         raise ValueError("cv2.imdecode returned None")
+       ros_img = nepi_img.cv2img_to_rosimg(cv2_img, encoding = "bgr8")
++      # The raw sensor_msgs/Image topics stay: the sim connector's common view
++      # mirror subscribes to color_2d_image/robot_color by path.
+       image_pub.publish(ros_img)
+       self.camera_last_frame_time = nepi_utils.get_time()
++      # robot_color is also published as a NEPI color image data product,
++      # the RBX image source (see robot_color_if in __init__)
++      if pub_attr == "image_pub_robot_color" and self.robot_color_if is not None:
++        self.robot_color_if.publish_cv2_img(cv2_img, encoding = "bgr8")
+     except Exception as e:
+       self.msg_if.pub_warn("Failed to process camera image frame: " + str(e))
+ 
+--- a/src/nepi_drivers/rbx_drivers/rbx_gazebo_node.py
++++ b/src/nepi_drivers/rbx_drivers/rbx_gazebo_node.py
+@@ -67,6 +67,7 @@
+ import copy
+ import json
+ import math
++import os
+ import socket
+ import threading
+ import time
+@@ -86,6 +87,8 @@
+ from geographic_msgs.msg import GeoPoint
+ 
+ from nepi_api.device_if_rbx import RBXRobotIF
++from nepi_api.device_if_npx import NPXDeviceIF
++from nepi_api.device_if_svx import DeviceSVXIF
+ from nepi_api.messages_if import MsgIF
+ 
+ PKG_NAME = 'RBX_GAZEBO' # Use in display menus
+@@ -236,6 +239,25 @@
+ 
+   rbx_if = None
+ 
++  # NPX device that publishes this robot's navpose (see selectOwnNavPoseCb)
++  npx_if = None
++  node_if = None
++  settings_if = None
++  save_data_if = None
++  connect_navpose_if = None
++  OWN_NAVPOSE_MAX_TRIES = 60 # 1 s apart
++  own_navpose_topic = None
++  own_navpose_tries = 0
++
++  # Every motor is its own DeviceSVXIF, named <device name>_motor_<n> (n from
++  # 1), keyed by that name in motor_svx_if_dict, which RBXRobotIF gets as its
++  # servo_if_dict. See createMotorSvxIfs.
++  motor_svx_if_dict = dict()
++  motor_svx_dirs = []
++  motor_svx_speed_ratios = []
++  motor_svx_stop_triggers = []
++  motor_svx_cmds_enabled = False
++
+   def __init__(self):
+     ####  NODE Initialization ####
+     nepi_sdk.init_node(name = self.DEFAULT_NODE_NAME)
+@@ -303,6 +325,19 @@
+     ##############################
+     # Manual motor-ratio state: motor 0 = left, motor 1 = right
+     self.motor_ratios = [0.0, 0.0]
++    # One servo (SVX) device per motor, named <device name>_motor_<n>. The
++    # motor count is fixed here at construction (motor_ratios above); any
++    # change to it needs a node restart. The names are entered now so
++    # RBXRobotIF sees its manual (servo) controls at construction; the
++    # DeviceSVXIF instances that share its IFs fill them in afterwards
++    # (createMotorSvxIfs).
++    motor_count = len(self.motor_ratios)
++    self.motor_svx_if_dict = dict()
++    for motor_ind in range(motor_count):
++      self.motor_svx_if_dict[self.device_name + "_motor_" + str(motor_ind + 1)] = None
++    self.motor_svx_dirs = [1] * motor_count
++    self.motor_svx_speed_ratios = [0.0] * motor_count
++    self.motor_svx_stop_triggers = [False] * motor_count
+ 
+     ##############################
+     # Home position state: local ENU x/y/z meters, carried over RBXRobotIF's
+@@ -358,8 +393,8 @@
+                              go_actions = self.RBX_GO_ACTIONS,
+                              setGoActionIndFunction = self.setGoActionInd,
+                              manualControlsReadyFunction = self.manualControlsReady,
+-                             getMotorControlRatios = self.getMotorControlRatios,
+-                             setMotorControlRatio = self.setMotorControlRatio,
++                             # One DeviceSVXIF per motor, see createMotorSvxIfs
++                             servo_if_dict = self.motor_svx_if_dict,
+                              autonomousControlsReadyFunction = self.autonomousControlsReady,
+                              getHomeFunction = self.getHome,
+                              setHomeFunction = self.setHome,
+@@ -368,14 +403,41 @@
+                              gotoPoseFunction = self.gotoPose,
+                              gotoPositionFunction = self.gotoPosition,
+                              gotoLocationFunction = None,
+-                             getNavPoseCb = self.getNavPoseCb,
+-                             navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
+                              data_source_description = 'simulator',
+                              data_ref_description = 'simulator',
+                              msg_if = self.msg_if
+                             )
+ 
+     self.msg_if.pub_info("... RBX interface running")
++    ready = self.rbx_if.wait_for_ready()
++
++    self.node_if = self.rbx_if.node_if
++    self.settings_if = self.rbx_if.settings_if
++    self.save_data_if = self.rbx_if.save_data_if
++    self.connect_navpose_if = self.rbx_if.connect_navpose_if
++    ##################################
++    # Setup NPX IF Class ####################
++    # The robot's navpose is published by an NPX device at
++    # <node>/<device_name>/npx/navpose, from getNavPoseCb, and selected as the
++    # RBX navpose source so RBXRobotIF's current_* control state tracks it.
++    self.msg_if.pub_debug("Starting NPX Device IF Initialization")
++    self.npx_if = NPXDeviceIF(device_info = self.device_info_dict,
++        data_source_description = 'simulator',
++        getNavPoseCb = self.getNavPoseCb,
++        max_navpose_update_rate = self.NAVPOSE_UPDATE_RATE,
++        msg_if = self.msg_if,
++        node_if = self.node_if,
++        settings_if = self.settings_if,
++        save_data_if = self.save_data_if,
++        connect_navpose_if = self.connect_navpose_if
++        )
++    # Make the robot's own navpose the RBX navpose source.
++    self.own_navpose_topic = self.npx_if.navpose_if.get_namespace()
++    nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++
++    ##################################
++    # Setup Motor SVX IF Classes ####################
++    self.createMotorSvxIfs()
+     time.sleep(1)
+ 
+     ## Raise the interface's setpoint-wait cmd_timeout above its factory default
+@@ -386,7 +448,18 @@
+     ## Point the interface's image-source search at this instance's own
+     ## device_name-qualified topic, overriding the factory default and any stale
+     ## persisted config on every startup, for deterministic per-instance behavior.
+-    self.rbx_if.setImageTopicCb(String(data = self.image_topic_name))
++    ## 3.4: RBXRobotIF has no setImageTopicCb; its image source is the
++    ## connect_img_if (ConnectColorImageIF) selection. set_selected_topic
++    ## quietly rejects a topic the connect has not discovered, and a raw
++    ## sensor_msgs/Image topic is not a NEPI image data product, so this only
++    ## takes effect once that topic is published as one (see report).
++    try:
++      # The publisher's relative name resolves against the node's ROS
++      # namespace, the parent of the node name.
++      image_topic = os.path.join(os.path.dirname(self.node_namespace), self.image_topic_name)
++      self.rbx_if.connect_img_if.set_selected_topic(image_topic)
++    except Exception as e:
++      self.msg_if.pub_warn("Could not select image source: " + str(e))
+ 
+     ## Start the closed-loop goto controller
+     controller_interval = float(1) / self.CONTROLLER_RATE_HZ
+@@ -567,6 +640,99 @@
+   def getMotorControlRatios(self):
+     return self.motor_ratios
+ 
++  ##########################
++  # Motor Servo (SVX) Functions
++  # Every motor is its own DeviceSVXIF (a spin servo) on the RUI Servo page.
++  # Each callback acts on one motor through setMotorControlRatio above, so its
++  # checks (index range, 0-1 clamp) still apply. A negative (reverse) command
++  # clamps to 0 there: this bridge's wheels cannot reverse.
++
++  def createMotorSvxIfs(self):
++    # One DeviceSVXIF per motor, shaped like ptx_iqr's per-axis servos: each
++    # shares the RBX interface's msg_if, node_if, settings_if, save_data_if and
++    # connect_navpose_if, and its <device name>_motor_<n> device name gives it
++    # its own <node>/<name>/svx namespace, status topic and node_if keys.
++    # Built after RBXRobotIF because they share its IFs; RBXRobotIF holds the
++    # same motor_svx_if_dict object, so it sees them once they are filled in.
++    self.msg_if.pub_info("Launching NEPI SVX motor interfaces...")
++    for motor_ind, motor_name in enumerate(list(self.motor_svx_if_dict.keys())):
++      motor_device_info = copy.deepcopy(self.device_info_dict)
++      motor_device_info["device_name"] = motor_name
++      self.motor_svx_if_dict[motor_name] = DeviceSVXIF(device_info = motor_device_info,
++                                        is_spin = True,
++                                        # Built into the robot, so always connected,
++                                        # with no Servo Connected toggle
++                                        always_connected = True,
++                                        stopMovingCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        moveCb = lambda direction, time_s = None, motor_ind = motor_ind: self.moveMotorSvx(motor_ind, direction, time_s),
++                                        moveSpeedRatioCb = lambda direction, speed_ratio, time_s = None, motor_ind = motor_ind: self.moveMotorSvxSpeedRatio(motor_ind, direction, speed_ratio, time_s),
++                                        # The Servo page drives a spin servo with set_direction +
++                                        # set_speed_ratio, and its STOP button sends go_home
++                                        set_direction = lambda direction, motor_ind = motor_ind: self.setMotorSvxDirection(motor_ind, direction),
++                                        get_direction = lambda motor_ind = motor_ind: self.motor_svx_dirs[motor_ind],
++                                        setSpeedRatioCb = lambda speed_ratio, motor_ind = motor_ind: self.setMotorSvxSpeedRatio(motor_ind, speed_ratio),
++                                        getSpeedRatioCb = lambda motor_ind = motor_ind: self.motor_svx_speed_ratios[motor_ind],
++                                        goHomeCb = lambda motor_ind = motor_ind: self.stopMotorSvx(motor_ind),
++                                        msg_if = self.msg_if,
++                                        node_if = self.node_if,
++                                        settings_if = self.settings_if,
++                                        save_data_if = self.save_data_if,
++                                        connect_navpose_if = self.connect_navpose_if
++                                        )
++    # DeviceSVXIF's init restores its saved speed ratio through setSpeedRatioCb
++    # during construction. Run commands are ignored until here, so starting the
++    # node never spins a motor.
++    self.motor_svx_cmds_enabled = True
++    self.msg_if.pub_info(" ... SVX motor interfaces running: " + str(list(self.motor_svx_if_dict.keys())))
++
++  def stopMotorSvx(self, motor_ind):
++    self.motor_svx_stop_triggers[motor_ind] = True
++    self.setMotorControlRatio(motor_ind, 0.0)
++
++  def runMotorSvx(self, motor_ind, signed_ratio):
++    # Same gate the RBX interface applied to set_motor_control before 3.4
++    if self.motor_svx_cmds_enabled == False:
++      return False
++    if self.manualControlsReady() != True:
++      self.msg_if.pub_warn("Motor " + str(motor_ind + 1) + " command ignored: manual controls not ready")
++      return False
++    self.motor_svx_stop_triggers[motor_ind] = False
++    self.setMotorControlRatio(motor_ind, signed_ratio)
++    return True
++
++  def moveMotorSvx(self, motor_ind, direction, time_s = None):
++    # moveCb (jog_timed): direction and optional time, at this motor's speed ratio
++    self.moveMotorSvxSpeedRatio(motor_ind, direction, self.motor_svx_speed_ratios[motor_ind], time_s)
++
++  def moveMotorSvxSpeedRatio(self, motor_ind, direction, speed_ratio, time_s = None):
++    # moveSpeedRatioCb (jog_timed_speed_ratio): the signed ratio is the
++    # direction's sign times the speed ratio. As in ptx_iqr's timed jog, a
++    # positive time stops the motor once it elapses or a stop arrives; no time
++    # (or 0) runs until stopped.
++    sign = 1.0 if direction >= 0 else -1.0
++    if self.runMotorSvx(motor_ind, sign * float(speed_ratio)) == False:
++      return
++    if time_s is not None and time_s > 0:
++      start_time = nepi_utils.get_time()
++      while (nepi_utils.get_time() - start_time) < time_s and self.motor_svx_stop_triggers[motor_ind] == False and not nepi_sdk.is_shutdown():
++        nepi_sdk.sleep(0.1)
++      if self.motor_svx_stop_triggers[motor_ind] == False:
++        self.stopMotorSvx(motor_ind)
++
++  def setMotorSvxDirection(self, motor_ind, direction):
++    self.motor_svx_dirs[motor_ind] = 1 if direction >= 0 else -1
++    # Re-command a running motor so a direction change at an unchanged speed
++    # ratio takes effect (DeviceSVXIF skips an unchanged set_speed_ratio)
++    ratios = self.getMotorControlRatios()
++    if motor_ind < len(ratios) and ratios[motor_ind] != 0:
++      self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
++  def setMotorSvxSpeedRatio(self, motor_ind, speed_ratio):
++    # For a spin servo the speed ratio is the run command: the Servo page's
++    # speed/direction slider sends set_direction, then set_speed_ratio.
++    self.motor_svx_speed_ratios[motor_ind] = float(speed_ratio)
++    self.runMotorSvx(motor_ind, self.motor_svx_dirs[motor_ind] * self.motor_svx_speed_ratios[motor_ind])
++
+   def autonomousControlsReady(self):
+     # Gates all goto commands: a live bridge connection AND fresh telemetry, so
+     # goto targets are computed from a real current position.
+@@ -603,8 +769,40 @@
+                           'y_m': self.navpose_dict['y_m'] + point_enu_m.y,
+                           'yaw_deg': orientation_enu_deg[2]}
+ 
++  ### Callback returning the full navpose dict to the NPX interface
+   def getNavPoseCb(self):
+-    return self.navpose_dict
++    # Returns None until telemetry has arrived: NPXDeviceIF derives its has_*
++    # capabilities once, from the first dict it gets, so a blank dict returned
++    # before telemetry would fix every capability at False for the life of
++    # the node.
++    if self.navpose_dict['has_orientation'] == False or self.navpose_dict['has_position'] == False:
++      return None
++    return copy.deepcopy(self.navpose_dict)
++
++  def selectOwnNavPoseCb(self, timer):
++    # Select the robot's own NPX navpose as the RBX navpose source once the
++    # connect has discovered it. Only a startup default is replaced ('None',
++    # '', or the node namespace that older saved configs hold), never a
++    # source the operator picked, and it gives up after a bounded number of
++    # tries so a navpose that never appears costs nothing.
++    connect_if = self.connect_navpose_if
++    if connect_if is None or self.own_navpose_topic is None or nepi_sdk.is_shutdown():
++      return
++    selected = connect_if.get_selected_topic()
++    if selected == self.own_navpose_topic:
++      return
++    if selected not in ['None', '', None, self.node_namespace]:
++      self.msg_if.pub_info("Keeping operator navpose source: " + str(selected))
++      return
++    if self.own_navpose_topic in connect_if.get_available_topics():
++      connect_if.set_selected_topic(self.own_navpose_topic)
++      self.msg_if.pub_info("Selected own navpose source: " + self.own_navpose_topic)
++      return
++    self.own_navpose_tries += 1
++    if self.own_navpose_tries < self.OWN_NAVPOSE_MAX_TRIES:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++    else:
++      self.msg_if.pub_warn("Own navpose source never appeared, leaving navpose unselected: " + self.own_navpose_topic)
+ 
+   #######################
+   ### Setup-Action Functions
+@@ -733,8 +931,8 @@
+       tol_m = self.FACTORY_GOTO_TOL_M
+       tol_rad = self.FACTORY_GOTO_TOL_RAD
+       if self.rbx_if is not None:
+-        tol_m = self.rbx_if.rbx_info.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
+-        tol_rad = (math.radians(self.rbx_if.rbx_info.error_bounds.max_rotation_error_deg)
++        tol_m = self.rbx_if.status_msg.error_bounds.max_distance_error_m * self.GOTO_TOL_FRACTION
++        tol_rad = (math.radians(self.rbx_if.status_msg.error_bounds.max_rotation_error_deg)
+                    * self.GOTO_TOL_FRACTION)
+ 
+       dx = target['x_m'] - cur_x
+--- a/src/nepi_engine/nepi_api/src/nepi_api/connect_device_if_rbx.py
++++ b/src/nepi_engine/nepi_api/src/nepi_api/connect_device_if_rbx.py
+@@ -628,7 +628,7 @@
+             lat (float): Target latitude in degrees. Pass -999 to keep the current value.
+             long (float): Target longitude in degrees. Pass -999 to keep the current value.
+             altitude_meters (float): Target altitude in meters. Pass -999 to keep the current value.
+-            yaw_deg (float): Target yaw in degrees (-180 to 180). Pass -999 to keep the current value.
++            yaw_deg (float): Target yaw, ENU yaw in degrees, 0 = east, counter-clockwise positive (-180 to 180). Pass -999 to keep the current value.
+         """
+         pub_name = 'goto_location'
+         msg = GotoLocation()
+@@ -641,11 +641,13 @@
+     def goto_position(self, x_meters, y_meters, z_meters, yaw_deg):
+         """Command the RBX device to move to a relative body-frame position.
+ 
++        Body FLU frame: x forward, y left, z up, yaw counter-clockwise positive.
++
+         Args:
+             x_meters (float): Target forward offset in meters. Zero keeps the current position on this axis.
+             y_meters (float): Target left offset in meters. Zero keeps the current position on this axis.
+             z_meters (float): Target up offset in meters. Zero keeps the current position on this axis.
+-            yaw_deg (float): Target yaw in degrees (-180 to 180). Zero keeps the current yaw.
++            yaw_deg (float): Target body yaw change in degrees (-180 to 180), counter-clockwise positive (turn left). Zero keeps the current yaw.
+         """
+         pub_name = 'goto_position'
+         msg = GotoPosition()
+@@ -684,7 +686,7 @@
+         Args:
+             roll_deg (float): Target roll in degrees (-180 to 180). Pass -999 to keep the current value.
+             pitch_deg (float): Target pitch in degrees (-180 to 180). Pass -999 to keep the current value.
+-            yaw_deg (float): Target yaw in degrees (-180 to 180). Pass -999 to keep the current value.
++            yaw_deg (float): Target yaw, ENU yaw in degrees, 0 = east, counter-clockwise positive (-180 to 180). Pass -999 to keep the current value.
+         """
+         pub_name = 'goto_pose'
+         msg = GotoPose()
+--- a/src/nepi_engine/nepi_api/src/nepi_api/device_if_rbx.py
++++ b/src/nepi_engine/nepi_api/src/nepi_api/device_if_rbx.py
+@@ -446,9 +446,13 @@
+ 
+ 
+ 
++        # Copy the has_*_control axis flags into caps_dict unconditionally (the
++        # class-level caps_dict starts empty, so the old "already a key" filter
++        # dropped every one). NodeIF fills status fields by name from caps_dict,
++        # so only keys that are DeviceRBXStatus fields are copied.
+         if axisCapabilities is not None:
+           for key in axisCapabilities.keys():
+-             if key in self.caps_dict.keys():
++             if key in DeviceRBXStatus.__slots__:
+                 self.caps_dict[key] = axisCapabilities[key]       
+ 
+ 
+@@ -1074,6 +1078,9 @@
+         status_msg.mode_options = list(self.caps_dict['modes'])
+         status_msg.setup_action_options = list(self.caps_dict['setup_actions'])
+         status_msg.go_action_options = list(self.caps_dict['go_actions'])
++        # Same name mismatch: the capability key is 'has_go_velocity', the
++        # status field is has_goto_velocity.
++        status_msg.has_goto_velocity = self.caps_dict['has_go_velocity']
+ 
+ 
+         try:
+@@ -1190,6 +1197,10 @@
+         if navpose_dict is None:
+             return
+         try:
++            # NavPoseIF converts to the system frame_nav setting, so the dict can
++            # arrive as NED. All control math here is ENU: convert a copy back.
++            if navpose_dict.get('frame_nav', 'ENU') == 'NED':
++                navpose_dict = nepi_nav.convert_navpose_ned2enu(copy.deepcopy(navpose_dict))
+             self.navpose_dict = navpose_dict
+             self.current_heading_deg = navpose_dict['heading_deg']
+             self.current_geoid_height_m = navpose_dict['geoid_height_meters']
+@@ -1200,10 +1211,11 @@
+             # Position: native ENU vector, plus NED conversion
+             self.current_position_enu_m = [navpose_dict['x_m'], navpose_dict['y_m'], navpose_dict['z_m']]
+             self.current_position_ned_m = [ned_dict['x_m'], ned_dict['y_m'], ned_dict['z_m']]
+-            # Location: WGS84 geopoint, plus AMSL conversion
++            # Location: WGS84 geopoint, plus AMSL. AMSL = ellipsoid altitude -
++            # geoid height, using this navpose's own geoid_height_meters, the
++            # same value setpoint_location_global_wgs84 sends the setpoint with.
+             self.current_location_wgs84_geo = [navpose_dict['latitude'], navpose_dict['longitude'], navpose_dict['altitude_m']]
+-            amsl_dict = nepi_nav.convert_navpose_wgs842amsl(copy.deepcopy(navpose_dict))
+-            self.current_location_amsl_geo = [amsl_dict['latitude'], amsl_dict['longitude'], amsl_dict['altitude_m']]
++            self.current_location_amsl_geo = [navpose_dict['latitude'], navpose_dict['longitude'], navpose_dict['altitude_m'] - self.current_geoid_height_m]
+         except Exception as e:
+             self.msg_if.pub_warn("Failed to update current navpose: " + str(e), throttle_s = 5.0 )
+             
+@@ -2044,7 +2056,8 @@
+     # Input is [LAT, LONG, ALT_WGS84, YAW_ENU_DEGREES]
+     # Converted to AMSL Altitude before sending; yaw is sent as ENU, unconverted
+     # Altitude is specified as meters above the WGS-84 ellipsoid and converted to AMSL
+-    # (WGS84 + the navpose geoid_height_meters) before sending
++    # (WGS84 - the navpose geoid_height_meters, the geoid's height above the
++    # ellipsoid) before sending
+     # Yaw is specified as ENU yaw degrees: 0 faces east, positive counter-clockwise
+     #####################################################
+     def setpoint_location_global_wgs84(self,setpoint_location):
+@@ -2118,7 +2131,10 @@
+       new_geopoint_amsl=GeoPoint()
+       new_geopoint_amsl.latitude = new_geopoint_wgs84[0]
+       new_geopoint_amsl.longitude = new_geopoint_wgs84[1]
+-      new_geopoint_amsl.altitude = new_geopoint_wgs84[2] + start_geoid_height_m
++      # AMSL = ellipsoid altitude - geoid height (N is the geoid above the
++      # ellipsoid). A held (-999) altitude is the start ellipsoid altitude, so
++      # it converts to the start AMSL altitude, not a jump of N meters.
++      new_geopoint_amsl.altitude = new_geopoint_wgs84[2] - start_geoid_height_m
+       self.msg_if.pub_info("Location Goal Lat, Long, Alt_AMSL" )
+       self.msg_if.pub_info(["%.8f" % new_geopoint_amsl.latitude,"%.8f" % new_geopoint_amsl.longitude,"%.2f" % new_geopoint_amsl.altitude])
+       # New Local Orienation ENU in degs  
+--- a/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_nav.py
++++ b/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_nav.py
+@@ -155,7 +155,7 @@
+ 
+ BLANK_POSITION_DATA_DICT = {
+     'time_position': 0.0,
+-    # Position should be provided in Meters ENU (x,y,z) with x forward, y left, and z up
++    # Position should be provided in Meters ENU (x,y,z) with x east, y north, and z up
+     'x_m': 0.0,
+     'y_m': 0.0,
+     'z_m': 0.0,
+@@ -167,7 +167,9 @@
+ 
+ BLANK_ORIENTATION_DATA_DICT = {
+     'time_orientation': 0.0,
+-    # Orientation should be provided in Degrees ENU
++    # Orientation should be provided in Degrees ENU. roll_deg and pitch_deg are
++    # always REP-103 FLU body angles (roll about x forward, pitch about y left),
++    # whatever frame_nav says; only yaw and position change between ENU and NED.
+     'roll_deg': 0.0,
+     'pitch_deg': 0.0,
+     'yaw_deg': 0.0,
+@@ -253,7 +255,10 @@
+ 
+     'has_orientation': False,
+     'time_orientation': 0.0,
+-    # Orientation should be provided in Degrees in specified 3d frame
++    # Orientation should be provided in Degrees in specified 3d frame.
++    # roll_deg and pitch_deg are always REP-103 FLU body angles (roll about x
++    # forward, pitch about y left), whatever frame_nav says; only yaw_deg and
++    # the x/y/z position change between ENU and NED.
+     'roll_deg': 0.0,
+     'pitch_deg': 0.0,
+     'yaw_deg': 0.0,
+@@ -1198,6 +1203,11 @@
+ 
+ 
+   
++### NavPose roll_deg and pitch_deg are always REP-103 FLU body angles (roll
++### about x forward, pitch about y left), whatever frame_nav says. Only yaw and
++### position change between ENU and NED, so both converters below pass roll and
++### pitch through unchanged. Each converter tags the dict's frame_nav with the
++### frame it converted to.
+ def convert_navpose_enu2ned(npdata_dict):
+   rpy_enu_d = [npdata_dict['roll_deg'], npdata_dict['pitch_deg'], npdata_dict['yaw_deg']]
+   yaw_ned_d = convert_yaw_enu2ned(rpy_enu_d[2])
+@@ -1207,6 +1217,7 @@
+   point_ned= [npdata_dict['y_m'], npdata_dict['x_m'], - npdata_dict['z_m']]
+   [npdata_dict['x_m'], npdata_dict['y_m'], npdata_dict['z_m']] = point_ned
+ 
++  npdata_dict['frame_nav'] = 'NED'
+   return npdata_dict
+ 
+ def convert_navpose_ned2enu(npdata_dict):
+@@ -1218,6 +1229,7 @@
+   point_enu = [npdata_dict['y_m'], npdata_dict['x_m'], - npdata_dict['z_m']]
+   [npdata_dict['x_m'], npdata_dict['y_m'], npdata_dict['z_m']] = point_enu
+ 
++  npdata_dict['frame_nav'] = 'ENU'
+   return npdata_dict
+ 
+ 
+@@ -1516,12 +1528,14 @@
+   return geoid_height
+   
+ 
++### The geoid height N (pygeodesy GeoidKarney) is the geoid's height above the
++### WGS84 ellipsoid, so ellipsoid height h = AMSL + N and AMSL = h - N.
+ def convert_amsl_to_wgs84(geopoint_in):
+   geoid_height = get_navpose_geoid_height_at_geopoint(geopoint_in)
+   geopoint_out = GeoPoint()
+   geopoint_out.latitude = geopoint_in.latitude
+   geopoint_out.longitude = geopoint_in.longitude
+-  geopoint_out.altitude = geopoint_in.altitude - geoid_height
++  geopoint_out.altitude = geopoint_in.altitude + geoid_height
+   return geopoint_out
+   
+ def convert_wgs84_to_amsl(geopoint_in):
+@@ -1529,7 +1543,7 @@
+   geopoint_out = GeoPoint()
+   geopoint_out.latitude = geopoint_in.latitude
+   geopoint_out.longitude = geopoint_in.longitude
+-  geopoint_out.altitude = geopoint_in.altitude + geoid_height
++  geopoint_out.altitude = geopoint_in.altitude - geoid_height
+   return geopoint_out
+ 
+ 
+@@ -1577,10 +1591,16 @@
+ 
+ ### Function to Convert Yaw from Body to ENU Frame
+ def convert_yaw_body2enu(yaw_body_deg,cur_heading_deg):
+-  cur_yaw_enu_deg = - cur_heading_deg
+-  if cur_yaw_enu_deg > 180: # Convert to +-180
+-    cur_yaw_enu_deg = cur_yaw_enu_deg - 360
++  # cur_heading_deg is a compass heading (0 = north, clockwise positive), whose
++  # ENU yaw is 90 - heading. Body yaw is counter-clockwise positive, the same
++  # sense as ENU yaw, so it adds. Heading 0, body yaw 0 gives 90 (north);
++  # heading 90, body yaw 10 gives 10. The old -heading form was off by 90 deg.
++  cur_yaw_enu_deg = 90 - cur_heading_deg
+   yaw_enu_deg =  cur_yaw_enu_deg + yaw_body_deg
++  # Wrap to (-180, 180]
++  yaw_enu_deg = float(yaw_enu_deg) % 360.0
++  if yaw_enu_deg > 180.0:
++    yaw_enu_deg = yaw_enu_deg - 360.0
+   return yaw_enu_deg
+ 
+ ### Function to Convert Point from Body to ENU Frame
+@@ -1630,6 +1650,8 @@
+   # cur_geopoint_geo is list [Lat,Long,Alt] with Alt passed through
+   earth_radius_km = 6378.137
+   earth_circ_m = np.float64(2 * math.pi * earth_radius_km*1000)
++  # Work on a copy so the caller's point list is not modified below
++  point_body_m = list(point_body_m)
+   # Calculate bearing in NED frame
+   point_body_m[1] = - point_body_m[1] # adjust for y = right frame from body y left frame.
+   cur_bearing_ned_deg = convert_yaw_enu2ned(cur_bearing_enu_deg)
+--- a/src/nepi_interfaces/msg/NavPose.msg
++++ b/src/nepi_interfaces/msg/NavPose.msg
+@@ -30,6 +30,9 @@
+ 
+ # Orientation Degrees in native frame ENU  (roll,pitch,yaw) right-hand
+ # with axises defined as x forward, y left, and z up
++# roll_deg and pitch_deg are always REP-103 FLU body angles (roll about x
++# forward, pitch about y left), whatever frame_nav says; only yaw_deg and the
++# x/y/z position change between ENU and NED.
+ bool has_orientation
+ float32 time_orientation
+ float32 roll_deg
+--- a/src/nepi_interfaces/msg/NavPoseOrientation.msg
++++ b/src/nepi_interfaces/msg/NavPoseOrientation.msg
+@@ -4,6 +4,9 @@
+ float64 timestamp
+ 
+ # Orientation in 'ENU' frame
++# roll_deg and pitch_deg are always REP-103 FLU body angles (roll about x
++# forward, pitch about y left), whatever the nav frame; only yaw_deg changes
++# between ENU and NED.
+ float32 roll_deg
+ float32 pitch_deg
+ float32 yaw_deg
+--- a/src/nepi_rui/src/rui_webserver/rui-app/src/NepiDeviceRBX-Controls.js
++++ b/src/nepi_rui/src/rui_webserver/rui-app/src/NepiDeviceRBX-Controls.js
+@@ -1160,7 +1160,7 @@
+                     </Label>
+                   </div>
+ 
+-                  <Label title={"Yaw Deg"}>
++                  <Label title={"Yaw ENU Deg (0=East, CCW+)"}>
+                     <Input
+                       value={this.state.yaw_deg_pose}
+                       id="yaw_deg_pose"
+@@ -1214,7 +1214,7 @@
+                     />
+                   </Label>
+ 
+-                  <Label title={"Yaw Deg"}>
++                  <Label title={"Yaw Body Deg (CCW+ = left)"}>
+                     <Input
+                       value={this.state.yaw_deg_position}
+                       id="yaw_deg_position"
+@@ -1339,7 +1339,7 @@
+                     />
+                   </Label>
+ 
+-                  <Label title={"Yaw Deg"}>
++                  <Label title={"Yaw ENU Deg (0=East, CCW+)"}>
+                     <Input
+                       value={this.state.yaw_deg_location}
+                       id="yaw_deg_location"
+--- a/src/nepi_rui/src/rui_webserver/rui-app/src/TeleopKeymap.js
++++ b/src/nepi_rui/src/rui_webserver/rui-app/src/TeleopKeymap.js
+@@ -82,10 +82,10 @@
+   const map = {}
+   map[bindings.forward] = [1, 0, 0, 0]
+   map[bindings.backward] = [-1, 0, 0, 0]
+-  map[bindings.turn_left] = [0, 0, 0, -1]
+-  map[bindings.turn_right] = [0, 0, 0, 1]
+-  map[bindings.strafe_left] = [0, -1, 0, 0]
+-  map[bindings.strafe_right] = [0, 1, 0, 0]
++  map[bindings.turn_left] = [0, 0, 0, 1]
++  map[bindings.turn_right] = [0, 0, 0, -1]
++  map[bindings.strafe_left] = [0, 1, 0, 0]
++  map[bindings.strafe_right] = [0, -1, 0, 0]
+   map[bindings.altitude_up] = [0, 0, 1, 0]
+   map[bindings.altitude_down] = [0, 0, -1, 0]
+   return map

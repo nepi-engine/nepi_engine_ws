@@ -1,0 +1,178 @@
+--- a/src/nepi_apps/nepi_app_image_viewer/api/connect_app_image_viewer.py
++++ b/src/nepi_apps/nepi_app_image_viewer/api/connect_app_image_viewer.py
+@@ -159,13 +159,13 @@
+ 
+         # Create Node Class ####################
+         
++        # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg: passing them
++        # raised TypeError. The namespace is already carried by CFGS_DICT.
+         self.con_node_if = NodeClassIF(
+-                        namespace = self.namespace,
+                         configs_dict = self.CFGS_DICT,
+                         services_dict = self.SRVS_DICT,
+                         pubs_dict = self.PUBS_DICT,
+                         subs_dict = self.SUBS_DICT,
+-                        log_class_name = True,
+                         msg_if = self.msg_if
+         )
+ 
+--- a/src/nepi_apps/nepi_app_file_pub_img/api/connect_app_file_pub_img.py
++++ b/src/nepi_apps/nepi_app_file_pub_img/api/connect_app_file_pub_img.py
+@@ -201,13 +201,13 @@
+ 
+         # Create Node Class ####################
+         
++        # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg: passing them
++        # raised TypeError. The namespace is already carried by CFGS_DICT.
+         self.con_node_if = NodeClassIF(
+-                        namespace = self.namespace,
+                         configs_dict = self.CFGS_DICT,
+                         services_dict = self.SRVS_DICT,
+                         pubs_dict = self.PUBS_DICT,
+                         subs_dict = self.SUBS_DICT,
+-                        log_class_name = True,
+                         msg_if = self.msg_if
+         )
+ 
+--- a/src/nepi_apps/nepi_app_onvif_mgr/api/connect_app_onvif_mgr.py
++++ b/src/nepi_apps/nepi_app_onvif_mgr/api/connect_app_onvif_mgr.py
+@@ -130,13 +130,13 @@
+ 
+         # Create Node Class ####################
+         
++        # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg: passing them
++        # raised TypeError. The namespace is already carried by CFGS_DICT.
+         self.con_node_if = NodeClassIF(
+-                        namespace = self.namespace,
+                         configs_dict = self.CFGS_DICT,
+                         services_dict = self.SRVS_DICT,
+                         pubs_dict = self.PUBS_DICT,
+-                        subs_dict = self.SUBS_DICT,
+-                        log_class_name = True
++                        subs_dict = self.SUBS_DICT
+         )
+ 
+         
+--- a/src/nepi_apps/nepi_app_file_pub_depthmap/api/connect_app_file_pub_depthmap.py
++++ b/src/nepi_apps/nepi_app_file_pub_depthmap/api/connect_app_file_pub_depthmap.py
+@@ -243,13 +243,13 @@
+ 
+         # Create Node Class ####################
+ 
++        # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg: passing them
++        # raised TypeError. The namespace is already carried by CFGS_DICT.
+         self.con_node_if = NodeClassIF(
+-                        namespace = self.namespace,
+                         configs_dict = self.CFGS_DICT,
+                         services_dict = self.SRVS_DICT,
+                         pubs_dict = self.PUBS_DICT,
+                         subs_dict = self.SUBS_DICT,
+-                        log_class_name = True,
+                         msg_if = self.msg_if
+         )
+ 
+--- a/src/nepi_apps/nepi_app_file_pub_vid/api/connect_app_file_pub_vid.py
++++ b/src/nepi_apps/nepi_app_file_pub_vid/api/connect_app_file_pub_vid.py
+@@ -204,13 +204,13 @@
+ 
+         # Create Node Class ####################
+         
++        # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg: passing them
++        # raised TypeError. The namespace is already carried by CFGS_DICT.
+         self.con_node_if = NodeClassIF(
+-                        namespace = self.namespace,
+                         configs_dict = self.CFGS_DICT,
+                         services_dict = self.SRVS_DICT,
+                         pubs_dict = self.PUBS_DICT,
+-                        subs_dict = self.SUBS_DICT,
+-                        log_class_name = True
++                        subs_dict = self.SUBS_DICT
+         )
+ 
+         
+--- a/src/nepi_apps/nepi_app_nav_sim/scripts/nav_sim_app_node.py
++++ b/src/nepi_apps/nepi_app_nav_sim/scripts/nav_sim_app_node.py
+@@ -1526,7 +1526,11 @@
+         d = copy.deepcopy(nepi_nav.BLANK_NAVPOSE_DICT)
+         d['has_location']    = True; d['latitude']    = lat;    d['longitude'] = lon;   d['time_location']    = t
+         d['has_heading']     = True; d['heading_deg'] = heading;                        d['time_heading']     = t
+-        d['has_orientation'] = True; d['roll_deg']    = roll;   d['pitch_deg'] = pitch; d['yaw_deg'] = heading; d['time_orientation'] = t
++        # heading_deg is the NED compass heading; yaw_deg is ENU (frame_nav), so it
++        # is converted the same way the GPS kind does. Roll and pitch pass through
++        # unchanged, as in nepi_nav.convert_navpose_ned2enu.
++        yaw_enu = nepi_nav.convert_yaw_ned2enu(heading)
++        d['has_orientation'] = True; d['roll_deg']    = roll;   d['pitch_deg'] = pitch; d['yaw_deg'] = yaw_enu; d['time_orientation'] = t
+         d['has_altitude']    = True; d['altitude_m']  = alt;                            d['time_altitude']    = t
+         d['has_depth']       = True; d['depth_m']     = depth;                          d['time_depth']       = t
+         self._navpose_if.publish_navpose(d)
+--- a/src/nepi_apps/CONTROLS_MIGRATION_PATTERN.md
++++ b/src/nepi_apps/CONTROLS_MIGRATION_PATTERN.md
+@@ -16,7 +16,8 @@
+ `onvif_mgr`, and `image_viewer` node-side only (see the last section).
+ 
+ The pattern sources are `ControlsIF` in
+-`nepi_engine/nepi_api/src/nepi_api/system_if.py`, the dict helpers in
++`nepi_engine/nepi_api/src/nepi_api/utils_if.py` (it lived in `system_if.py`
++before 3.4; import it from `nepi_api.utils_if`), the dict helpers in
+ `nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py`, and the two renderers
+ `Nepi_IF_Controls.js` and `Nepi_IF_Control.js` in `nepi_rui`.
+ 
+@@ -132,14 +133,18 @@
+ 
+ ## The namespace rule, and deriving one set name on both sides
+ 
+-A `ControlsIF` is **always a direct child of the NODE namespace**. Its `__init__`
+-builds `create_namespace(node_namespace, controls_name)`, there is **no**
+-`namespace` argument, and `nepi_utils.get_clean_name()` rewrites `/` to `_` so
+-the name cannot carry a path.
++A `ControlsIF` is **a direct child of the NODE namespace unless it is given a
++`namespace`**. Since 3.4 the constructor takes `namespace=None`, and NodeIF
++resolves `None` to the node namespace before building
++`create_namespace(namespace, controls_name)`. No app in this document passes it,
++so every set here still lands at `<node>/<controls_name>`. A `namespace` whose
++last segment equals the set name has that segment stripped first, so it does not
++double up. `nepi_utils.get_clean_name()` rewrites `/` to `_`, so the name itself
++still cannot carry a path. Before 3.4 there was no `namespace` argument at all.
+ 
+ Three consequences, all of which have cost real debugging time.
+ 
+-**A set cannot be mounted under a sub-namespace.** Where an app needs more than
++**Without `namespace`, a set cannot be mounted under a sub-namespace.** Where an app needs more than
+ one set, the set NAME is the only thing that distinguishes them, and the node and
+ the RUI must derive the same name independently. `nav_sim` needs one set per
+ section per instance, so it builds the name from the instance's own ROS path:
+@@ -504,7 +509,21 @@
+ ## Upstream defects encountered
+ 
+ Recorded during the fake GPS migration and not fixed by it. All are outside
+-`nepi_apps`.
++`nepi_apps`. The `system_if.py` line numbers are from before 3.4; `ControlsIF`
++now lives in `utils_if.py`.
++
++Fixed in 3.4 (2026-11-09), found on nav_sim. Any app on an older engine shows
++both symptoms:
++
++- `ControlsIF.save_params_dict()` saved with `set_value('controls_dict', ...)`.
++  `NodeIF.set_value` also does a setattr on any name the class declares, so the
++  live controls dict was replaced by the flat `{control: value}` params dict. The
++  next status publish then logged `update_status_msg: left control '<name>' ...
++  TypeError` for every control in the set. It now saves with `set_param`.
++- `nepi_controls.apply_update_msg()` called `len()` on the current value when an
++  update carried an index. The RUI sends an index with every typed edit, so every
++  typed edit to a single-value control failed with `object of type 'float' has no
++  len()`.
+ 
+ - `nepi_sdk/nepi_controls.py:880` -- `get_bounds()` raises `UnboundLocalError`
+   for an unknown control name instead of returning its prepared `[-999,-999]`.
+--- a/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py
++++ b/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py
+@@ -1591,6 +1591,9 @@
+     if debug == True:
+       logger.log_debug("Setting Update Msg value: " + str([name, update_value])) 
+ 
++    # Bound before the branch: a rejected update skips it, and the debug log
++    # below then read an unassigned name (NameError, debug runs only).
++    updated_value = None
+     if update_value is not None:
+       controls_dict = set_value(controls_dict, name, update_value, debug = debug)
+       updated_value = get_value(controls_dict, name)

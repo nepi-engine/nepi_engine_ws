@@ -1,0 +1,1287 @@
+--- a/src/nepi_drivers/rbx_drivers/rbx_ardupilot_discovery.py
++++ b/src/nepi_drivers/rbx_drivers/rbx_ardupilot_discovery.py
+@@ -366,7 +366,9 @@
+       self.enable_fake_gps = (str(fake_gps_val).lower() == 'true')
+     except Exception as e:
+       self.logger.log_warn("Failed to load options " + str(e))
+-      return None
++      # drivers_mgr assigns this return to its active_paths_list; None
++      # replaced that list and broke every later discovery call.
++      return self.active_paths_list
+ 
+     # Retry behavior
+     self.retry = retry_enabled
+--- a/src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py
++++ b/src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py
+@@ -50,6 +50,7 @@
+ from nepi_interfaces.msg import UpdateBool
+ 
+ from nepi_api.device_if_rbx import RBXRobotIF
++from nepi_api.device_if_npx import NPXDeviceIF
+ from nepi_api.messages_if import MsgIF
+ 
+ PKG_NAME = 'RBX_ARDUPILOT' # Use in display menus
+@@ -736,6 +737,16 @@
+ 
+   rbx_if = None
+ 
++  # NPX device that publishes this autopilot's navpose (see selectOwnNavPoseCb)
++  npx_if = None
++  node_if = None
++  settings_if = None
++  save_data_if = None
++  connect_navpose_if = None
++  OWN_NAVPOSE_MAX_TRIES = 60 # 1 s apart
++  own_navpose_topic = None
++  own_navpose_tries = 0
++
+   port_id = None
+ 
+   msg_list = ["","","","","",""]
+@@ -1146,8 +1157,9 @@
+                                   go_actions = self.RBX_GO_ACTIONS,
+                                   setGoActionIndFunction = self.setGoActionInd,
+                                   manualControlsReadyFunction = self.manualControlsReady,
+-                                  getMotorControlRatios = self.getMotorControlRatios,
+-                                  setMotorControlRatio = self.setMotorControlRatio,
++                                  # 3.4.0 PORT: motor test not wired to servo_if_dict, see report
++                                  # getMotorControlRatios = self.getMotorControlRatios,
++                                  # setMotorControlRatio = self.setMotorControlRatio,
+                                   teleopControlsReadyFunction = self.teleopControlsReady,
+                                   setTeleopVelocityFunction = self.setTeleopVelocity,
+                                   autonomousControlsReadyFunction = self.autonomousControlsReady,
+@@ -1158,13 +1170,36 @@
+                                   gotoPoseFunction = self.gotoPose,
+                                   gotoPositionFunction = self.gotoPosition,
+                                   gotoLocationFunction = self.gotoLocation,
+-                                  getNavPoseCb = self.getNavPoseCb,
+-                                  navpose_update_rate = self.POSITION_UPDATE_RATE,
+                                   msg_if = self.msg_if
+                                 )
+ 
+ 
+     self.msg_if.pub_info("... RBX interface running")
++    ready = self.rbx_if.wait_for_ready()
++
++    self.node_if = self.rbx_if.node_if
++    self.settings_if = self.rbx_if.settings_if
++    self.save_data_if = self.rbx_if.save_data_if
++    self.connect_navpose_if = self.rbx_if.connect_navpose_if
++    ##################################
++    # Setup NPX IF Class ####################
++    # The autopilot's navpose is published by an NPX device at
++    # <node>/<device_name>/npx/navpose, from getNavPoseCb, and selected as the
++    # RBX navpose source so RBXRobotIF's current_* control state tracks it.
++    self.msg_if.pub_debug("Starting NPX Device IF Initialization")
++    self.npx_if = NPXDeviceIF(device_info = self.device_info_dict,
++        data_source_description = ('simulator' if self.is_sitl else 'control_system'),
++        getNavPoseCb = self.getNavPoseCb,
++        max_navpose_update_rate = self.POSITION_UPDATE_RATE,
++        msg_if = self.msg_if,
++        node_if = self.node_if,
++        settings_if = self.settings_if,
++        save_data_if = self.save_data_if,
++        connect_navpose_if = self.connect_navpose_if
++        )
++    # Make the autopilot's own navpose the RBX navpose source.
++    self.own_navpose_topic = self.npx_if.navpose_if.get_namespace()
++    nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
+     time.sleep(1)
+ 
+     ## Point the interface's image-source search at this instance's own
+@@ -1176,7 +1211,18 @@
+     ## is correct there as well as in SITL; the operator can still switch to
+     ## any of the other five topics (SITL only) any time via the ordinary
+     ## Image Source dropdown.
+-    self.rbx_if.setImageTopicCb(String(data = self.robot_color_topic_name))
++    ## 3.4: RBXRobotIF has no setImageTopicCb; its image source is the
++    ## connect_img_if (ConnectColorImageIF) selection. set_selected_topic
++    ## quietly rejects a topic the connect has not discovered, and a raw
++    ## sensor_msgs/Image topic is not a NEPI image data product, so this only
++    ## takes effect once that topic is published as one (see report).
++    try:
++      # The publisher's relative name resolves against the node's ROS
++      # namespace, the parent of the node name.
++      robot_color_topic = os.path.join(os.path.dirname(self.node_namespace), self.robot_color_topic_name)
++      self.rbx_if.connect_img_if.set_selected_topic(robot_color_topic)
++    except Exception as e:
++      self.msg_if.pub_warn("Could not select robot_color image source: " + str(e))
+     ## Same "deterministic per-instance behavior regardless of what a
+     ## previous run left in config" rationale as the image-topic override
+     ## just above -- see rbx_sim_node.py's own copy of this line for the
+@@ -1503,7 +1549,10 @@
+   def gotoPose(self,attitude_enu_degs):
+     att_str = str(attitude_enu_degs)
+     self.msg_if.pub_info("Recieved Pose setpoint command: " + att_str)
+-    # Create Setpoint Attitude Message
++    # Create Setpoint Attitude Message. RBXRobotIF hands over ENU roll/pitch/
++    # yaw (NavPose convention); mavros setpoint_raw/attitude takes the ENU
++    # (base_link FLU) orientation and converts it to NED/FRD itself, so no NED
++    # pre-conversion here.
+     attitude_enu_quat = nepi_nav.convert_rpy2quat(attitude_enu_degs)
+     orientation_enu_quat = Quaternion()
+     orientation_enu_quat.x = attitude_enu_quat[0]
+@@ -1602,19 +1651,23 @@
+     self.position_target = position_local_target_msg
+     self.fake_gps_goto_position_pub.publish(point_enu_m)
+ 
+-  def gotoLocation(self,geopoint_amsl,orientation_ned_deg):
++  def gotoLocation(self,geopoint_amsl,orientation_enu_deg):
+     loc_str = str(geopoint_amsl)
+     self.msg_if.pub_info("Recieved Location setpoint command: " + loc_str)
+-    # Create GeoPose Setpoint Global AMSL and Yaw NED Message
+-    orientation_ned_q = nepi_nav.convert_rpy2quat(orientation_ned_deg)
+-    orientation_ned_quat = Quaternion()
+-    orientation_ned_quat.x = orientation_ned_q[0]
+-    orientation_ned_quat.y = orientation_ned_q[1]
+-    orientation_ned_quat.z = orientation_ned_q[2]
+-    orientation_ned_quat.w = orientation_ned_q[3]
++    # Create GeoPose Setpoint Global AMSL and Yaw ENU Message. RBXRobotIF
++    # hands over an ENU attitude; mavros setpoint_position/global takes the
++    # orientation as ENU and converts the yaw to NED itself. Building this
++    # quaternion from a NED yaw (as before) commanded the wrong heading for
++    # every yaw except 45 and 225 degrees, where NED and ENU yaw coincide.
++    orientation_enu_q = nepi_nav.convert_rpy2quat(orientation_enu_deg)
++    orientation_enu_quat = Quaternion()
++    orientation_enu_quat.x = orientation_enu_q[0]
++    orientation_enu_quat.y = orientation_enu_q[1]
++    orientation_enu_quat.z = orientation_enu_q[2]
++    orientation_enu_quat.w = orientation_enu_q[3]
+     geopose_enu=GeoPose()
+     geopose_enu.position = geopoint_amsl
+-    geopose_enu.orientation = orientation_ned_quat
++    geopose_enu.orientation = orientation_enu_quat
+     location_global_target_msg = GeoPoseStamped()
+     location_global_target_msg.pose = geopose_enu
+     ##############################################
+@@ -1677,7 +1730,10 @@
+     if self.getSettingSelection('autonomous_movement_enabled') != 'TRUE':
+       return False
+     ready = False
+-    if self.RBX_STATES[self.state_ind] == "ARM" and self.RBX_MODES[self.mode_ind] == "GUIDED" and self.isAirborne():
++    # mode_ind is -999 while ArduPilot reports a mode not in RBX_MODES (e.g.
++    # AUTO), and RBX_MODES[-999] raised IndexError; such a mode is not GUIDED.
++    mode_known = (0 <= self.mode_ind < len(self.RBX_MODES))
++    if self.RBX_STATES[self.state_ind] == "ARM" and mode_known and self.RBX_MODES[self.mode_ind] == "GUIDED" and self.isAirborne():
+       ready = True
+     return ready
+ 
+@@ -1690,7 +1746,9 @@
+     # Sim Connector's own toggle for this feature.
+     if self.getSettingSelection('teleop_movement_enabled') != 'TRUE':
+       return False
++    # Bounds check first: mode_ind is -999 for a mode not in RBX_MODES.
+     return (self.RBX_STATES[self.state_ind] == "ARM"
++            and (0 <= self.mode_ind < len(self.RBX_MODES))
+             and self.RBX_MODES[self.mode_ind] == "GUIDED"
+             and self.isAirborne())
+ 
+@@ -1713,12 +1771,10 @@
+     max_lin = self.TELEOP_MAX_LINEAR_MPS
+     max_ang = math.radians(self.TELEOP_MAX_ANGULAR_DPS)
+     body_x = max(-1.0, min(1.0, linear_x)) * max_lin
+-    # Negated -- reported live 2026-09-14: "positive y should probably be
+-    # right, not left." This driver's teleop alone treats y+ as right;
+-    # everything else sharing the y+ = left convention (the rover,
+-    # convert_point_body2enu itself, and this driver's own gotoPosition) is
+-    # untouched.
+-    body_y = -max(-1.0, min(1.0, linear_y)) * max_lin
++    # Body FLU, y+ = LEFT, per the RBXRobotIF teleop contract, so not negated.
++    # The 2026-09-14 negation (y+ = right for this driver's teleop alone) is
++    # removed; a client that wants a key to strafe right sends linear.y < 0.
++    body_y = max(-1.0, min(1.0, linear_y)) * max_lin
+     yaw_rad = math.radians(self.navpose_dict['yaw_deg'])
+     # Standard body(x+forward,y+left)->ENU rotation, matching
+     # convert_point_body2enu exactly. The hand-tuned "+90 degree
+@@ -1739,6 +1795,8 @@
+     enu_y = body_x * math.sin(yaw_rad) + body_y * math.cos(yaw_rad)
+     with self.teleop_lock:
+       self.teleop_linear_enu = [enu_x, enu_y, max(-1.0, min(1.0, linear_z)) * max_lin]
++      # angular_z is body yaw rate, positive counter-clockwise; the same sign
++      # as the ENU yaw rate mavros cmd_vel_unstamped takes.
+       self.teleop_angular_z = max(-1.0, min(1.0, angular_z)) * max_ang
+       self.teleop_last_cmd_time = nepi_utils.get_time()
+ 
+@@ -1899,7 +1957,10 @@
+ 
+   ### Callback to update RBX heading navpose data
+   def heading_topic_callback(self,heading_msg):
+-      # Heading in Degrees True North
++      # Heading in Degrees True North (compass, clockwise). mavros
++      # compass_hdg is a NED compass value; NavPose heading_deg is the same
++      # compass heading, so it is stored as is. ENU yaw_deg comes from the
++      # odom quaternion (odom_topic_callback), never from this heading.
+       self.navpose_dict['has_heading'] = True
+       self.navpose_dict['time_heading'] = nepi_utils.get_time()
+       self.navpose_dict['heading_deg'] = heading_msg.data
+@@ -1946,9 +2007,43 @@
+       return ""
+ 
+ 
+-  ### Callback returning the full navpose dict to the RBX/NPX interface
++  ### Callback returning the full navpose dict to the NPX interface
+   def getNavPoseCb(self):
+-    return self.navpose_dict
++    # NavPose convention: ENU orientation and position (mavros
++    # global_position/local), compass heading_deg (compass_hdg), WGS84
++    # location with altitude above the ellipsoid (global_position/global).
++    # Returns None until the GPS-fed odometry and fix have both arrived:
++    # NPXDeviceIF derives its has_* capabilities once, from the first dict it
++    # gets, so a blank dict returned before telemetry would fix every
++    # capability at False for the life of the node.
++    if self.navpose_dict['has_orientation'] == False or self.navpose_dict['has_location'] == False:
++      return None
++    return copy.deepcopy(self.navpose_dict)
++
++  def selectOwnNavPoseCb(self, timer):
++    # Select the autopilot's own NPX navpose as the RBX navpose source once the
++    # connect has discovered it. Only a startup default is replaced ('None',
++    # '', or the node namespace that older saved configs hold), never a
++    # source the operator picked, and it gives up after a bounded number of
++    # tries so a navpose that never appears costs nothing.
++    connect_if = self.connect_navpose_if
++    if connect_if is None or self.own_navpose_topic is None or nepi_sdk.is_shutdown():
++      return
++    selected = connect_if.get_selected_topic()
++    if selected == self.own_navpose_topic:
++      return
++    if selected not in ['None', '', None, self.node_namespace]:
++      self.msg_if.pub_info("Keeping operator navpose source: " + str(selected))
++      return
++    if self.own_navpose_topic in connect_if.get_available_topics():
++      connect_if.set_selected_topic(self.own_navpose_topic)
++      self.msg_if.pub_info("Selected own navpose source: " + self.own_navpose_topic)
++      return
++    self.own_navpose_tries += 1
++    if self.own_navpose_tries < self.OWN_NAVPOSE_MAX_TRIES:
++      nepi_sdk.start_timer_process(1.0, self.selectOwnNavPoseCb, oneshot = True)
++    else:
++      self.msg_if.pub_warn("Own navpose source never appeared, leaving navpose unselected: " + self.own_navpose_topic)
+ 
+   #######################
+   # Mavlink Interface Methods
+@@ -1991,7 +2086,7 @@
+       # See set_mavlink_mode's identical removal for why this unconditional
+       # 1s sleep is gone -- same unjustified per-command latency.
+       self.msg_if.pub_info("Waiting for armed value to set to " + str(arm_value))
+-      timeout_sec = self.rbx_if.rbx_info.cmd_timeout
++      timeout_sec = self.rbx_if.status_msg.cmd_timeout
+       check_interval_s = 0.25
+       check_timer = 0
+       # Same response-checking as set_mavlink_mode -- see its comment. mavros'
+@@ -2058,7 +2153,7 @@
+     # full seconds of unconditional sleep before anything even started, on
+     # every command, every time.
+     self.msg_if.pub_info("Waiting for mode to set to " + mode_new)
+-    timeout_sec = self.rbx_if.rbx_info.cmd_timeout
++    timeout_sec = self.rbx_if.status_msg.cmd_timeout
+     check_interval_s = 0.25
+     check_timer = 0
+     # The service RESPONSE is checked now rather than discarded. mavros'
+@@ -2340,9 +2435,9 @@
+       climb_point.z = float(takeoff_height_m)
+       self.fake_gps_goto_position_pub.publish(climb_point)
+ 
+-      error_bound_m = self.rbx_if.rbx_info.error_bounds.max_distance_error_m
++      error_bound_m = self.rbx_if.status_msg.error_bounds.max_distance_error_m
+       self.takeoff_error_bound_m = error_bound_m
+-      timeout_sec = self.rbx_if.rbx_info.cmd_timeout
++      timeout_sec = self.rbx_if.status_msg.cmd_timeout
+       check_interval_s = float(timeout_sec) / 100
+       check_timer = 0
+       alt_error = (goal_alt - self.rbx_if.current_location_wgs84_geo[2])
+@@ -2473,13 +2568,15 @@
+     geo_point.altitude = goal_alt
+     self.fake_gps_goto_location_pub.publish(geo_point)
+     self.msg_if.pub_info("Waiting for land process to complete and disarm")
+-    timeout_sec = self.rbx_if.rbx_info.cmd_timeout
++    timeout_sec = self.rbx_if.status_msg.cmd_timeout
+     check_interval_s = float(timeout_sec) / 100
+     check_timer = 0
+     while (self.state_current == "ARM" and check_timer < timeout_sec):
+       time.sleep(check_interval_s)
+       check_timer += check_interval_s
+-    if self.state_current == "ARM":
++    # Landing completes when the vehicle disarms; still ARM here means the
++    # wait above timed out (this test was inverted).
++    if self.state_current != "ARM":
+       self.msg_if.pub_info("Land process complete")
+       cmd_success = True
+     else:
+@@ -2493,10 +2590,10 @@
+     cmd_success = False
+     self.set_mavlink_mode('RTL')
+     self.fake_gps_goto_location_pub.publish(self.home_location)
+-    error_goal_m = self.rbx_if.rbx_info.error_bounds.max_distance_error_m
++    error_goal_m = self.rbx_if.status_msg.error_bounds.max_distance_error_m
+     last_loc = self.rbx_if.current_location_wgs84_geo
+-    timeout_sec = self.rbx_if.rbx_info.cmd_timeout
+-    check_interval_s = self.rbx_if.rbx_info.error_bounds.min_stabilize_time_s
++    timeout_sec = self.rbx_if.status_msg.cmd_timeout
++    check_interval_s = self.rbx_if.status_msg.error_bounds.min_stabilize_time_s
+     check_timer = 0
+     stabilized_check = False
+     while (stabilized_check is False and check_timer < timeout_sec):
+--- a/src/nepi_engine/nepi_api/src/nepi_api/device_if_rbx.py
++++ b/src/nepi_engine/nepi_api/src/nepi_api/device_if_rbx.py
+@@ -81,7 +81,9 @@
+ 
+ EXAMPLE_POSITION_DATA_DICT = {
+     'time_position': nepi_utils.get_time(),
+-    # Position should be provided in Meters ENU (x,y,z) with x forward, y left, and z up
++    # Position should be provided in Meters, local ENU world frame (x,y,z) with
++    # x east, y north, and z up. Body-relative commands (goto_position, teleop,
++    # goto_velocity) use the body FLU frame instead: x forward, y left, z up.
+     'x_m': 1.234,
+     'y_m': 1.234,
+     'z_m': 1.234,
+@@ -89,7 +91,9 @@
+ 
+ EXAMPLE_ORIENTATION_DATA_DICT = {
+     'time_orientation': nepi_utils.get_time(),
+-    # Orientation should be provided in Degrees ENU
++    # Orientation should be provided in Degrees ENU, in the NavPose convention
++    # (nepi_nav): yaw 0 faces east and is positive counter-clockwise seen from
++    # above; roll and pitch are the NavPose roll/pitch values
+     'roll_deg': 30.51,
+     'pitch_deg': 30.51,
+     'yaw_deg': 30.51,
+@@ -104,7 +108,7 @@
+ 
+ EXAMPLE_ALTITUDE_DATA_DICT = {
+     'time_altitude': nepi_utils.get_time(),
+-    # Altitude should be provided in postivie meters WGS84
++    # Altitude should be provided in postivie meters WGS84 (height above the ellipsoid)
+     'altitude_m': 12.321,
+ }
+ 
+@@ -356,6 +360,69 @@
+                 save_data_if = None,
+                 connect_navpose_if = None,
+                 ):
++        """Creates the RBX robot interface and its command, status and image topics.
++
++        Frame contract. World quantities are ENU (x east, y north, z up). A
++        yaw_* value is ENU yaw: 0 faces east, positive counter-clockwise seen
++        from above. Roll and pitch follow the NavPose convention of nepi_nav.
++        Body-relative quantities are FLU (x forward, y left, z up, yaw positive
++        counter-clockwise). heading_* values are compass headings (degrees
++        clockwise from true north). Latitude and longitude are WGS84 degrees.
++        The interface hands every driver function ENU or FLU values; a driver
++        converts anything its hardware does not take as ENU/FLU itself.
++
++        Args:
++            device_info (dict): Device name, path, serial number and versions.
++            axisCapabilities (dict): has_*_control flags for the x, y, z, roll,
++                pitch and yaw axes.
++            getBatteryPercentFunction (callable): Returns battery charge 0.0-1.0.
++            states (list): State names; getStateIndFunction/setStateIndFunction
++                get and set an index into it.
++            modes (list): Mode names; getModeIndFunction/setModeIndFunction get
++                and set an index into it.
++            checkStopFunction (callable): Returns True once after a stop request.
++            setup_actions (list): Setup action names, run by index with
++                setSetupActionIndFunction.
++            go_actions (list): Go action names, run by index with
++                setGoActionIndFunction.
++            getSettingsFunction (callable, optional): Returns the settings
++                controls dict.
++            setSettingFunction (callable, optional): Sets one setting by name.
++            getHomeFunction (callable, optional): Returns the home GeoPoint,
++                WGS84 latitude/longitude with altitude in meters above the
++                WGS84 ellipsoid.
++            setHomeFunction (callable, optional): Receives a home GeoPoint in
++                the same frame as getHomeFunction returns.
++            teleopControlsReadyFunction (callable, optional): Returns True while
++                teleop commands will be acted on.
++            setTeleopVelocityFunction (callable, optional): Receives
++                (linear_x, linear_y, linear_z, angular_z) ratios in [-1, 1] in
++                the body FLU frame: x forward, y left, z up, angular_z positive
++                counter-clockwise (turn left). Passed through unconverted.
++            autonomousControlsReadyFunction (callable, optional): Returns True
++                while goto commands will be acted on.
++            goHomeFunction (callable, optional): Goes home; returns success.
++            goStopFunction (callable, optional): Stops motion; returns success.
++            gotoPoseFunction (callable, optional): Receives a target attitude
++                [roll_deg, pitch_deg, yaw_deg] in ENU, NavPose convention.
++            gotoPositionFunction (callable, optional): Receives
++                (point_enu_m, orientation_enu_deg): a geometry_msgs Point that
++                is the ENU OFFSET (meters, x east, y north, z up) from the
++                current position, and the absolute target attitude
++                [roll_deg, pitch_deg, yaw_deg] in ENU.
++            gotoLocationFunction (callable, optional): Receives
++                (geopoint_amsl, orientation_enu_deg): a GeoPoint with WGS84
++                latitude/longitude and altitude in meters AMSL, and the
++                absolute target attitude [roll_deg, pitch_deg, yaw_deg] in ENU.
++            gotoVelocityFunction (callable, optional): Receives
++                (x_mps, y_mps, z_mps, yaw_degps, duration_s) in the body FLU
++                frame, yaw rate positive counter-clockwise.
++            manualControlsReadyFunction (callable, optional): Returns True while
++                manual (servo) controls will be acted on.
++            servo_if_dict (dict, optional): DeviceSVXIF instances by name.
++            msg_if, node_if, settings_if, save_data_if, connect_navpose_if
++                (optional): Shared interfaces; built here when None.
++        """
+ 
+         ##############################
+         # Instance Copies of Class State
+@@ -883,16 +950,17 @@
+             throttle_status_sec = 0.1
+         )
+ 
+-        self.process_if = ProcessIF(
+-                    process_name = self.rbx_process_name,
+-                    process_group = self.rbx_process_name,
+-                    process_description = self.rbx_process_name,
+-                    process_module = self.rbx_process_module,
+-                    callback_dict = self.rbx_process_callback_dict, 
+-                    config_dict = self.rbx_process_config_dict,
+-                    msg_if = self.msg_if,
+-                    node_if = self.node_if
+-                )  
++        # WIP-PROCESS 3.4.0: disabled for ardupilot port: processCb replaces process_data_dict with nepi_process_rbx's data dict, whose keys (has_home, has_stop, has_pose, ...) are not the has_go_home/has_go_stop/has_goto_* keys every home/stop/goto callback reads, so after the first process tick those callbacks raise KeyError; process_if stays None so the existing None guards take over
++        # self.process_if = ProcessIF(
++        #             process_name = self.rbx_process_name,
++        #             process_group = self.rbx_process_name,
++        #             process_description = self.rbx_process_name,
++        #             process_module = self.rbx_process_module,
++        #             callback_dict = self.rbx_process_callback_dict,
++        #             config_dict = self.rbx_process_config_dict,
++        #             msg_if = self.msg_if,
++        #             node_if = self.node_if
++        #         )
+ 
+        ####################################
+         ## Initiation Complete
+@@ -904,6 +972,10 @@
+         nepi_sdk.start_timer_process(1, self.blankImagePubCb)
+         # processCb re-arms itself as a oneshot at the process rate
+         nepi_sdk.start_timer_process(1, self.processCb, oneshot = True)
++        # Refresh the current_* control attributes from this device's navpose.
++        # The goto convergence loops, takeoff checks and home location all read
++        # current_*; without this timer they stayed at their [0,0,0] defaults.
++        nepi_sdk.start_timer_process(self.update_navpose_interval_sec, self._updateNavposeTimerCb)
+         ####################################
+         self.ready = True
+         self.msg_if.pub_info("Initialization Complete" + ": " + self.node_name, color = 'GREEN')
+@@ -994,6 +1066,15 @@
+ 
+         status_msg.data_products = self.data_products_list
+ 
++        # The option lists live in caps_dict under 'states'/'modes'/
++        # 'setup_actions'/'go_actions', which are not the status field names,
++        # so NodeIF's name-matched status fill never set them and the RUI's
++        # state, mode and action selectors (NepiDeviceRBX.js) stayed empty.
++        status_msg.state_options = list(self.caps_dict['states'])
++        status_msg.mode_options = list(self.caps_dict['modes'])
++        status_msg.setup_action_options = list(self.caps_dict['setup_actions'])
++        status_msg.go_action_options = list(self.caps_dict['go_actions'])
++
+ 
+         try:
+            status_msg.manual_control_mode_ready = self.manualControlsReadyFunction()
+@@ -1099,9 +1180,12 @@
+         self._updateCurrentNavpose()
+ 
+     def _updateCurrentNavpose(self):
+-        # Prefer the device's own navpose (populated directly from the driver via
+-        # getNavPoseCb) for control accuracy, falling back to the system navpose
+-        # cached for this device's frame.
++        # Reads this device's navpose (navpose_if), which republishes the source
++        # selected on connect_navpose_if -- for a driver that hosts its own
++        # NPXDeviceIF and selects it, that is the driver's own navpose. Values
++        # are in the NavPose convention: ENU orientation and position, compass
++        # heading_deg, WGS84 location. The *_ned copies below are kept for
++        # external readers only; no control logic in this class uses them.
+         navpose_dict = self.get_navpose_dict()
+         if navpose_dict is None:
+             return
+@@ -1276,15 +1360,16 @@
+         if self.teleopControlsReadyFunction is None or self.teleopControlsReadyFunction() is not True:
+             self.update_error_msg("Ignoring teleop velocity command, " + self._notReadyReason("Teleop Controls"))
+             return
+-        # linear.x/y/z, angular.z only. angular.x/y (roll-rate/pitch-rate) are
+-        # deliberately not read here: a rover has no meaning for them at all,
+-        # and for a drone the teleop "roll, pitch" controls are body-frame
+-        # horizontal VELOCITY (linear.x forward/back, linear.y left/right), the
+-        # same command shape MAVROS SET_POSITION_TARGET_LOCAL_NED velocity
+-        # setpoints use for GUIDED-mode flight -- not raw attitude-rate
+-        # setpoints, which would fight the flight controller's own attitude
+-        # loop and are a riskier command to accept from a keyboard with no
+-        # stick centering/failsafe.
++        # Body FLU ratios in [-1,1], passed through unconverted: linear.x
++        # positive is forward, linear.y positive is LEFT, linear.z positive is
++        # up, angular.z positive is counter-clockwise (turn left). The driver
++        # converts to whatever frame its hardware takes. angular.x/y
++        # (roll-rate/pitch-rate) are deliberately not read here: a rover has no
++        # meaning for them at all, and for a drone the teleop horizontal
++        # controls are body-frame VELOCITY (linear.x, linear.y) -- not raw
++        # attitude-rate setpoints, which would fight the flight controller's
++        # own attitude loop and are a riskier command to accept from a
++        # keyboard with no stick centering/failsafe.
+         self.setTeleopVelocityFunction(twist_msg.linear.x, twist_msg.linear.y,
+                                        twist_msg.linear.z, twist_msg.angular.z)
+ 
+@@ -1314,7 +1399,14 @@
+     def setHomeCurrentCb(self,empty_msg):
+         self.msg_if.pub_info("Received set home current message" )
+         if self.setHomeFunction is not None:
+-            self.setHomeFunction(self.current_location_wgs84_geo)
++            # setHomeFunction takes a GeoPoint (as setHomeCb and
++            # ApplyConfigUpdates pass); current_location_wgs84_geo is a list.
++            cur_loc = list(self.current_location_wgs84_geo)
++            new_home_geo = GeoPoint()
++            new_home_geo.latitude = cur_loc[0]
++            new_home_geo.longitude = cur_loc[1]
++            new_home_geo.altitude = cur_loc[2]
++            self.setHomeFunction(new_home_geo)
+ 
+           
+ 
+@@ -1450,7 +1542,7 @@
+                 self.update_current_errors( [0,0,0,0,0,0,0] )
+                 self.update_current_goals( [0,0,0,0,0,0,0] )
+ 
+-                self.rbx_cmd_success_current = self.setpoint_attitude_ned(setpoint_data)
++                self.rbx_cmd_success_current = self.setpoint_attitude_enu(setpoint_data)
+                 self.status_msg.process_last = "GoTo Pose"
+                 self.status_msg.process_current = "None"
+                 self.status_msg.cmd_success = self.rbx_cmd_success_current
+@@ -1469,7 +1561,7 @@
+     #
+     # STRUCTURALLY DIFFERENT from gotoPoseCb and gotoPositionCb above, and this
+     # is the thing a later reader will get wrong. Those two call
+-    # setpoint_attitude_ned / setpoint_position_local_body, which are BLOCKING
++    # setpoint_attitude_enu / setpoint_position_local_body, which are BLOCKING
+     # CONVERGENCE LOOPS: they hold a target and compare it against the live
+     # navpose until the error is inside bounds or cmd_timeout expires.
+     #
+@@ -1622,28 +1714,31 @@
+     #######################
+     # RBX IF Methods
+ 
+-    ### Function to set and check setpoint attitude NED command
++    ### Function to set and check setpoint attitude ENU command
+     ###################################################
+-    # Input is [ROLL_NED_DEG, PITCH_NED_DEG, YEW_NED_DEGREES]
+-    # Converted to ENU befor sending message
++    # Input is [ROLL_ENU_DEG, PITCH_ENU_DEG, YAW_ENU_DEG] in the NavPose convention
++    # Sent to the driver in ENU, unconverted
+     ###################################################
+-    def setpoint_attitude_ned(self,setpoint_attitude):
+-      """Commands the robot to a target attitude in the NED reference frame.
++    def setpoint_attitude_enu(self,setpoint_attitude):
++      """Commands the robot to a target attitude in the ENU world frame.
+ 
+-      Converts the NED input to ENU before sending a pose setpoint command,
+-      then blocks until the attitude goal is reached within error bounds or
+-      the command times out.
++      Sends the ENU attitude to gotoPoseFunction unconverted, then blocks
++      until the attitude goal is reached within error bounds or the command
++      times out. Goals are the target ENU attitude; errors are goal minus
++      current, wrapped to (-180, 180].
+ 
+       Args:
+           setpoint_attitude (list): Target attitude as
+-              [ROLL_NED_DEG, PITCH_NED_DEG, YAW_NED_DEG]. Use -999 for any
+-              axis to hold the current value.
++              [ROLL_ENU_DEG, PITCH_ENU_DEG, YAW_ENU_DEG] in the NavPose
++              convention (yaw 0 faces east, positive counter-clockwise). Use
++              -999 for any axis to hold the current value; a held axis is
++              never sent as -999 and never counted as an error.
+ 
+       Returns:
+           bool: True if the attitude setpoint was reached within bounds and
+               timeout, False otherwise.
+       """
+-      # setpoint_attitude is [ROLL_NED_DEG, PITCH_NED_DEG, YEW_NED_DEGREES]
++      # setpoint_attitude is [ROLL_ENU_DEG, PITCH_ENU_DEG, YAW_ENU_DEG]
+       # Use value -999 to use current value
+       cmd_success = True
+       timeout_sec = self.status_msg.cmd_timeout
+@@ -1656,38 +1751,28 @@
+       ##############################################
+       # Capture Current NavPoses Data
+       ##############################################
+-      start_orientation_ned_degs=list(self.current_orientation_ned_degs)
+-      self.msg_if.pub_info("Attitude Current NED Roll, Pitch, Yaw in Degrees" )
+-      self.msg_if.pub_info(["%.2f" % start_orientation_ned_degs[0],"%.2f" % start_orientation_ned_degs[1],"%.2f" % start_orientation_ned_degs[2]])
++      start_orientation_enu_degs=list(self.current_orientation_enu_degs)
++      self.msg_if.pub_info("Attitude Current ENU Roll, Pitch, Yaw in Degrees" )
++      self.msg_if.pub_info(["%.2f" % start_orientation_enu_degs[0],"%.2f" % start_orientation_enu_degs[1],"%.2f" % start_orientation_enu_degs[2]])
+       ##############################################
+       # Condition Inputs
+       ##############################################
+-      input_attitude_ned_degs = list(setpoint_attitude)
+-      #self.msg_if.pub_info("Attitude Input NED Roll, Pitch, Yaw in Degrees" )
+-      #self.msg_if.pub_info(["%.2f" % input_attitude_ned_degs[0],"%.2f" % input_attitude_ned_degs[1],"%.2f" % input_attitude_ned_degs[2]])
+-      # Set new attitude in degs NED
+-      new_attitude_ned_degs=list(start_orientation_ned_degs) # Initialize with start values
++      input_attitude_enu_degs = list(setpoint_attitude)
++      # Set new attitude in degs ENU. A -999 (held) axis takes the current
++      # value, so -999 is never sent as a command.
++      new_attitude_enu_degs=list(start_orientation_enu_degs) # Initialize with start values
+       for ind in range(3): # Overwrite current with new if set and valid
+         if setpoint_attitude[ind] != -999:
+-          new_attitude_ned_degs[ind]=setpoint_attitude[ind]
+-        # Condition to +-180 deg
+-        if new_attitude_ned_degs[ind] > 180:
+-          new_attitude_ned_degs[ind] = new_attitude_ned_degs[ind] - 360
+-      #self.msg_if.pub_info("Attitude Input Conditioned NED Roll, Pitch, Yaw in Degrees" )
+-      #self.msg_if.pub_info(["%.2f" % new_attitude_ned_degs[0],"%.2f" % new_attitude_ned_degs[1],"%.2f" % new_attitude_ned_degs[2]])
+-      ##############################################
+-      # Convert NED attitude to Pose
+-      ##############################################
+-      # Convert to ROS ENU attitude degs and create ENU quaternion setpoint attitude goal
+-      yaw_enu_deg = nepi_nav.convert_yaw_ned2enu(new_attitude_ned_degs[2])
+-      new_attitude_enu_degs = [new_attitude_ned_degs[0],new_attitude_ned_degs[1],yaw_enu_deg]
++          new_attitude_enu_degs[ind]=setpoint_attitude[ind]
++        # Condition to (-180,180] deg
++        new_attitude_enu_degs[ind] = self._wrapAngleDeg(new_attitude_enu_degs[ind])
+       self.msg_if.pub_info("Attitude Goal ENU Roll, Pitch, Yaw in Degrees" )
+       self.msg_if.pub_info(["%.2f" % new_attitude_enu_degs[0],"%.2f" % new_attitude_enu_degs[1],"%.2f" % new_attitude_enu_degs[2]])
+       ##############################################
+       ## Send Setpoint Message and Check for Success
+       ##############################################
+-      # Update current goals with NED attitude goal in degrees
+-      self.update_current_goals( [None,None,None,None,new_attitude_ned_degs[0],new_attitude_ned_degs[1],new_attitude_ned_degs[2]] )
++      # Update current goals with ENU attitude goal in degrees
++      self.update_current_goals( [None,None,None,None,new_attitude_enu_degs[0],new_attitude_enu_degs[1],new_attitude_enu_degs[2]] )
+       self.msg_if.pub_info("Sending Setpoint Attitude Command" )
+       if self.process_data_dict['has_goto_pose'] == True:
+         self.process_data_dict['go_attitude_success'] = None 
+@@ -1699,13 +1784,14 @@
+       stabilize_timer=0
+       timeout_timer = 0 # Initialize timeout timer
+       attitude_errors = [] # Initialize running list of errors
++      attitude_errors_degs = [0.0,0.0,0.0]
+       time2sleep = 0.1
+       while setpoint_attitude_reached is False and not nepi_sdk.is_shutdown():  # Wait for setpoint goal to be set
+         if self.checkStopFunction() is True:
+             self.msg_if.pub_info("Setpoint Attitude received Stop Command" )
+             # Hold the current attitude on stop (same source used below for error calc).
+-            new_attitude_ned_degs = list(self.current_orientation_ned_degs)
+-            self.update_current_goals( [None,None,None,None,new_attitude_ned_degs[0],new_attitude_ned_degs[1],new_attitude_ned_degs[2]] )
++            new_attitude_enu_degs = list(self.current_orientation_enu_degs)
++            self.update_current_goals( [None,None,None,None,new_attitude_enu_degs[0],new_attitude_enu_degs[1],new_attitude_enu_degs[2]] )
+         if timeout_timer > timeout_sec:
+           self.update_error_msg("Setpoint cmd timed out")
+           cmd_success = False
+@@ -1713,13 +1799,13 @@
+         time.sleep(time2sleep) # update setpoint position at 50 Hz
+         stabilize_timer=stabilize_timer+time2sleep # Increment message timer
+         timeout_timer = timeout_timer+time2sleep
+-        # Calculate setpoint attitude errors
+-        cur_attitude_ned_degs = [self.current_orientation_ned_degs[0],self.current_orientation_ned_degs[1],self.current_orientation_ned_degs[2]]
+-        attitude_errors_degs = np.array(new_attitude_ned_degs) - np.array(cur_attitude_ned_degs)
++        # Calculate setpoint attitude errors: goal minus current, wrapped
++        cur_attitude_enu_degs = [self.current_orientation_enu_degs[0],self.current_orientation_enu_degs[1],self.current_orientation_enu_degs[2]]
++        attitude_errors_degs = [0.0,0.0,0.0]
+         for ind in range(3):
+-          if input_attitude_ned_degs[ind] == -999.0: # Ignore error check if set to current
+-            attitude_errors_degs[ind]=0.0
+-        max_attutude_error_deg = max(abs(attitude_errors_degs))
++          if input_attitude_enu_degs[ind] != -999: # Ignore error check if set to current
++            attitude_errors_degs[ind] = self._wrapAngleDeg(new_attitude_enu_degs[ind] - cur_attitude_enu_degs[ind])
++        max_attutude_error_deg = max(np.abs(attitude_errors_degs))
+         # Check for setpoint position local point goal
+         if  setpoint_attitude_reached is False:
+           if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+@@ -1745,14 +1831,14 @@
+ 
+     ### Function to set and check setpoint position local body command
+     ###################################################
+-    # Input is [X_BODY_METERS, Y_BODY_METERS, Z_BODY_METERS, YEW_BODY_DEGREES]
++    # Input is [X_BODY_METERS, Y_BODY_METERS, Z_BODY_METERS, YAW_BODY_DEGREES]
+     # Converted to Local ENU Frame before sending
+-    # Local Body Position Setpoint Function use these body relative x,y,z,yaw conventions
++    # Local Body Position Setpoint Function use these body relative (FLU) x,y,z,yaw conventions
+     # x+ axis is forward
+     # y+ axis is left
+     # z+ axis is up
+     # Only yaw orientation updated
+-    # yaw+ counter clockwise from x axis (0 degrees faces x+ and rotates using right hand rule around z+ axis down)
++    # yaw+ counter clockwise seen from above (0 degrees faces x+ and rotates using right hand rule around the z+ up axis)
+     #####################################################
+     def setpoint_position_local_body(self,setpoint_position):
+       """Commands the robot to a target position in the local body frame.
+@@ -1761,20 +1847,27 @@
+       sends a position setpoint, then blocks until the position and yaw goals
+       are reached within error bounds or the command times out.
+ 
+-      Body frame conventions: x+ forward, y+ left, z+ up, yaw+ counter-clockwise
+-      from x axis.
++      Body frame conventions (FLU): x+ forward, y+ left, z+ up, yaw+
++      counter-clockwise seen from above. The driver receives the ENU offset
++      from the current position (x east, y north, z up) and the absolute ENU
++      target attitude. Goals: x/y/z are the body FLU offsets, yaw is the
++      absolute ENU yaw goal. Errors are goal minus current in the same frames
++      (x/y/z rotated back into the start body frame), yaw wrapped to
++      (-180, 180].
+ 
+       Args:
+           setpoint_position (list): Target position and yaw as
+-              [X_BODY_M, Y_BODY_M, Z_BODY_M, YAW_BODY_DEG]. Use -999 for any
+-              element to hold the current value.
++              [X_BODY_M, Y_BODY_M, Z_BODY_M, YAW_BODY_DEG]. 0 on an axis means
++              no move on that axis. Use -999 for any element to hold the
++              current value; a held element is not commanded as a number and
++              not counted as an error.
+ 
+       Returns:
+           bool: True if both position and yaw setpoints were reached within
+               bounds and timeout, False otherwise.
+       """
+-      # setpoint_position is [X_BODY_METERS, Y_BODY_METERS, Z_BODY_METERS, YEW_BODY_DEGREES]
+-      # use value 0 for no change
++      # setpoint_position is [X_BODY_METERS, Y_BODY_METERS, Z_BODY_METERS, YAW_BODY_DEGREES]
++      # use value 0 for no change, -999 to hold the axis and skip its error check
+       cmd_success = True
+       timeout_sec = self.status_msg.cmd_timeout
+       self.update_prev_errors()
+@@ -1808,13 +1901,14 @@
+       # Condition Body Input Data
+       ##############################################
+       # Condition Point Input
+-      input_point_body_m=setpoint_position[0:3]
++      input_point_body_m=list(setpoint_position[0:3])
+       self.msg_if.pub_info("Input Postion Body  X, Y, Z in Meters" )
+       self.msg_if.pub_info(["%.2f" % input_point_body_m[0],"%.2f" % input_point_body_m[1],"%.2f" % input_point_body_m[2]])
+-      new_point_body_m=list(input_point_body_m) # No conditioning required
+-      #self.msg_if.pub_info("Point Conditioned Body Meters" )
+-      #self.msg_if.pub_info(" X, Y, Z" )
+-      #self.msg_if.pub_info(["%.2f" % new_point_body_m[0],"%.2f" % new_point_body_m[1],"%.2f" % new_point_body_m[2]])
++      # A -999 (held) axis is a zero offset, so -999 is never sent as a -999 m move
++      new_point_body_m=list(input_point_body_m)
++      for ind in range(3):
++        if input_point_body_m[ind] == -999:
++          new_point_body_m[ind] = 0
+       # Condition Orienation Input
+       input_yaw_body_deg = setpoint_position[3]
+       self.msg_if.pub_info("Yaw Input Body Degrees" )
+@@ -1834,12 +1928,12 @@
+       self.msg_if.pub_info("Point Goal ENU X, Y, Z in Meters" )
+       self.msg_if.pub_info(["%.2f" % new_position_enu_m[0],"%.2f" % new_position_enu_m[1],"%.2f" % new_position_enu_m[2]])
+ 
+-      new_yaw_enu_deg = start_yaw_enu_deg + input_yaw_body_deg
+-        # Condition to +-180 deg
+-      if new_yaw_enu_deg > 180:
+-        new_yaw_enu_deg = new_yaw_enu_deg - 360
+-      elif new_yaw_enu_deg < -180:
+-        new_yaw_enu_deg = 360 + new_yaw_enu_deg
++      # A -999 (held) yaw keeps the start yaw rather than adding -999 degrees
++      new_yaw_enu_deg = start_yaw_enu_deg
++      if input_yaw_body_deg != -999:
++        new_yaw_enu_deg = start_yaw_enu_deg + input_yaw_body_deg
++      # Condition to (-180,180] deg
++      new_yaw_enu_deg = self._wrapAngleDeg(new_yaw_enu_deg)
+       self.msg_if.pub_info("Yaw Goal ENU Degrees" )
+       self.msg_if.pub_info(["%.2f" % new_yaw_enu_deg])
+       ##############################################
+@@ -1859,14 +1953,9 @@
+       ##############################################
+       ## Send Message and Check for Setpoint Success
+       ##############################################
+-      # Update current goals with body offset goal in meters and ENU yaw goal in degrees
++      # Update current goals with body FLU offset goal in meters and ENU yaw goal in degrees
+       goal_point_body_m = list(new_point_body_m)
+-      for ind in range(3): # Zero offset goal if set to current
+-        if input_point_body_m[ind] == -999:
+-          goal_point_body_m[ind] = 0
+       goal_yaw_enu_deg = new_yaw_enu_deg
+-      if input_yaw_body_deg == -999: # Start yaw goal if set to current
+-        goal_yaw_enu_deg = start_yaw_enu_deg
+       self.update_current_goals( [goal_point_body_m[0],goal_point_body_m[1],goal_point_body_m[2],None,None,None,goal_yaw_enu_deg] )
+       self.msg_if.pub_info("Sending Setpoint Position Local Command" )
+       if self.process_data_dict['has_goto_position'] == True:
+@@ -1880,9 +1969,11 @@
+       stabilize_timer=0
+       point_errors = [] # Initialize running list of errors
+       yaw_errors = [] # Initialize running list of errors
++      point_body_errors_m = [0.0,0.0,0.0]
++      yaw_enu_error_deg = 0.0
+       timeout_timer = 0 # Initialize timeout timer
+       time2sleep = 0.1
+-      while setpoint_position_local_point_reached is False or setpoint_position_local_yaw_reached is False and not nepi_sdk.is_shutdown():  # Wait for setpoint goal to be set
++      while (setpoint_position_local_point_reached is False or setpoint_position_local_yaw_reached is False) and not nepi_sdk.is_shutdown():  # Wait for setpoint goal to be set
+         if self.checkStopFunction() is True:
+             self.msg_if.pub_info("Setpoint Position received Stop Command" )
+             new_position_enu_m = copy.deepcopy(self.current_position_enu_m)
+@@ -1899,31 +1990,33 @@
+         time.sleep(time2sleep) # update setpoint position at 50 Hz
+         stabilize_timer=stabilize_timer+time2sleep # Increment message timer
+         timeout_timer = timeout_timer+time2sleep
+-        # Calculate setpoint position enu errors    
+-        point_body_errors_m = [0,0,0] # initialize for later
+-        point_enu_errors_m = np.array(self.current_position_enu_m) - np.array(new_position_enu_m)
++        # Calculate setpoint position errors: goal minus current, ENU then
++        # rotated into the start body FLU frame the goals are expressed in
++        point_enu_errors_m = np.array(new_position_enu_m) - np.array(self.current_position_enu_m)
++        point_body_errors_m = list(nepi_nav.convert_point_enu2body(point_enu_errors_m,start_yaw_enu_deg))
+         for ind in range(3):
+-          if input_point_body_m == -999: # Ignore error check if set to current
+-            point_enu_errors_m[ind] = 0
+-        max_point_enu_errors_m = np.max(np.abs(point_enu_errors_m))
+-        # Calculate setpoint yaw enu error
++          if input_point_body_m[ind] == -999: # Ignore error check if set to current
++            point_body_errors_m[ind] = 0
++        max_point_body_errors_m = np.max(np.abs(point_body_errors_m))
++        # Calculate setpoint yaw enu error: goal minus current, wrapped
+         if input_yaw_body_deg == -999: # Ignore error check if set to current
+           setpoint_position_local_yaw_reached = True
++          yaw_enu_error_deg = 0
+           max_yaw_enu_error_deg = 0
+         else:
+           cur_yaw_enu_deg = self.current_orientation_enu_degs[2]
+-          yaw_enu_error_deg =  cur_yaw_enu_deg - new_yaw_enu_deg
++          yaw_enu_error_deg =  self._wrapAngleDeg(new_yaw_enu_deg - cur_yaw_enu_deg)
+           max_yaw_enu_error_deg = abs(yaw_enu_error_deg)
+         # Check for setpoint position local point goal
+         if  setpoint_position_local_point_reached is False:
+           if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+             max_point_errors = max(point_errors) # Get max from error window
+-            point_errors = [max_point_enu_errors_m] # reset running list of errors
++            point_errors = [max_point_body_errors_m] # reset running list of errors
+             if max_point_errors < self.status_msg.error_bounds.max_distance_error_m:
+               self.msg_if.pub_info("Position Setpoint Reached" )
+               setpoint_position_local_point_reached = True
+           else:
+-            point_errors.append(max_point_enu_errors_m) # append last
++            point_errors.append(max_point_body_errors_m) # append last
+         # Check for setpoint position yaw point goal
+         if  setpoint_position_local_yaw_reached is False:
+           if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+@@ -1937,42 +2030,48 @@
+         # Reset timer if past
+         if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+           stabilize_timer=0 # Reset timer
+-        point_body_errors_m = nepi_nav.convert_point_enu2body(point_enu_errors_m,start_yaw_enu_deg)
+-        self.update_current_errors(  [point_body_errors_m[1],point_body_errors_m[0],point_body_errors_m[2],None,None,None,max_yaw_enu_error_deg] )
++        self.update_current_errors(  [point_body_errors_m[0],point_body_errors_m[1],point_body_errors_m[2],None,None,None,yaw_enu_error_deg] )
+       if cmd_success:
+         self.msg_if.pub_info("Setpoint Reached" )
+         self.msg_if.pub_info("************************" )
+-      point_body_errors_m = nepi_nav.convert_point_enu2body(point_enu_errors_m,start_yaw_enu_deg)
+-      self.update_current_errors(  [point_body_errors_m[1],point_body_errors_m[0],point_body_errors_m[2],None,None,None,max_yaw_enu_error_deg] )
++      self.update_current_errors(  [point_body_errors_m[0],point_body_errors_m[1],point_body_errors_m[2],None,None,None,yaw_enu_error_deg] )
+       return cmd_success
+ 
+ 
+ 
+     ### Function to set and check setpoint location global geopoint and yaw command
+     ###################################################
+-    # Input is [LAT, LONG, ALT_WGS84, YAW_NED_DEGREES]
+-    # Converted to AMSL Altitude and ENU Yaw berore sending
+-    # Altitude is specified as meters above the WGS-84 and converted to AMSL before sending
+-    # Yaw is specified in NED frame degrees 0-360 or +-180 
++    # Input is [LAT, LONG, ALT_WGS84, YAW_ENU_DEGREES]
++    # Converted to AMSL Altitude before sending; yaw is sent as ENU, unconverted
++    # Altitude is specified as meters above the WGS-84 ellipsoid and converted to AMSL
++    # (WGS84 + the navpose geoid_height_meters) before sending
++    # Yaw is specified as ENU yaw degrees: 0 faces east, positive counter-clockwise
+     #####################################################
+     def setpoint_location_global_wgs84(self,setpoint_location):
+       """Commands the robot to a global WGS84 geographic position.
+ 
+-      Converts WGS84 altitude to AMSL, converts NED yaw to ENU, sends a
+-      location setpoint, then blocks until the geopoint and yaw goals are
+-      reached within error bounds or the command times out.
++      Converts WGS84 altitude to AMSL, sends the location setpoint with an ENU
++      attitude to gotoLocationFunction, then blocks until the geopoint and yaw
++      goals are reached within error bounds or the command times out.
++
++      Goals are the ENU offsets from the start location in meters (x east,
++      y north, z up) and the ENU yaw goal. Errors are goal minus current in
++      the same frames (x east, y north, z up, yaw wrapped to (-180, 180]).
+ 
+       Args:
+           setpoint_location (list): Target location as
+-              [LAT, LONG, ALT_WGS84_M, YAW_NED_DEG]. Latitude and longitude
+-              in decimal degrees, altitude in meters above WGS84 ellipsoid.
+-              Use -999 for any element to hold the current value.
++              [LAT, LONG, ALT_WGS84_M, YAW_ENU_DEG]. Latitude and longitude
++              in decimal degrees, altitude in meters above the WGS84
++              ellipsoid, yaw in ENU degrees (0 faces east, positive
++              counter-clockwise). Use -999 for any element to hold the current
++              value; a held element is not commanded as a number and not
++              counted as an error.
+ 
+       Returns:
+           bool: True if both location and yaw setpoints were reached within
+               bounds and timeout, False otherwise.
+       """
+-      # setpoint_location is [LAT, LONG, ALT_WGS84, YEW_NED_DEGREES 0-360 or +-180]
++      # setpoint_location is [LAT, LONG, ALT_WGS84, YAW_ENU_DEGREES +-180]
+       # Use value -999 to use current value
+       cmd_success = True
+       timeout_sec = self.status_msg.cmd_timeout
+@@ -1985,74 +2084,59 @@
+       # Capture Current NavPose Data
+       ##############################################
+       start_geopoint_wgs84 = list(self.current_location_wgs84_geo)  
+-      #self.msg_if.pub_info("Start Location WSG84 geopoint" )
+-      #self.msg_if.pub_info(" Lat, Long, Alt" )
+-      #self.msg_if.pub_info(["%.6f" % start_geopoint_wgs84[0],"%.6f" % start_geopoint_wgs84[1],"%.2f" % start_geopoint_wgs84[2]])
+-      start_orientation_ned_degs=list(self.current_orientation_ned_degs)
+-      #self.msg_if.pub_info("Start Orientation NED degs" )
+-      #self.msg_if.pub_info(" Roll, Pitch, Yaw" )
+-      #self.msg_if.pub_info(["%.6f" % start_orientation_ned_degs[0],"%.6f" % start_orientation_ned_degs[1],"%.2f" % start_orientation_ned_degs[2]])
+-      start_yaw_ned_deg = start_orientation_ned_degs[2]
+-      if start_yaw_ned_deg < 0:
+-        start_yaw_ned_deg = start_yaw_ned_deg + 360
+-      #self.msg_if.pub_info("Start Yaw NED degs 0-360" )
+-      self.msg_if.pub_info(start_yaw_ned_deg) 
++      start_orientation_enu_degs=list(self.current_orientation_enu_degs)
++      start_yaw_enu_deg = start_orientation_enu_degs[2]
++      self.msg_if.pub_info("Start Yaw ENU degs" )
++      self.msg_if.pub_info(start_yaw_enu_deg) 
+       start_heading_deg=self.current_heading_deg
+       self.msg_if.pub_info("Start Heading degs" )
+       self.msg_if.pub_info(start_heading_deg)
+       start_geoid_height_m = self.current_geoid_height_m
++      # Meters per degree. Longitude degrees shrink with cos(latitude).
++      m_per_deg_lat = 111139
++      m_per_deg_long = m_per_deg_lat * np.cos(np.radians(start_geopoint_wgs84[0]))
+       ##############################################
+-      # Condition NED Input Data
++      # Condition Input Data
+       ##############################################
+       # Condition Location Input
+       input_geopoint_wgs84 = list(setpoint_location[0:3])
+-      #self.msg_if.pub_info("Location Input Global Geo" )
+-      #self.msg_if.pub_info(" Lat, Long, Alt_WGS84" )
+-      #self.msg_if.pub_info(["%.8f" % input_geopoint_wgs84[0],"%.8f" % input_geopoint_wgs84[1],"%.2f" % input_geopoint_wgs84[2]])
+       new_geopoint_wgs84=list(start_geopoint_wgs84) # Initialize with start
+       for ind in range(3): # Overwrite current with new if set and valid
+         if input_geopoint_wgs84[ind] != -999:
+           new_geopoint_wgs84[ind]=input_geopoint_wgs84[ind]
+-      #self.msg_if.pub_info("Location Input Conditioned Global Geo" )
+-      #self.msg_if.pub_info(" Lat, Long, Alt_WGS84" )
+-      #self.msg_if.pub_info(["%.8f" % new_geopoint_wgs84[0],"%.8f" % new_geopoint_wgs84[1],"%.2f" % new_geopoint_wgs84[2]])
+       # Condition Yaw Input
+-      input_yaw_ned_deg = setpoint_location[3]
+-      #self.msg_if.pub_info("Yaw Input NED Degrees" )
+-      #self.msg_if.pub_info(["%.2f" % input_yaw_ned_deg])
+-      new_yaw_ned_deg = start_yaw_ned_deg # Initialize to current
+-      if input_yaw_ned_deg != -999: # Replace if not -999
+-        new_yaw_ned_deg = input_yaw_ned_deg
+-      # Condition to 0-360 degs
+-      if new_yaw_ned_deg < 0:
+-        new_yaw_ned_deg = new_yaw_ned_deg + 360
+-      #self.msg_if.pub_info("Yaw Input Conditioned NED Degrees 0-360" )
+-      #self.msg_if.pub_info(["%.2f" % new_yaw_ned_deg])      
++      input_yaw_enu_deg = setpoint_location[3]
++      new_yaw_enu_deg = start_yaw_enu_deg # Initialize to current
++      if input_yaw_enu_deg != -999: # Replace if not -999
++        new_yaw_enu_deg = input_yaw_enu_deg
++      # Condition to (-180,180] degs
++      new_yaw_enu_deg = self._wrapAngleDeg(new_yaw_enu_deg)
+       ##############################################
+-      # Create Global AMSL Location and NED Orienation Setpoint Values
++      # Create Global AMSL Location and ENU Orienation Setpoint Values
+       ##############################################
+-      # New Global location ENU in meters
++      # New Global location
+       new_geopoint_amsl=GeoPoint()
+       new_geopoint_amsl.latitude = new_geopoint_wgs84[0]
+       new_geopoint_amsl.longitude = new_geopoint_wgs84[1]
+       new_geopoint_amsl.altitude = new_geopoint_wgs84[2] + start_geoid_height_m
+       self.msg_if.pub_info("Location Goal Lat, Long, Alt_AMSL" )
+       self.msg_if.pub_info(["%.8f" % new_geopoint_amsl.latitude,"%.8f" % new_geopoint_amsl.longitude,"%.2f" % new_geopoint_amsl.altitude])
+-      # New Local Orienation NED in degs  
+-      new_orientation_ned_deg = [start_orientation_ned_degs[0],start_orientation_ned_degs[1],new_yaw_ned_deg]
+-      self.msg_if.pub_info("Orienation Goal NED  Roll, Pitch, Yaw in Degrees" )
+-      self.msg_if.pub_info(["%.2f" % new_orientation_ned_deg[0],"%.2f" % new_orientation_ned_deg[1],"%.2f" % new_orientation_ned_deg[2]])
++      # New Local Orienation ENU in degs  
++      new_orientation_enu_deg = [start_orientation_enu_degs[0],start_orientation_enu_degs[1],new_yaw_enu_deg]
++      self.msg_if.pub_info("Orienation Goal ENU  Roll, Pitch, Yaw in Degrees" )
++      self.msg_if.pub_info(["%.2f" % new_orientation_enu_deg[0],"%.2f" % new_orientation_enu_deg[1],"%.2f" % new_orientation_enu_deg[2]])
+       ##############################################
+       ## Send Message and Check for Setpoint Success
+       ##############################################
+-      # Update current goals with start to goal offset in meters and NED yaw goal in degrees
+-      self.update_current_goals( [(new_geopoint_wgs84[0] - start_geopoint_wgs84[0])*111139,(new_geopoint_wgs84[1] - start_geopoint_wgs84[1])*111139,new_geopoint_wgs84[2] - start_geopoint_wgs84[2],None,None,None,new_yaw_ned_deg] )
++      # Update current goals with start to goal ENU offset in meters (x east,
++      # y north, z up) and ENU yaw goal in degrees
++      self.update_current_goals( [(new_geopoint_wgs84[1] - start_geopoint_wgs84[1])*m_per_deg_long,(new_geopoint_wgs84[0] - start_geopoint_wgs84[0])*m_per_deg_lat,new_geopoint_wgs84[2] - start_geopoint_wgs84[2],None,None,None,new_yaw_enu_deg] )
+       self.msg_if.pub_info("Sending MAVLINK Setpoint Position Local Command" )
+       if self.process_data_dict['has_goto_location'] == True:
+         self.process_data_dict['go_location_success'] = None 
+-        self.process_update_dict['go_location'] = [new_geopoint_amsl,new_orientation_ned_deg]
++        self.process_update_dict['go_location'] = [new_geopoint_amsl,new_orientation_enu_deg]
+       elif self.gotoLocationFunction is not None:
+-        self.gotoLocationFunction(new_geopoint_amsl,new_orientation_ned_deg)
++        self.gotoLocationFunction(new_geopoint_amsl,new_orientation_enu_deg)
+       self.msg_if.pub_info(" checking for Setpoint Reached" )
+       setpoint_location_global_geopoint_reached = False
+       setpoint_location_global_yaw_reached = False 
+@@ -2060,13 +2144,15 @@
+       stabilize_timer=0
+       geopoint_errors = [] # Initialize running list of errors
+       yaw_errors = [] # Initialize running list of errors
++      geopoint_errors_m = [0.0,0.0,0.0]
++      yaw_enu_error_deg = 0.0
+       timeout_timer = 0 # Initialize timeout timer
+       time2sleep = 0.1
+       while (setpoint_location_global_geopoint_reached is False or setpoint_location_global_yaw_reached is False) and not nepi_sdk.is_shutdown(): # Wait for setpoint goal to be set
+         if self.checkStopFunction() is True:
+           self.msg_if.pub_info("Setpoint Location received Stop Command" )
+           new_geopoint_wgs84 = copy.deepcopy(self.current_location_wgs84_geo)
+-          self.update_current_goals( [(new_geopoint_wgs84[0] - start_geopoint_wgs84[0])*111139,(new_geopoint_wgs84[1] - start_geopoint_wgs84[1])*111139,new_geopoint_wgs84[2] - start_geopoint_wgs84[2],None,None,None,None] )
++          self.update_current_goals( [(new_geopoint_wgs84[1] - start_geopoint_wgs84[1])*m_per_deg_long,(new_geopoint_wgs84[0] - start_geopoint_wgs84[0])*m_per_deg_lat,new_geopoint_wgs84[2] - start_geopoint_wgs84[2],None,None,None,None] )
+         if timeout_timer > timeout_sec:
+           self.update_error_msg("Setpoint cmd timed out")
+           cmd_success = False
+@@ -2074,22 +2160,26 @@
+         time.sleep(time2sleep) # update setpoint position at 50 Hz
+         stabilize_timer=stabilize_timer+time2sleep # Increment self.update_error_msg message timer
+         timeout_timer = timeout_timer+time2sleep        
+-        # Calculate setpoint position and yaw errors
+-        geopoint_errors_geo = np.array(self.current_location_wgs84_geo) - np.array(new_geopoint_wgs84)
+-        geopoint_errors_m = [geopoint_errors_geo[0]*111139,geopoint_errors_geo[1]*111139,geopoint_errors_geo[2]]
+-        for ind in range(3):  # Ignore error check if set to current
+-          if input_geopoint_wgs84[ind] == -999.0:
+-            geopoint_errors_m[ind] = 0
++        # Calculate setpoint position and yaw errors: goal minus current, ENU order
++        geopoint_errors_geo = np.array(new_geopoint_wgs84) - np.array(self.current_location_wgs84_geo)
++        geopoint_errors_m = [geopoint_errors_geo[1]*m_per_deg_long,geopoint_errors_geo[0]*m_per_deg_lat,geopoint_errors_geo[2]]
++        # Ignore error check if set to current. Input order is lat, long, alt;
++        # error order is x east (long), y north (lat), z up (alt)
++        if input_geopoint_wgs84[0] == -999.0:
++          geopoint_errors_m[1] = 0
++        if input_geopoint_wgs84[1] == -999.0:
++          geopoint_errors_m[0] = 0
++        if input_geopoint_wgs84[2] == -999.0:
++          geopoint_errors_m[2] = 0
+         max_geopoint_error_m = np.max(np.abs(geopoint_errors_m))
+-        if input_yaw_ned_deg == -999: # Ignore error check if set to current
++        if input_yaw_enu_deg == -999: # Ignore error check if set to current
+           setpoint_location_global_yaw_reached = True
+-          max_yaw_ned_error_deg = 0
++          yaw_enu_error_deg = 0
++          max_yaw_enu_error_deg = 0
+         else:
+-          cur_yaw_ned_deg = self.current_orientation_ned_degs[2]
+-          if cur_yaw_ned_deg < 0:
+-            cur_yaw_ned_deg = cur_yaw_ned_deg + 360
+-          yaw_ned_error_deg =  cur_yaw_ned_deg - new_yaw_ned_deg
+-          max_yaw_ned_error_deg = abs(yaw_ned_error_deg)
++          cur_yaw_enu_deg = self.current_orientation_enu_degs[2]
++          yaw_enu_error_deg =  self._wrapAngleDeg(new_yaw_enu_deg - cur_yaw_enu_deg)
++          max_yaw_enu_error_deg = abs(yaw_enu_error_deg)
+         # Check for setpoint position global goal
+         if  setpoint_location_global_geopoint_reached is False:
+           if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+@@ -2104,22 +2194,31 @@
+         if  setpoint_location_global_yaw_reached is False:
+           if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+             max_yaw_errors = max(yaw_errors) # Get max from error window
+-            yaw_errors = [max_yaw_ned_error_deg] # reset running list of errors
++            yaw_errors = [max_yaw_enu_error_deg] # reset running list of errors
+             if max_yaw_errors < self.status_msg.error_bounds.max_rotation_error_deg:
+               self.msg_if.pub_info("Yaw Setpoint Reached" )
+               setpoint_location_global_yaw_reached = True
+           else:
+-            yaw_errors.append(max_yaw_ned_error_deg) # append last
+-        # Reset timer if past
+-        if stabilize_timer > 1:
++            yaw_errors.append(max_yaw_enu_error_deg) # append last
++        # Reset timer if past. Same bound as the checks above: a fixed 1 s
++        # reset never let the timer pass a min_stabilize_time_s above 1 s, so
++        # such a goto could never complete.
++        if stabilize_timer > self.status_msg.error_bounds.min_stabilize_time_s:
+           stabilize_timer=0 # Reset timer
+-        self.update_current_errors( [geopoint_errors_m[0],geopoint_errors_m[1],geopoint_errors_m[2],None,None,None,max_yaw_ned_error_deg] )
++        self.update_current_errors( [geopoint_errors_m[0],geopoint_errors_m[1],geopoint_errors_m[2],None,None,None,yaw_enu_error_deg] )
+       if cmd_success:
+         self.msg_if.pub_info("Setpoint Reached" )
+         self.msg_if.pub_info("************************" )
+-      self.update_current_errors( [geopoint_errors_m[0],geopoint_errors_m[1],geopoint_errors_m[2],None,None,None,max_yaw_ned_error_deg] )
++      self.update_current_errors( [geopoint_errors_m[0],geopoint_errors_m[1],geopoint_errors_m[2],None,None,None,yaw_enu_error_deg] )
+       return cmd_success
+ 
++    def _wrapAngleDeg(self, angle_deg):
++      # Wrap an angle in degrees to (-180, 180]
++      wrapped = float(angle_deg) % 360.0
++      if wrapped > 180.0:
++        wrapped = wrapped - 360.0
++      return wrapped
++
+     #######################
+     # Class Utility Functions
+     
+@@ -2135,6 +2234,10 @@
+       errors message is then assigned to the status message. Does nothing if
+       the list length is not seven.
+ 
++      Each error is goal minus current, in the same frame and units as the
++      goal it pairs with (see update_current_goals); angles are wrapped to
++      (-180, 180]. A held (-999) axis reports 0.
++
+       Args:
+           error_list (list): Error values in the order
+               [x_m, y_m, z_m, heading_deg, roll_deg, pitch_deg, yaw_deg].
+@@ -2172,6 +2275,12 @@
+       message is then assigned to the status message. Does nothing if the
+       list length is not seven.
+ 
++      Frames: x_m/y_m/z_m are body FLU offsets (x forward, y left, z up) for
++      goto_position, and ENU offsets from the start location (x east,
++      y north, z up) for goto_location and takeoff. heading_deg is a compass
++      heading. roll_deg/pitch_deg/yaw_deg are ENU in the NavPose convention
++      (yaw 0 faces east, positive counter-clockwise).
++
+       Args:
+           goal_list (list): Goal values in the order
+               [x_m, y_m, z_m, heading_deg, roll_deg, pitch_deg, yaw_deg].
+@@ -2445,7 +2554,11 @@
+ 
+ 
+         try:
+-            cv2_img = self.process_if.process_results_image(cv2_img, status_dict)
++            # Only overlay process results when a process is running. With
++            # process_if None, process_results_image raised inside this try and
++            # no image was republished at all.
++            if self.process_if is not None:
++                cv2_img = self.process_if.process_results_image(cv2_img, status_dict)
+             self.pub_image_if.publish_cv2_img(cv2_img,
+                                             timestamp = timestamp,
+                                             width_deg = width_deg,
+--- a/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_nav.py
++++ b/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_nav.py
+@@ -1548,8 +1548,12 @@
+   roll_rad = math.radians(rpy_attitude_deg[0])
+   pitch_rad = math.radians(rpy_attitude_deg[1]) 
+   yaw_rad = math.radians(rpy_attitude_deg[2])
+-  #xyzw_attitude = tf.transformations.quaternion_from_euler(roll_rad,pitch_rad,yaw_rad,axes="sxyz")
+-  xyzw_attitude = tf.transformations.quaternion_from_euler(pitch_rad, yaw_rad, roll_rad, axes="ryzx")
++  # Static xyz (sxyz), the same convention convert_quat2rpy reads back with
++  # euler_from_quaternion's default. The "ryzx" (pitch, yaw, roll) form used
++  # before only agreed with it when at most one angle was non-zero, so a
++  # combined roll/pitch/yaw target read back as a different attitude.
++  xyzw_attitude = tf.transformations.quaternion_from_euler(roll_rad,pitch_rad,yaw_rad,axes="sxyz")
++  #xyzw_attitude = tf.transformations.quaternion_from_euler(pitch_rad, yaw_rad, roll_rad, axes="ryzx")
+   return xyzw_attitude
+ 
+ ### Function to Convert Yaw NED to Yaw ENU
+@@ -1591,7 +1595,9 @@
+   
+ ### Function to Convert from ENU Frame to Point from Body
+ def convert_point_enu2body(point_enu_m,yaw_enu_deg):
+-  point_bearing_body_deg = yaw_enu_deg + math.degrees(math.atan2(point_enu_m[1],point_enu_m[0]))
++  # Inverse of convert_point_body2enu: rotate by -yaw. Adding yaw here made a
++  # body2enu/enu2body round trip rotate the point by 2*yaw.
++  point_bearing_body_deg = math.degrees(math.atan2(point_enu_m[1],point_enu_m[0])) - yaw_enu_deg
+   point_bearing_body_rad = math.radians(point_bearing_body_deg)
+   xy_enu_m = math.sqrt(point_enu_m[0]**2 + point_enu_m[1]**2)
+   x_body_m = xy_enu_m * math.cos(point_bearing_body_rad)
+--- a/src/nepi_interfaces/msg/DeviceRBXStatus.msg
++++ b/src/nepi_interfaces/msg/DeviceRBXStatus.msg
+@@ -61,7 +61,7 @@
+ float32 cmd_timeout
+ 
+ 
+-# Home Location Lat, Long, altitude_meters
++# Home Location Lat, Long (WGS84 degrees), altitude_meters (above the WGS84 ellipsoid)
+ float32 home_lat
+ float32 home_long
+ float32 home_alt
+@@ -97,7 +97,7 @@
+ # Battery charge state (0.0-1.0 percent) -999 if not available
+ float32 battery	
+ 
+-# Signed error values for current control process 
++# Signed error values for current control process (goal minus current, see GotoErrors.msg for frames)
+ # Updated during active command control action, reset after completion or timeout
+ GotoErrors errors_current
+ 
+@@ -105,7 +105,7 @@
+ # Updated after completion or timeout of last command control action
+ GotoErrors errors_prev
+ 
+-# Signed goal values for current control process 
++# Signed goal values for current control process (see GotoGoals.msg for frames)
+ # Reset to 0 at the start of each command control action, keep their last values after completion or timeout
+ GotoGoals goals_current
+ 
+--- a/src/nepi_interfaces/msg/GotoErrors.msg
++++ b/src/nepi_interfaces/msg/GotoErrors.msg
+@@ -1,4 +1,12 @@
+ # Error values for RBX drivers
++# Each error is goal minus current, in the same frame and units as the
++# GotoGoals field it pairs with. Angles are wrapped to (-180, 180] degrees.
++# A held (-999) axis reports 0.
++# x_m, y_m, z_m: body FLU (forward, left, up) for goto_position;
++#   ENU (east, north, up) offsets for goto_location and takeoff
++# heading_deg: compass heading, degrees clockwise from true north
++# roll_deg, pitch_deg, yaw_deg: ENU, NavPose convention (yaw 0 faces east,
++#   positive counter-clockwise)
+ 
+ float32 x_m
+ float32 y_m
+--- a/src/nepi_interfaces/msg/GotoGoals.msg
++++ b/src/nepi_interfaces/msg/GotoGoals.msg
+@@ -1,4 +1,10 @@
+ # Goal values for RBX drivers
++# x_m, y_m, z_m: body FLU (forward, left, up) offsets for goto_position;
++#   ENU (east, north, up) offsets from the start location for goto_location
++#   and takeoff
++# heading_deg: compass heading, degrees clockwise from true north
++# roll_deg, pitch_deg, yaw_deg: ENU, NavPose convention (yaw 0 faces east,
++#   positive counter-clockwise)
+ 
+ float32 x_m
+ float32 y_m
+--- a/src/nepi_interfaces/msg/GotoLocation.msg
++++ b/src/nepi_interfaces/msg/GotoLocation.msg
+@@ -1,6 +1,9 @@
+ # GoTo Location Msg
++# lat, long are WGS84 decimal degrees
++# altitude_meters is meters above the WGS84 ellipsoid
++# yaw_deg is ENU yaw, 0 faces east, positive counter-clockwise seen from above
+ # Degree Values should be between -180 and 180 degrees
+-# Value = -999 uses current value
++# Value = -999 holds the current value on that axis (not commanded, not error checked)
+ 
+ float32 lat
+ float32 long
+--- a/src/nepi_interfaces/msg/GotoPose.msg
++++ b/src/nepi_interfaces/msg/GotoPose.msg
+@@ -1,6 +1,9 @@
+ # GoTo Pose Msg
++# Target attitude in the ENU world frame, NavPose convention (nepi_nav):
++# yaw_deg is ENU yaw, 0 faces east, positive counter-clockwise seen from above
++# roll_deg and pitch_deg follow the NavPose roll/pitch convention
+ # Values should be between -180 and 180 degrees
+-# Value = -999 uses current value
++# Value = -999 holds the current value on that axis (not commanded, not error checked)
+ 
+ float32 roll_deg
+ float32 pitch_deg
+--- a/src/nepi_interfaces/msg/GotoPosition.msg
++++ b/src/nepi_interfaces/msg/GotoPosition.msg
+@@ -1,8 +1,11 @@
+ # GoTo Position Msg
++# Relative move in the body FLU frame from the current pose
+ # X,Y,Z Body is meters Forward, Left, Up
+-# Values of Zero uses current position for that axis
++# Value of Zero on an axis means no move on that axis
++# yaw_deg is a body-relative turn in degrees, positive counter-clockwise (turn left)
+ # Yaw Body Degree Values should be between -180 and 180 degrees
+-# Degree Value = 0 uses current yaw value
++# Degree Value = 0 keeps the current yaw
++# Value = -999 holds the current value on that axis (not commanded, not error checked)
+ 
+ float32 x_meters
+ float32 y_meters
+--- a/src/nepi_interfaces/msg/GotoVelocity.msg
++++ b/src/nepi_interfaces/msg/GotoVelocity.msg
+@@ -1,7 +1,7 @@
+ # GoTo Velocity Msg
+ # A timed open-loop body-frame velocity command
+ # X,Y,Z Body is meters/second Forward, LEFT, Up
+-# Yaw Body is degrees/second, positive to port
++# Yaw Body is degrees/second, positive to port (counter-clockwise seen from above)
+ # duration_s is how long the device holds this command, in seconds
+ #
+ # Unlike GotoPosition, which names a target and drives a convergence loop

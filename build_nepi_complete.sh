@@ -102,10 +102,7 @@ printf "\n${HIGHLIGHT}***** Build/Install NEPI Engine *****${CLEAR}\n"
 
 
 export CONFIG_USER=$(id -un 1000)
-
-
-
-BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+export BUILD_FOLDER=$(cd -P "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
 
 
 

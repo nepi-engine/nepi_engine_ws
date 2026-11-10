@@ -1,0 +1,64 @@
+--- a/src/nepi_engine/nepi_api/src/nepi_api/utils_if.py
++++ b/src/nepi_engine/nepi_api/src/nepi_api/utils_if.py
+@@ -958,7 +958,12 @@
+         params_dict = nepi_controls.get_params_dict(controls_dict)
+         if self.node_if is not None and self.save_params == True and controls_dict is not None:
+             param_name = 'controls_dict'
+-            self.set_value(param_name, params_dict)
++            # Param only. set_value also setattr()s any name this class declares,
++            # and controls_dict is one, so it replaced the live controls dict with
++            # this flat {control_name: value} form -- the next status publish then
++            # indexed a str/float/int as a control entry and dropped every control
++            # of the set. set_param applies the same node_if_prefix set_value does.
++            self.set_param(param_name, params_dict)
+ 
+ 
+     ##################
+--- a/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py
++++ b/src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py
+@@ -1563,9 +1563,23 @@
+       if index is not None: 
+  
+         value = value[0]
++        # get_value returns the NATIVE value: a scalar for the single-value
++        # types, a tuple for ColorRGB, None if the read failed. len() raised on
++        # the scalar and item assignment on the tuple, so every indexed edit the
++        # RUI sends (text, int, float and per-component boxes) died here. List
++        # it first -- list(), not get_value_list(), set_value re-cleans and
++        # re-lists whatever it is handed. None stays None, so it falls to the
++        # out-of-range branch below and the control is left unchanged.
+         values = get_value(controls_dict, name)
+-        values_len = len(values)
+-        if values_len > index:
++        if values is not None:
++          if isinstance(values, (list, tuple)):
++            values = list(values)
++          else:
++            values = [values]
++        values_len = len(values) if values is not None else 0
++        # index >= 0 as well: the same bounds test get_value and set_value use,
++        # and without it a negative index on a failed (None) read still indexed.
++        if index >= 0 and values_len > index:
+           values[index] = value
+           update_value = values
+         else:
+--- a/src/nepi_apps/nepi_app_nav_sim/api/connect_app_nav_sim.py
++++ b/src/nepi_apps/nepi_app_nav_sim/api/connect_app_nav_sim.py
+@@ -157,13 +157,15 @@
+         # status arrives, so these are created lazily and cached.
+         self._dyn_pubs = {}
+ 
++        # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg (3.3 or
++        # 3.4): passing them raised TypeError, so this IF could never be built. The
++        # app namespace is already carried by CFGS_DICT['namespace'] and the
++        # per-entry 'namespace' fields above, the same as connect_app_stereo_cam.
+         self.node_if = NodeClassIF(
+-            namespace=self.namespace,
+             configs_dict=self.CFGS_DICT,
+             services_dict=self.SRVS_DICT,
+             pubs_dict=self.PUBS_DICT,
+             subs_dict=self.SUBS_DICT,
+-            log_class_name=True,
+             msg_if=self.msg_if,
+         )
+         self.node_if.wait_for_ready()
