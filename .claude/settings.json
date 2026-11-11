@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-<<<<<<< HEAD
       "Bash(git -c core.filemode=false status --short)",
       "Bash(git -c core.filemode=false diff --stat HEAD)",
       "Bash(git -C /home/production/nepi_engine_ws/src/nepi_interfaces -c core.filemode=false status --short)",
@@ -119,13 +118,7 @@
       "Bash(timeout 60 ssh -o BatchMode=yes -o ConnectTimeout=6 -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker exec youthful_thompson bash -lc \"source /opt/ros/noetic/setup.bash >/dev/null 2>&1; source /opt/nepi/nepi_engine/setup.bash >/dev/null 2>&1; T=/nepi/device1/ardupilot_ttyUSB0/ardupilot_ttyUSB0/rbx/settings/status; timeout 8 rostopic info \\\\$T 2>&1 | head -8; echo == echo raw; timeout 20 rostopic echo -n 1 \\\\$T 2>&1 | cut -c1-140 | head -30\"')",
       "Bash(timeout 60 ssh -o BatchMode=yes -o ConnectTimeout=6 -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker exec youthful_thompson bash -lc \"source /opt/ros/noetic/setup.bash >/dev/null 2>&1; T=\\\\$\\(timeout 10 rostopic list 2>/dev/null\\); B=\\\\$\\(echo \\\\\"\\\\$T\\\\\" | grep -E \\\\\"/battery\\\\$\\\\\" | head -1\\); S=\\\\$\\(echo \\\\\"\\\\$T\\\\\" | grep -E \\\\\"/mavros/state\\\\$|mav.*/state\\\\$\\\\\" | head -1\\); R=\\\\$\\(echo \\\\\"\\\\$T\\\\\" | grep -E \\\\\"/rc/out\\\\$\\\\\" | head -1\\); echo \\\\\"battery=\\\\$B state=\\\\$S rcout=\\\\$R\\\\\"; [ -n \\\\\"\\\\$B\\\\\" ] && timeout 10 rostopic echo -n 1 \\\\$B 2>&1 | grep -E \\\\\"^\\(voltage|current|percentage|present|power_supply_status\\):\\\\\"; [ -n \\\\\"\\\\$S\\\\\" ] && timeout 10 rostopic echo -n 1 \\\\$S 2>&1 | grep -E \\\\\"^\\(connected|armed|guided|mode|system_status\\):\\\\\"; [ -n \\\\\"\\\\$R\\\\\" ] && timeout 10 rostopic echo -n 1 \\\\$R 2>&1 | grep -A1 \\\\\"^channels\\\\\"\"')",
       "Bash(awk '{print $3, $4}')",
-      "Bash(git -c core.fileMode=false diff make_nepi_release_archive.sh build_nepi_complete.sh)"
-    ],
-    "additionalDirectories": [
-      "/home/production/nepi_engine_ws/.claude/sessions",
-      "/home/production/nvidia/A603_JP5.1.2/seeed",
-      "/home/production/nvidia/A603_JP5.1.2_transfer"
-=======
+      "Bash(git -c core.fileMode=false diff make_nepi_release_archive.sh build_nepi_complete.sh)",
       "Bash(timeout 90 ssh -i /home/production/.ssh/nepi_default_ssh_key -o BatchMode=yes nepihost@192.168.179.103 'C=gallant_heyrovsky; docker exec $C bash -c \"source /opt/ros/noetic/setup.bash; source /opt/nepi/nepi_engine/setup.bash; T=/nepi/device1/mate_rov_link_robot/link_status; timeout 9 rostopic echo -n 60 \\\\$T 2>/dev/null | grep -o \\\\\"tn_age_ms.: [0-9-]*\\\\\" | grep -o \\\\\"[0-9-]*\\\\$\\\\\" | tr \\\\\"\\\\\\\\n\\\\\" \\\\\" \\\\\"; echo; timeout 12 rostopic hz -w 50 /nepi/device1/mate_rov_link_robot/npx/navpose/depth 2>&1 | tail -2; timeout 6 rostopic echo -n 20 /nepi/device1/mate_rov_link_robot/npx/navpose/depth 2>/dev/null | grep -E \\\\\"^depth_m:|^timestamp\\\\\" | sort | uniq -c\"')",
       "Bash(timeout 60 ssh -i /home/production/.ssh/nepi_default_ssh_key -o BatchMode=yes nepihost@192.168.179.103 'docker exec -i gallant_heyrovsky bash -c \"source /opt/ros/noetic/setup.bash; source /opt/nepi/nepi_engine/setup.bash; python3 -\"')",
       "mcp__claude_ai_Claude_Docs__update",
@@ -194,8 +187,19 @@
       "Bash(python3 -c \"import yaml; d=yaml.safe_load\\(open\\('rbx_px4_params.yaml'\\)\\); print\\(d['driver']['DISCOVERY_DICT']['OPTIONS']\\)\")",
       "Bash(python3 test_px4_serial.py /home/production/nepi_engine_ws/src/nepi_drivers/rbx_drivers)",
       "Bash(gh api *)",
-      "Bash(timeout 20 ssh -o BatchMode=yes -o ConnectTimeout=10 -T git@github.com)"
->>>>>>> 0a99d13dce94b32ab32bf14c5155ca6c4fef4c57
+      "Bash(timeout 20 ssh -o BatchMode=yes -o ConnectTimeout=10 -T git@github.com)",
+      "Bash(grep -v -E '\\\\.\\(png|jpg\\)$')",
+      "Bash(git -C /home/production/mate_robotics diff --stat)",
+      "Bash(awk '{print $1, $2, $3, $4}')",
+      "Bash(timeout 25 ssh -o ConnectTimeout=5 -o BatchMode=yes -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker ps --format \"{{.Names}} {{.Image}} {{.Status}}\"')",
+      "Bash(git -C ../../../.. log --format='%h %an %ad' --date=short -3 -- src/rui_webserver/rui-app/src/Nepi_IF_ConnectNavPose.js)",
+      "Bash(git -C /home/production/nepi_engine_ws/src/nepi_rui diff f455105 7b4f3f7 --stat)",
+      "Bash(python3 -m pyflakes /tmp/claude-1000/-home-production-nepi-engine-ws/5f489a19-6c2a-46f5-8291-a0093c2d93bd/scratchpad/csi_head.py)"
+    ],
+    "additionalDirectories": [
+      "/home/production/nepi_engine_ws/.claude/sessions",
+      "/home/production/nvidia/A603_JP5.1.2/seeed",
+      "/home/production/nvidia/A603_JP5.1.2_transfer"
     ]
   }
 }
