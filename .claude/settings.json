@@ -188,7 +188,13 @@
       "Bash(python3 test_px4_serial.py /home/production/nepi_engine_ws/src/nepi_drivers/rbx_drivers)",
       "Bash(gh api *)",
       "Bash(timeout 20 ssh -o BatchMode=yes -o ConnectTimeout=10 -T git@github.com)",
-      "Bash(grep -v -E '\\\\.\\(png|jpg\\)$')"
+      "Bash(grep -v -E '\\\\.\\(png|jpg\\)$')",
+      "Bash(git -C /home/production/mate_robotics diff --stat)",
+      "Bash(awk '{print $1, $2, $3, $4}')",
+      "Bash(timeout 25 ssh -o ConnectTimeout=5 -o BatchMode=yes -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker ps --format \"{{.Names}} {{.Image}} {{.Status}}\"')",
+      "Bash(git -C ../../../.. log --format='%h %an %ad' --date=short -3 -- src/rui_webserver/rui-app/src/Nepi_IF_ConnectNavPose.js)",
+      "Bash(git -C /home/production/nepi_engine_ws/src/nepi_rui diff f455105 7b4f3f7 --stat)",
+      "Bash(python3 -m pyflakes /tmp/claude-1000/-home-production-nepi-engine-ws/5f489a19-6c2a-46f5-8291-a0093c2d93bd/scratchpad/csi_head.py)"
     ],
     "additionalDirectories": [
       "/home/production/nepi_engine_ws/.claude/sessions",
