@@ -198,7 +198,8 @@
       "Bash(timeout 15 ssh -o ConnectTimeout=5 -o BatchMode=yes -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 true)",
       "Bash(git -C /home/production/nepi_engine_ws/src/nepi_apps log --format='%h %an %ad %s' --date=short -5 -- nepi_app_nav_sim/scripts/nav_sim_app_node.py)",
       "Bash(sed -i 's/-o BatchMode=yes/-o BatchMode=yes -o StrictHostKeyChecking=accept-new/' /tmp/claude-1000/-home-production-nepi-engine-ws/5f489a19-6c2a-46f5-8291-a0093c2d93bd/scratchpad/dev.sh)",
-      "Bash(timeout 20 ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker ps --format \"{{.Names}} {{.Status}}\"')"
+      "Bash(timeout 20 ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker ps --format \"{{.Names}} {{.Status}}\"')",
+      "Bash(python3 -c \"import yaml;print\\('host pyyaml', yaml.__version__\\)\")"
     ],
     "additionalDirectories": [
       "/home/production/nepi_engine_ws/.claude/sessions",
