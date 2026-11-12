@@ -194,12 +194,27 @@
       "Bash(timeout 25 ssh -o ConnectTimeout=5 -o BatchMode=yes -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker ps --format \"{{.Names}} {{.Image}} {{.Status}}\"')",
       "Bash(git -C ../../../.. log --format='%h %an %ad' --date=short -3 -- src/rui_webserver/rui-app/src/Nepi_IF_ConnectNavPose.js)",
       "Bash(git -C /home/production/nepi_engine_ws/src/nepi_rui diff f455105 7b4f3f7 --stat)",
-      "Bash(python3 -m pyflakes /tmp/claude-1000/-home-production-nepi-engine-ws/5f489a19-6c2a-46f5-8291-a0093c2d93bd/scratchpad/csi_head.py)"
+      "Bash(python3 -m pyflakes /tmp/claude-1000/-home-production-nepi-engine-ws/5f489a19-6c2a-46f5-8291-a0093c2d93bd/scratchpad/csi_head.py)",
+      "Bash(timeout 15 ssh -o ConnectTimeout=5 -o BatchMode=yes -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 true)",
+      "Bash(git -C /home/production/nepi_engine_ws/src/nepi_apps log --format='%h %an %ad %s' --date=short -5 -- nepi_app_nav_sim/scripts/nav_sim_app_node.py)",
+      "Bash(sed -i 's/-o BatchMode=yes/-o BatchMode=yes -o StrictHostKeyChecking=accept-new/' /tmp/claude-1000/-home-production-nepi-engine-ws/5f489a19-6c2a-46f5-8291-a0093c2d93bd/scratchpad/dev.sh)",
+      "Bash(timeout 20 ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new -i ~/.ssh/nepi_default_ssh_key nepihost@192.168.179.103 'docker ps --format \"{{.Names}} {{.Status}}\"')",
+      "Bash(python3 -c \"import yaml;print\\('host pyyaml', yaml.__version__\\)\")",
+      "Bash(cd /home/production/mate_robotics/Nepi_Connect/pi && grep -n \"takeover_stick\\\\|takeover_trigger\\\\|assist_slot\\\\|def validate_config\" nepi_link.py | head; sed -n '/def validate_config/,/^def validateServos/p' nepi_link.py | grep -n \"takeover\" ; echo ===; grep -n \"slow\\\\|out_l\\\\|out_r\\\\|tn_bad\\\\|'tn'\" test_nepi_link.py | wc -l; grep -c \"def test\" test_nepi_link.py ../tools/test_rbx_mate_rov_link.py)",
+      "Bash(mkdir -p /tmp/claude-1000/-home-production-nepi-engine-ws/23ae0ad9-eee5-46b6-93ba-e66250776fda/scratchpad/fr_old)",
+      "Bash(git archive *)",
+      "Bash(tar -x -C /tmp/claude-1000/-home-production-nepi-engine-ws/23ae0ad9-eee5-46b6-93ba-e66250776fda/scratchpad/fr_old)",
+      "Bash(awk -F: '$1>935 && $1<6700')",
+      "Bash(awk 'NR>=935 && NR<=1300 && /self.namespace =|namespace = nepi_sdk|create_namespace\\\\\\(namespace|self.data_product/' data_if.py)",
+      "Bash(awk -F: '$1>935 && $1<3100')",
+      "Bash(awk -F: '$1>935 && $1<6690')",
+      "Bash(awk -F: '$1>3336 && $1<3420')"
     ],
     "additionalDirectories": [
       "/home/production/nepi_engine_ws/.claude/sessions",
       "/home/production/nvidia/A603_JP5.1.2/seeed",
-      "/home/production/nvidia/A603_JP5.1.2_transfer"
+      "/home/production/nvidia/A603_JP5.1.2_transfer",
+      "/home/production/mate_robotics/Drivers/rbx_drivers"
     ]
   }
 }
