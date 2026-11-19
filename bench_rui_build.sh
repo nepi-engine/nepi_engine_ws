@@ -5,6 +5,17 @@
 # This file is part of nepi engine ws (nepi_engine_ws) repo
 # (see https://github.com/nepi-engine/nepi_engine_ws)
 #
+# License: NEPI Engine WS Tools and NEPI software deployed and/or compiled with these tools
+# are licensed under the "Numurus Software License",
+# which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
+#
+# Redistributions in source code must retain this top-level comment block.
+# Plagiarizing this software to sidestep the license obligations is illegal.
+#
+# Contact Information:
+# ====================
+# - mailto:nepi@numurus.com
+#
 # RUI build-speed benchmark.
 #
 # Times the npm build alone (no rsync/setup preamble) across several

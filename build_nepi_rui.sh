@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_engine_ws)
 #
 # License: NEPI Engine WS Tools and NEPI software deployed and/or compiled with these tools
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -267,7 +267,7 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
     else
         echo "WARNING: RUI key file not found at ${RUI_KEY_PATH} -- building without encryption key"
     fi
-    # Build profiles. All numbers measured on this hardware 2026-09-17; see the
+    # Build profiles. All numbers measured on this hardware; see the
     # RUI Build Speed entry in CLAUDE.md for the full matrix.
     #
     #   ruibld                 DEV      ~24s   650KB gz   debuggable + lint
@@ -280,7 +280,7 @@ if [[ -f ${NEPI_HOME}/.nvm/nvm.sh ]]; then
     # line-only source map accurate, since the bundle still has real lines.
     #
     # RELEASE is what belongs in a container image build: the artifact is small
-    # and nobody debugs it in place. It is yesterday's fast build.
+    # and nobody debugs it in place.
     #
     # Every value below is an overridable default, so any single axis can be
     # flipped for one build regardless of profile -- e.g.
