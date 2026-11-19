@@ -1,0 +1,69 @@
+src/nepi_engine/nepi_api/src/nepi_api/WIP/connect_node_if.py:590: #     # the old code fell through and wrote the param plus save_config() even
+src/nepi_engine/nepi_api/src/nepi_api/WIP/connect_node_if.py:591: #     # though self.selected_topic was left unchanged. Callers that re-assert a
+src/nepi_engine/nepi_api/src/nepi_api/device_if_rbx.py:2581: #     # Re-arm this loop, not updaterCb. Re-arming the updater here ran the
+src/nepi_engine/nepi_api/src/nepi_api/WIP/connect_node_if.py:118: # self.get_pub_status_msg - Changed to return the ConndectNodeIFStatus message
+src/nepi_engine/nepi_api/src/nepi_api/device_if_rbx.py:33: # matplotlib, cv_bridge) -- confirmed live on aarch64/glibc 2.31: those heavier
+src/nepi_engine/nepi_api/src/nepi_api/connect_device_if_ptx.py:728: # No 3.4 PTX device publishes these two; kept so a device that does
+src/nepi_engine/nepi_api/src/nepi_api/connect_node_if.py:668: [doc] Device connect classes are unaffected. A device topic ends at its
+src/nepi_engine/nepi_api/src/nepi_api/device_if_npx.py:633: # Create the NavPose IF from the current has_* flags. Split out of __init__ so
+src/nepi_engine/nepi_api/src/nepi_api/node_if.py:1092: # defines -- it builds controls_node_subs_dict and
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py:510: # are what every control carried before these fields existed.
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_servo.py:357: # are what every control carried before these fields existed.
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py:1311: # .get rather than [], as in get_disabled: a controls dict built before this
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_servo.py:1112: # .get rather than [], as in get_disabled: a servo dict built before this
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_data.py:872: # .get rather than [], as in get_disabled: a data dict built before this
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_nav.py:410: # .get, not [] -- navpose_mgr's fixed navposes are reloaded from saved / config written before this key existed, and a KeyError here is
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_ros.py:1720: # subscriber whose message exceeds 64 KB should pass one; see the stereo cam / app, where leaving it unset put the two cameras hundreds of ms ap
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_pc.py:151: # Nearest point distance. NOTE: this is the true min radial range, not the / norm of the AABB min corner (which could exceed the max corner's norm
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_drvs.py:138: # strings. Also accepts a comma-separated string, which is how a value saved / while the option was a single Selection reads back ('a,b'), and t
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_controls.py:291: # Read the TYPE here, not the name.
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_servo.py:185: # Read the TYPE here, not the name.
+src/nepi_engine/nepi_sdk/src/nepi_sdk/nepi_settings.py:104: # for never. 'Trigger' is the retired spelling of this type.
+src/nepi_engine/nepi_env/src/drivers/ad9249_adc.cpp:45: // Enable the following to readback after every write to make sure the setting took -- as of 12/31/21 the ADC SPI is
+src/nepi_engine/nepi_env/src/drivers/i2c.cpp:31: // This problem is fixed in 19.2, but 18.2 seems quite fragile with much
+src/nepi_engine/nepi_managers/scripts/navpose_mgr.py:672: # Restore every saved frame, not only the init frames. A saved
+src/nepi_apps/nepi_app_file_pub_depthmap/scripts/file_pub_depthmap_app_node.py:351: # The factory pair is the app's historical hardcoded pair, kept so behavior does / not move until an operator asks f
+src/nepi_apps/nepi_app_file_pub_depthmap/scripts/file_pub_depthmap_app_node.py:1225: # Each value goes through the same clamp the set topics use, so a sidecar
+src/nepi_apps/nepi_app_stereo_cam/scripts/stereo_library.py:192: # Facts measured on a JetPack 5.1 Orin NX in the NEPI 3.3 container (VPI 2.3, / 2026-11-17) that this code is written around:
+src/nepi_apps/nepi_app_stereo_cam/scripts/stereo_settings.py:499: # Measured 2026-11-17 on a 15 W Orin NX with this app also running, matcher only,
+src/nepi_apps/nepi_app_stereo_cam/rui/NepiAppStereoCam-Calibration.js:37: // Solve. The node (custom_stereo_app_node.py) does the work through
+src/nepi_apps/nepi_app_stereo_cam/rui/NepiAppStereoCam-Calibration.js:49: // The parent (NepiAppCustomStereo.js) owns the status subscription and passes
+src/nepi_apps/nepi_app_stereo_cam/scripts/calibrate.py:22: [doc] Stereo calibration + rectification for the custom stereo driver.
+src/nepi_apps/nepi_app_stereo_cam/scripts/calibrate.py:25: [doc] (Custom Stereo Depth app -> "Stereo Calibration" panel), which talks to the / app node topics wired in custom_stereo_app_node.py:
+src/nepi_apps/nepi_app_stereo_cam/scripts/stereo_cam_app_node.py:49: [doc] * A stereo calibration panel (RUI NepiAppCustomStereo-Calibration.js ->
+src/nepi_apps/nepi_app_file_pub_depthmap/scripts/file_pub_depthmap_app_node.py:615: # 2026-07 DECISION LOG entry on registry keys.
+src/nepi_apps/nepi_app_nav_sim/scripts/nav_sim_app_node.py:396: # write -- they are simply no longer drawn. The controls that cannot be
+src/nepi_apps/nepi_app_nav_sim/api/connect_app_nav_sim.py:162: # NodeClassIF takes no 'namespace' or 'log_class_name' kwarg (3.3 or
+src/nepi_apps/nepi_app_stereo_cam/scripts/stereo_cam_app_node.py:1692: # default folder (the ZED cal folder). Configs written before / default_calib_folder() reliably resolved to that folder carry a h
+src/nepi_apps/nepi_app_onvif_mgr/scripts/onvif_mgr_app_node.py:448: # discovery-clearing toggle had one; the other two controls are read by
+src/nepi_apps/nepi_app_file_pub_depthmap/rui/NepiAppFilePubDepthmap.js:257: // ControlsStatus. What is left here is what the node REPORTS.
+src/nepi_apps/nepi_app_nav_sim/scripts/nav_sim_app_node.py:890: # Only the master enable stays a topic. It is not a row control -- the
+src/nepi_drivers/idx_drivers/idx_zed_node.py:483: # carry it by default. RC1's IDX IF has no navpose callback; its navpose
+src/nepi_drivers/ptx_drivers/ptx_servos_node.py:378: # RC1 DeviceSVXStatus reports servo connected in its 'connected' field
+src/nepi_drivers/ptx_drivers/ptx_servos_node.py:530: # A full topic is accepted as-is: selections saved before the selectors
+src/nepi_drivers/idx_drivers/idx_zed_node.py:565: # The retired cap-settings form carried an Int/Float control's min and
+src/nepi_drivers/lsx_drivers/lsx_deepsea_sealite_node.py:228: # The retired cap-settings form carried an Int control's min and max in
+src/nepi_drivers/lsx_drivers/lsx_sidus_SS182_serial_node.py:254: # The retired cap-settings form carried an Int control's min and max in
+src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py:1336: # The retired cap-settings form carried an Int/Float control's min and
+src/nepi_drivers/rbx_drivers/rbx_px4_node.py:557: # The retired cap-settings form carried an Int/Float control's min and
+src/nepi_drivers/svx_drivers/svx_servo_maestro_node.py:397: # The retired cap-settings form carried an Int/Float control's min
+src/nepi_drivers/rbx_drivers/rbx_gazebo_node.py:61: # hard-code the wrong one. What this driver exposes instead this pass: the
+src/nepi_drivers/rbx_drivers/rbx_gazebo_discovery.py:62: # Multi-robot worlds are out of scope for this pass.
+src/nepi_drivers/rbx_drivers/rbx_gazebo_node.py:209: # max_linear_speed_mps. The RBXRobotIF factory default of 25 s was measured too
+src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py:490: # quadcopter.py's own copy of this concept was never wired to anything
+src/nepi_drivers/rbx_drivers/rbx_ardupilot_node.py:675: # RESET_SIM reaches across the reverse SSH tunnel to a tiny listener
+src/nepi_drivers/rbx_drivers/rbx_ardupilot_discovery.py:69: [doc] requires (the same false-positive a reverse-tunnel's sshd end always
+src/nepi_drivers/svx_drivers/svx_servo_maestro_discovery.py:94: # the same requests were verified by hand on a Micro Maestro 6). A mode change
+src/nepi_drivers/scripts/fake_gps_node.py:49: #BARO_OPTION = 1  (This was required for proper barometer reading on Pixhawk)
+src/nepi_rui/src/rui_webserver/rui-app/config-overrides.js:72: // the build is exactly what it was.
+src/nepi_rui/src/rui_webserver/rui-app/config-overrides.js:138: // costs ~38s on this hardware (measured 2026-09-17: npm build 16s -> 54s,
+src/nepi_rui/src/rui_webserver/rui-app/config-overrides.js:160: // Full `source-map` measured at ~38s on 2026-09-17, but that was over a
+src/nepi_rui/src/rui_webserver/rui-app/src/NepiDeviceRBX-Controls.js:331: // below still covers that, for a driver that hasn't been rebuilt with
+src/nepi_rui/src/rui_webserver/rui-app/src/NepiDeviceSVX-Controls.js:491: // RC1's DeviceSVXIF has no runtime set_continuous_mode, so the Continuous Spinning
+src/nepi_rui/src/rui_webserver/rui-app/src/NepiDeviceSVX.js:120: // RC1 DeviceSVXStatus reports servo connected in its 'connected' field
+src/nepi_rui/src/rui_webserver/rui-app/src/Nepi_IF_Control.js:552: // with 0 rather than undefined, and round 0 is step 1 -- the defect
+nepi_setup/resources/bash/nepi_bash_utils:5373: # Guard A: refuse unless this folder is the root of its own repo. An
+src/nepi_interfaces/msg/MgrSystemStatus.msg:13: ## Moving to System Status Msg
+src/nepi_interfaces/msg/MgrSoftwareStatus.msg:69: ## Moving to System Status Msg
+src/nepi_interfaces/msg/DeviceRBXStatus.msg:118: # live and continuously, rather than only rejecting one after the fact. What
+src/nepi_ai_frameworks/nepi_aif_yolo/scripts/nepi_ai_yolo_detection_node.py:261: # Default to empty results so a failed inference returns no / # detections instead of raising UnboundLocalError below
