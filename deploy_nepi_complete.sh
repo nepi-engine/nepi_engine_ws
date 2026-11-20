@@ -2,11 +2,11 @@
 #
 # Copyright (c) 2024 Numurus <https://www.numurus.com>.
 #
-# This file is part of nepi engine ws (${NEPI_REPO_NAME}) repo
-# (see https://github.com/nepi-engine/${NEPI_REPO_NAME})
+# This file is part of nepi engine ws (nepi_engine_ws) repo
+# (see https://github.com/nepi-engine/nepi_engine_ws)
 #
 # License: NEPI Engine WS Tools and NEPI software deployed and/or compiled with these tools
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
