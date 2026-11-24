@@ -303,12 +303,11 @@ fi
 
 #####################################
 ######       NEPI Live Updates       #####
-# RUI build
 
-script_file=deploy_nepi_live.sh
-script_path=${SOURCE_FOLDER}/${script_file}
-if ! source_script $script_path; then
-    script_error=$?
-    echo "Script ${script_path} failed with error ${script_error}"
-fi
+# script_file=deploy_nepi_live.sh
+# script_path=${SOURCE_FOLDER}/${script_file}
+# if ! source_script $script_path; then
+#     script_error=$?
+#     echo "Script ${script_path} failed with error ${script_error}"
+# fi
 

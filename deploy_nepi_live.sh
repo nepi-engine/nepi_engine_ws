@@ -16,7 +16,7 @@
 # ====================
 # - mailto:nepi@numurus.com
 #
-sudo -v
+# sudo -v
 
 CONFIG_USER=$(id -un)
 buid_folder=$(pwd)
