@@ -16,7 +16,7 @@
 # ====================
 # - mailto:nepi@numurus.com
 #
-sudo -v
+# sudo -v
 
 CONFIG_USER=$(id -un)
 buid_folder=$(pwd)
@@ -169,11 +169,10 @@ DEPLOY_FOLDER=${NEPI_ENGINE}
 function deploy_live_update() {
   source_path=$1
   dest_path=$2
-  echo "Deploying ${source_name} from ${source_path}"
   #echo "  to NEPI live folder ${dest_path}:" 
   fix_scripts $source_path >/dev/null 2>&1
   RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude empty.txt"
-  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no -p 2222" ${RSYNC_EXCLUDES} ${source_path}/* ${NEPI_LIVE_USER}@${NEPI_TARGET_IP}:${dest_path}/ >/dev/null
+  rsync -avzhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -p 2222" ${RSYNC_EXCLUDES} ${source_path}/* ${NEPI_LIVE_USER}@${NEPI_TARGET_IP}:${dest_path}/ >/dev/null
   if [[ $? -ne 0 ]]; then
     if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
       host_ip="localhost"
@@ -194,6 +193,7 @@ LIVE_SUCCESS=1
 DEPLOY_NAME=nepi_managers
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
 DEST_PATH=${DEPLOY_FOLDER}/lib/${dest_name}
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   if ! deploy_live_update $SOURCE_PATH $DEST_PATH; then
     LIVE_SUCCESS=0
@@ -203,6 +203,7 @@ fi
 DEPLOY_NAME=nepi_sdk
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
 DEST_PATH=${DEPLOY_FOLDER}/lib/python3/dist-packages/nepi_sdk
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   if ! deploy_live_update $SOURCE_PATH $DEST_PATH; then
     LIVE_SUCCESS=0
@@ -212,6 +213,7 @@ fi
 DEPLOY_NAME=nepi_api
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
 DEST_PATH=${DEPLOY_FOLDER}/lib/python3/dist-packages/nepi_api
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   if ! deploy_live_update $SOURCE_PATH $DEST_PATH; then
     LIVE_SUCCESS=0
@@ -221,6 +223,7 @@ fi
 DEPLOY_NAME=nepi_api
 SOURCE_PATH=$REPO_FOLDER/src/nepi_engine/${DEPLOY_NAME}/scripts/
 DEST_PATH=${DEPLOY_FOLDER}/lib/nepi_api
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   if ! deploy_live_update $SOURCE_PATH $DEST_PATH; then
     LIVE_SUCCESS=0
@@ -234,6 +237,7 @@ fi
 DEPLOY_NAME=nepi_drivers
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
 DEST_PATH=${DEPLOY_FOLDER}/lib/nepi_drivers
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   for dir in "$SOURCE_PATH"/*/; do
       # Ensure the directory actually exists (handles empty folders safely)
@@ -250,6 +254,7 @@ fi
 # ###############################################
 DEPLOY_NAME=nepi_ai_frameworks
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   for dir in "$SOURCE_PATH"/*/; do
       # Ensure the directory actually exists (handles empty folders safely)
@@ -277,6 +282,7 @@ fi
 # ###############################################
 DEPLOY_NAME=nepi_apps
 SOURCE_PATH=$REPO_FOLDER/${DEPLOY_NAME}
+echo "Deploying ${DEPLOY_NAME}"
 if [[ $LIVE_SUCCESS -eq 1 ]]; then
   for dir in "$SOURCE_PATH"/*/; do
       # Ensure the directory actually exists (handles empty folders safely)
@@ -298,3 +304,6 @@ if [[ $LIVE_SUCCESS -eq 1 ]]; then
       fi
   done
 fi
+
+echo "--------------------------------------------"
+echo ""
