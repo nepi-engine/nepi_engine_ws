@@ -373,7 +373,10 @@
       "Bash(cd /home/production/nepi_engine_ws/src/nepi_engine/nepi_api/src/nepi_api && ls device_if*.py; grep -n -E \"ALTITUDE_FRAME|altitude_frame|frame_altitude|ALT_FRAMES|'AMSL'|'WGS84'\" device_if_npx.py ../../../nepi_sdk/src/nepi_sdk/nepi_nav.py 2>/dev/null | head -12)",
       "Read(//nepi_sdk/src/nepi_sdk/**)",
       "Bash(git -C /home/production/nepi_drivers_dev status --short)",
-      "Bash(git -C /home/production/nepi_drivers_dev status)"
+      "Bash(git -C /home/production/nepi_drivers_dev status)",
+      "Bash(git grep *)",
+      "Bash(echo \"grep exit: $?\")",
+      "Bash(awk '/^class SettingsIF/{f=1} f&&/^class /&&!/SettingsIF/{exit} f' system_if.py)"
     ],
     "additionalDirectories": [
       "/home/production/nepi_engine_ws/.claude/sessions",
