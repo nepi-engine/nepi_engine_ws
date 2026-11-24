@@ -36,7 +36,7 @@ buid_folder=$(pwd)
 # It can be run from a development host or directly on the target hardware as described in this
 # repository's README
 #
-source_folder=$(pwd)
+SOURCE_FOLDER=$(pwd)
 
 
 if [[ ! -v NEPI_REPO_NAME  ]]; then
@@ -53,7 +53,7 @@ echo "########################################"
 echo "Deploying NEPI Version ${fw_version}"
 echo "########################################"
 echo ""
-#echo ${fw_version} > ${source_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt 
+#echo ${fw_version} > ${SOURCE_FOLDER}/src/nepi_engine/nepi_env/etc/fw_version.txt 
 
 
 
@@ -182,13 +182,13 @@ fi
 RSYNC_EXCLUDES=" --exclude .git --exclude .gitmodules --exclude .catkin_tools/profiles/*/packages --exclude devel_* --exclude logs_* --exclude install_* --exclude nepi_3rd_party*"
 echo "Excluding ${RSYNC_EXCLUDES}"
 
-echo "Deploying NEPI Setup Source from ${source_folder}/nepi_setup to ${NEPI_SETUP_SRC_DIR}/nepi_setup"
+echo "Deploying NEPI Setup Source from ${SOURCE_FOLDER}/nepi_setup to ${NEPI_SETUP_SRC_DIR}/nepi_setup"
   # Deploy Setup Folders
 
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000 --delete  ${RSYNC_EXCLUDES} ${source_folder}/nepi_setup/* ${NEPI_SETUP_SRC_DIR}/nepi_setup/
+  sudo rsync -arh --chown=1000:1000 --delete  ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/nepi_setup/* ${NEPI_SETUP_SRC_DIR}/nepi_setup/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 --delete ${RSYNC_EXCLUDES} ${source_folder}/nepi_setup ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_SETUP_SRC_DIR}/
+  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 --delete ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/nepi_setup ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_SETUP_SRC_DIR}/
 fi
 
 echo ""
@@ -198,7 +198,7 @@ echo ""
 
 
 
-echo "Updating NEPI System Config files from ${source_folder}/nepi_setup/resources/etc to ${NEPI_CONFIG}/system_cfg"
+echo "Updating NEPI System Config files from ${SOURCE_FOLDER}/nepi_setup/resources/etc to ${NEPI_CONFIG}/system_cfg"
   # Deploy Docker Folder
 
 if [[ $DCLEAN -eq 1 ]]; then
@@ -215,39 +215,39 @@ if [[ $DCLEAN -eq 1 ]]; then
   echo "Clearing NEPI user config from ${NEPI_CONFIG}/system_cfg"
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
    find ${NEPI_CONFIG}/system_cfg -mindepth 1 -path ${NEPI_CONFIG}/system_cfg/etc -prune -o -exec rm -rf {} + 2>/dev/null
-    sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${source_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
+    sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     ssh -o StrictHostKeyChecking=no -p 22 -i ${NEPI_SSH_KEY} ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP} \
      "find ${NEPI_CONFIG}/system_cfg -mindepth 1 -path ${NEPI_CONFIG}/system_cfg/etc -prune -o -exec rm -rf {} + 2>/dev/null" 
     rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} \
-      ${source_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
+      ${SOURCE_FOLDER}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
   fi
 
 else
 
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml --exclude nepi_system_config.yaml.bak ${source_folder}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
+    sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml --exclude nepi_system_config.yaml.bak ${SOURCE_FOLDER}/nepi_setup/resources/etc/* ${NEPI_CONFIG}/system_cfg/etc/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
     rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${RSYNC_EXCLUDES} --exclude nepi_system_config.yaml  --exclude nepi_system_config.yaml.bak \
-      ${source_folder}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
+      ${SOURCE_FOLDER}/nepi_setup/resources/etc/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/system_cfg/etc
   fi
 fi
 
 
-echo "Updating NEPI Docker Config files from ${source_folder}/nepi_setup/resources/docker to ${NEPI_CONFIG}/docker_cfg"
+echo "Updating NEPI Docker Config files from ${SOURCE_FOLDER}/nepi_setup/resources/docker to ${NEPI_CONFIG}/docker_cfg"
   # Deploy Docker Folder
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${source_folder}/nepi_setup/resources/docker/* ${NEPI_CONFIG}/docker_cfg/
+  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/nepi_setup/resources/docker/* ${NEPI_CONFIG}/docker_cfg/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${source_folder}/nepi_setup/resources/docker/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/docker_cfg
+  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${SOURCE_FOLDER}/nepi_setup/resources/docker/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_CONFIG}/docker_cfg
 fi
 
-echo "Updating NEPI Docker Config files from ${source_folder}/nepi_setup/resources/docker to ${NEPI_BASE}/docker_cfg"
+echo "Updating NEPI Docker Config files from ${SOURCE_FOLDER}/nepi_setup/resources/docker to ${NEPI_BASE}/docker_cfg"
   # Deploy Docker Folder
 if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${source_folder}/nepi_setup/resources/docker/* ${NEPI_BASE}/docker_cfg/
+  sudo rsync -arh --chown=1000:1000   ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/nepi_setup/resources/docker/* ${NEPI_BASE}/docker_cfg/
 elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${source_folder}/nepi_setup/resources/docker/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_BASE}/docker_cfg
+  rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no"  ${SOURCE_FOLDER}/nepi_setup/resources/docker/ ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_BASE}/docker_cfg
 fi
 
 shopt -u dotglob
@@ -270,7 +270,7 @@ echo "DEPLOYING BUILD UPDATES"
 echo ""
 
 
-echo "Deploying NEPI Engine Source from ${source_folder} to ${NEPI_TARGET_SRC_DIR}"
+echo "Deploying NEPI Engine Source from ${SOURCE_FOLDER} to ${NEPI_TARGET_SRC_DIR}"
 if [ "$NEPI_REMOTE_SETUP" -eq 0 ]; then
   sudo rsync -arh --chown=1000:1000 ${RSYNC_EXCLUDES} ../${NEPI_REPO_NAME}/* ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/
   echo ${fw_version} > ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/nepi_engine/nepi_env/etc/fw_version.txt
@@ -291,14 +291,24 @@ if [[ "$DEPLOY_3RD_PARTY" -eq 1 ]]; then
   echo "Excluding ${RSYNC_EXCLUDES}"
     # Deploy Third Party Folders
   if [ "${NEPI_REMOTE_SETUP}" == "0" ]; then
-    sudo rsync -arh --chown=1000:1000 ${RSYNC_EXCLUDES} ${source_folder}/src/nepi_3rd_party ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
+    sudo rsync -arh --chown=1000:1000 ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/src/nepi_3rd_party ${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
   elif [ "${NEPI_REMOTE_SETUP}" == "1" ]; then
-    rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} ${source_folder}/src/nepi_3rd_party ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
+    rsync -azhe "ssh -i ${NEPI_SSH_KEY} -o StrictHostKeyChecking=no" --chown=1000:1000 ${RSYNC_EXCLUDES} ${SOURCE_FOLDER}/src/nepi_3rd_party ${NEPI_DEPLOY_USERNAME}@${NEPI_TARGET_IP}:${NEPI_TARGET_SRC_DIR}/${NEPI_REPO_NAME}/src/
   fi
 
 else
   echo "Skipping nepi 3rd party repos"
 fi
 
-#echo "0.0.0" > ${source_folder}/src/nepi_engine/nepi_env/etc/fw_version.txt
+
+#####################################
+######       NEPI Live Updates       #####
+# RUI build
+
+script_file=deploy_nepi_live.sh
+script_path=${SOURCE_FOLDER}/${script_file}
+if ! source_script $script_path; then
+    script_error=$?
+    echo "Script ${script_path} failed with error ${script_error}"
+fi
 
