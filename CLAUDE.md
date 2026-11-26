@@ -85,6 +85,12 @@ be audited for external call sites before any renaming pass proceeds.
 
 ---
 
+## Logging Levels
+
+Diagnostic output, such as dict dumps or per-call "doing X" lines, uses `msg_if.pub_debug` (in node and IF classes) or `logger.log_debug` (in SDK functions), never `warn`. A warn prints on every running system. A debug message prints only when the System Admin page has Debug Mode on, the level set to MED or higher, and a target of ALL or the calling node. When debug is off, the call costs nothing beyond evaluating its arguments, so pass large structures with `data=` rather than `str()`. The full mechanism, including levels, options, namespace targeting and a known drop defect in drivers_mgr, is in src/nepi_engine/CLAUDE.md under "Logging and Debug Output".
+
+---
+
 ## MENURIC FRAMEWORK INTEGRATION
 
 This repo uses the Menuric Framework for AI-assisted development governance. The framework adds persistent context, decision tracking, and session continuity across Claude AI and Claude Code sessions.
